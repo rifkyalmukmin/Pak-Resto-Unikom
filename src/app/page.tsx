@@ -1,164 +1,128 @@
 import Link from "next/link";
-import { ArrowRight, UtensilsCrossed, ShoppingCart, Clock, Star } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { RoleCard } from "@/components/role/role-card";
 
-const features = [
-  {
-    icon: ShoppingCart,
-    title: "Pemesanan Digital",
-    description: "Pesan menu favorit Anda dengan mudah melalui sistem digital yang cepat dan praktis.",
-  },
-  {
-    icon: UtensilsCrossed,
-    title: "Manajemen Menu",
-    description: "Kelola menu restoran dengan kategori yang terorganisir dan update real-time.",
-  },
-  {
-    icon: Clock,
-    title: "Reservasi Meja",
-    description: "Reservasi meja makan sebelumnya untuk menghindari antrean di jam sibuk.",
-  },
-  {
-    icon: Star,
-    title: "Layanan Pelanggan",
-    description: "Sistem rating dan feedback untuk meningkatkan kualitas layanan restoran.",
-  },
-];
-
-const popularMenus = [
-  { name: "Nasi Goreng Spesial", price: 25000, category: "Makanan", emoji: "🍛" },
-  { name: "Ayam Geprek", price: 28000, category: "Makanan", emoji: "🍗" },
-  { name: "Es Teh Manis", price: 5000, category: "Minuman", emoji: "🧋" },
-  { name: "Pisang Goreng", price: 12000, category: "Snack", emoji: "🍌" },
-];
-
-export default function HomePage() {
+export default function RoleSelectionPage() {
   return (
-    <>
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-accent/10">
-        <div className="container py-20 md:py-32">
-          <div className="mx-auto max-w-3xl text-center">
-            <Badge variant="secondary" className="mb-4">
-              🎓 Kampus Universitas Komputer Indonesia
-            </Badge>
-            <h1 className="text-4xl font-bold tracking-tight md:text-6xl">
-              Sistem Restoran Digital{" "}
-              <span className="text-primary">Pak Resto Unikom</span>
-            </h1>
-            <p className="mt-6 text-lg text-muted-foreground md:text-xl">
-              Solusi digital untuk pengelolaan restoran kampus — pemesanan online,
-              manajemen menu, dan layanan pelanggan dalam satu platform.
-            </p>
-            <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center">
-              <Button size="lg" asChild>
-                <Link href="/menu">
-                  Lihat Menu <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link href="/order">Pesan Sekarang</Link>
-              </Button>
+    <div className="relative flex min-h-screen flex-col bg-[#faf9f6]">
+      {/* Top Navigation */}
+      <header className="sticky top-0 z-50 w-full bg-[#f8f9ff]/90 px-10 shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] backdrop-blur-[6px]">
+        <div className="mx-auto flex max-w-[1200px] items-center justify-between px-6 py-3">
+          <Link
+            href="/"
+            className="font-[family-name:var(--font-playfair)] text-2xl font-bold leading-8 text-[#9d4300]"
+            aria-label="Pak Resto UNIKOM - Beranda"
+          >
+            Pak Resto UNIKOM
+          </Link>
+          <div className="flex items-center gap-6">
+            <button
+              type="button"
+              className="flex size-[19px] items-center justify-center"
+              aria-label="Bantuan"
+            >
+              <img
+                src="/images/role-selection/icon-help.svg"
+                alt=""
+                className="size-full"
+              />
+            </button>
+            <div className="size-8 overflow-hidden rounded-full border-2 border-[#ffdbca]/30 bg-[#e5eeff] p-0.5">
+              <img
+                src="/images/role-selection/avatar.jpg"
+                alt="Profil pengguna"
+                className="h-full w-full rounded-full object-cover"
+              />
             </div>
           </div>
         </div>
-      </section>
+      </header>
 
-      {/* Features Section */}
-      <section className="container py-16 md:py-24">
-        <div className="mx-auto mb-12 max-w-2xl text-center">
-          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
-            Fitur Unggulan
-          </h2>
-          <p className="mt-4 text-muted-foreground">
-            Semua yang Anda butuhkan untuk pengelolaan restoran modern
-          </p>
-        </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {features.map((feature) => (
-            <Card key={feature.title}>
-              <CardHeader>
-                <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-                  <feature.icon className="h-6 w-6 text-primary" />
-                </div>
-                <CardTitle className="text-xl">{feature.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-sm">
-                  {feature.description}
-                </CardDescription>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
+      {/* Main Content */}
+      <main className="flex flex-1 items-center justify-center px-6 pb-[117.5px] pt-[197.5px]">
+        <div className="mx-auto flex w-full max-w-[896px] flex-col gap-12">
+          <div className="flex w-full flex-col items-center gap-1 text-center">
+            <h1 className="font-[family-name:var(--font-playfair)] text-[48px] font-bold leading-[56px] tracking-[-0.96px] text-[#9d4300]">
+              Pilih Peran Anda
+            </h1>
+            <div className="max-w-[512px] text-center text-lg font-normal leading-7 text-[#5c5f60]">
+              <p>Silakan pilih akses ruang kerja Anda untuk memulai</p>
+              <p>manajemen operasional restoran hari ini.</p>
+            </div>
+          </div>
 
-      {/* Popular Menu Section */}
-      <section className="bg-muted/50 py-16 md:py-24">
-        <div className="container">
-          <div className="mx-auto mb-12 max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
-              Menu Populer
-            </h2>
-            <p className="mt-4 text-muted-foreground">
-              Pilihan favorit para mahasiswa dan dosen Unikom
+          <div className="grid w-full grid-cols-1 gap-12 py-6 sm:grid-cols-2 lg:grid-cols-4">
+            <RoleCard
+              title="Pelayan"
+              subtitleLines={["Order &", "Layanan"]}
+              href="/dashboard/waiter"
+              iconSrc="/images/role-selection/icon-waiter.svg"
+              iconAlt="Ikon pelayan"
+              iconClassName="h-[29.25px] w-[21px] object-contain"
+            />
+            <RoleCard
+              title="Koki"
+              subtitleLines={["Manajemen", "Dapur"]}
+              href="/dashboard/chef"
+              iconSrc="/images/role-selection/icon-chef.svg"
+              iconAlt="Ikon koki"
+              iconClassName="h-6 w-[30.35px] object-contain"
+            />
+            <RoleCard
+              title="Kasir"
+              subtitleLines={["Transaksi", "& Billing"]}
+              href="/dashboard/cashier"
+              iconSrc="/images/role-selection/icon-cashier.svg"
+              iconAlt="Ikon kasir"
+              iconClassName="h-[22.04px] w-[30.46px] object-contain"
+            />
+            <RoleCard
+              title="Manajer"
+              subtitleLines={["Laporan", "& Staf"]}
+              href="/dashboard/manager"
+              iconSrc="/images/role-selection/icon-manager.svg"
+              iconAlt="Ikon manajer"
+              iconClassName="h-[28.44px] w-[25.5px] object-contain"
+            />
+          </div>
+
+          <div className="w-full pt-6 text-center opacity-70">
+            <p className="text-sm font-semibold leading-5 tracking-[0.7px] text-[#5c5f60]">
+              Butuh bantuan? Hubungi admin IT UNIKOM.
             </p>
           </div>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {popularMenus.map((menu) => (
-              <Card key={menu.name} className="overflow-hidden transition-shadow hover:shadow-lg">
-                <div className="flex h-40 items-center justify-center bg-gradient-to-br from-accent to-muted text-6xl">
-                  {menu.emoji}
-                </div>
-                <CardHeader>
-                  <Badge variant="outline" className="w-fit">
-                    {menu.category}
-                  </Badge>
-                  <CardTitle className="text-lg">{menu.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-primary">
-                      Rp {menu.price.toLocaleString("id-ID")}
-                    </span>
-                    <Button size="sm">Pesan</Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          <div className="mt-10 text-center">
-            <Button size="lg" variant="outline" asChild>
-              <Link href="/menu">
-                Lihat Semua Menu <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
         </div>
-      </section>
+      </main>
 
-      {/* CTA Section */}
-      <section className="container py-16 md:py-24">
-        <div className="rounded-2xl bg-primary px-6 py-16 text-center text-primary-foreground md:px-12">
-          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
-            Siap Memulai?
-          </h2>
-          <p className="mx-auto mt-4 max-w-xl text-primary-foreground/80">
-            Bergabunglah dengan Pak Resto Unikom dan nikmati pengalaman pemesanan
-            restoran yang modern dan efisien.
-          </p>
-          <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center">
-            <Button size="lg" variant="secondary" asChild>
-              <Link href="/register">Daftar Sekarang</Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link href="/login">Masuk</Link>
-            </Button>
+      {/* Footer */}
+      <footer className="w-full border-t border-[#e0c0b1] bg-[#d9e3f4] px-10 pb-6 pt-[25px]">
+        <div className="mx-auto max-w-[1200px]">
+          <div className="flex flex-col items-center justify-between gap-4 px-6 sm:flex-row">
+            <p className="text-sm font-semibold leading-5 tracking-[0.7px] text-[#584237]">
+              © 2024 Pak Resto UNIKOM. Effortless Elegance in Dining.
+            </p>
+            <div className="flex gap-6">
+              <Link
+                href="#"
+                className="text-sm font-semibold leading-5 tracking-[0.7px] text-[#584237] transition-colors hover:text-[#9d4300]"
+              >
+                Privacy Policy
+              </Link>
+              <Link
+                href="#"
+                className="text-sm font-semibold leading-5 tracking-[0.7px] text-[#584237] transition-colors hover:text-[#9d4300]"
+              >
+                Terms of Service
+              </Link>
+              <Link
+                href="#"
+                className="text-sm font-semibold leading-5 tracking-[0.7px] text-[#584237] transition-colors hover:text-[#9d4300]"
+              >
+                Support
+              </Link>
+            </div>
           </div>
         </div>
-      </section>
-    </>
+      </footer>
+    </div>
   );
 }
