@@ -21,11 +21,11 @@ const mockTransactions: Transaction[] = [
 ];
 
 const paymentMethodIcon: Record<string, string> = {
-  "QRIS - BCA": "/images/laporan/icon-qris.png",
-  "Cash": "/images/laporan/icon-tunai.png",
-  "Debit Card": "/images/laporan/icon-debit.png",
-  "Pending": "/images/laporan/icon-pending.png",
-  "OVO": "/images/laporan/icon-ewallet.png",
+  "QRIS - BCA": "/images/kasir/laporan/icon-qris.png",
+  "Cash": "/images/kasir/laporan/icon-tunai.png",
+  "Debit Card": "/images/kasir/laporan/icon-debit.png",
+  "Pending": "/images/kasir/laporan/icon-pending.png",
+  "OVO": "/images/kasir/laporan/icon-ewallet.png",
 };
 
 const statusStyles: Record<string, string> = {
@@ -58,7 +58,7 @@ export default function LaporanTransaksiPage() {
           </div>
           <div className="w-14 h-14 bg-[#22d3ee]/10 rounded-xl flex items-center justify-center shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/laporan/icon-total.png" alt="" width={28} height={28} />
+            <img src="/images/kasir/laporan/icon-total.png" alt="" width={28} height={28} />
           </div>
         </div>
 
@@ -70,7 +70,7 @@ export default function LaporanTransaksiPage() {
             </p>
             <div className="w-14 h-14 bg-[#00B954]/10 rounded-xl flex items-center justify-center shrink-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/images/laporan/icon-jumlah.png" alt="" width={28} height={28} />
+              <img src="/images/kasir/laporan/icon-jumlah.png" alt="" width={28} height={28} />
             </div>
           </div>
           <p className="text-white text-3xl font-bold mb-3">184</p>
@@ -87,7 +87,7 @@ export default function LaporanTransaksiPage() {
         <div className="px-5 py-4 flex items-center justify-between" style={{ backgroundColor: "#292839" }}>
           <h3 className="text-white font-semibold text-base">Riwayat Transaksi Terkini</h3>
           <div className="flex items-center gap-2">
-            <button className="flex items-center gap-2 bg-[#333344] border border-white/10 text-slate-300 text-sm px-3.5 py-2 rounded-lg hover:bg-[#3d3d55] transition-colors">
+            <button className="flex items-center gap-2 border border-white/10 text-slate-300 text-sm px-3.5 py-2 rounded-lg hover:bg-white/5 transition-colors" style={{ backgroundColor: "#333344" }}>
               <Filter size={13} />
               Filter
             </button>
@@ -101,7 +101,7 @@ export default function LaporanTransaksiPage() {
         {/* Column headers */}
         <div className="grid grid-cols-[1fr_1.5fr_1.2fr_1.5fr_1fr_0.5fr] gap-4 px-5 py-3" style={{ backgroundColor: "#1E1E2E" }}>
           {["Waktu", "No. Meja / Tipe", "Total (IDR)", "Metode Bayar", "Status", "Aksi"].map((h) => (
-            <p key={h} className="text-slate-500 text-[10px] font-bold uppercase tracking-wider">{h}</p>
+            <p key={h} className="text-white text-sm font-bold uppercase tracking-wider">{h}</p>
           ))}
         </div>
 
@@ -112,10 +112,10 @@ export default function LaporanTransaksiPage() {
             className="grid grid-cols-[1fr_1.5fr_1.2fr_1.5fr_1fr_0.5fr] gap-4 px-5 py-4 border-t border-white/[0.04]"
             style={{ backgroundColor: "#1A1A2A" }}
           >
-            <p className="text-slate-300 text-sm font-mono self-center">{tx.time}</p>
+            <p className="text-sm font-normal self-center" style={{ color: "#E3E0F7" }}>{tx.time}</p>
             <div className="self-center">
-              <p className="text-white text-sm font-semibold">{tx.tableOrType}</p>
-              <p className="text-slate-500 text-[10px] font-semibold tracking-wide">{tx.type}</p>
+              <p className="text-sm font-normal" style={{ color: "#E3E0F7" }}>{tx.tableOrType}</p>
+              <p className="text-slate-500 text-[10px] tracking-wide">{tx.type}</p>
             </div>
             <p className="text-[#4CD7F6] text-sm font-bold font-mono tabular-nums self-center">
               {tx.total.toLocaleString("id-ID")}
@@ -128,7 +128,7 @@ export default function LaporanTransaksiPage() {
                 width={16}
                 height={16}
               />
-              <span className="text-slate-300 text-sm">{tx.paymentMethod}</span>
+              <span className="text-sm font-normal" style={{ color: "#E3E0F7" }}>{tx.paymentMethod}</span>
             </div>
             <div className="self-center">
               <span className={`text-[10px] font-bold px-2.5 py-1 rounded-md ${statusStyles[tx.status]}`}>
@@ -139,7 +139,7 @@ export default function LaporanTransaksiPage() {
               <button className="p-1 transition-opacity hover:opacity-80">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/images/laporan/icon-eye.png"
+                  src="/images/kasir/laporan/icon-eye.png"
                   alt="view"
                   width={16}
                   height={16}

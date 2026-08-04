@@ -39,10 +39,10 @@ const mockOrderItems = [
 const numpadKeys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "C", "0", "DEL"];
 
 const paymentMethods: { key: PaymentMethod; label: string; icon: string }[] = [
-  { key: "tunai", label: "Tunai", icon: "/images/pembayaran/tunai.png" },
-  { key: "debit", label: "Debit/Kredit", icon: "/images/pembayaran/debit.png" },
-  { key: "qris", label: "QRIS", icon: "/images/pembayaran/qris.png" },
-  { key: "ewallet", label: "E-Wallet", icon: "/images/pembayaran/e-wallet.png" },
+  { key: "tunai", label: "Tunai", icon: "/images/kasir/pembayaran/tunai.png" },
+  { key: "debit", label: "Debit/Kredit", icon: "/images/kasir/pembayaran/debit.png" },
+  { key: "qris", label: "QRIS", icon: "/images/kasir/pembayaran/qris.png" },
+  { key: "ewallet", label: "E-Wallet", icon: "/images/kasir/pembayaran/e-wallet.png" },
 ];
 
 function formatRp(amount: number) {
@@ -283,7 +283,7 @@ export default function KonfirmasiPembayaranPage() {
           <h1 className="text-white text-2xl font-bold">Konfirmasi Pembayaran</h1>
           <p className="text-slate-400 text-sm mt-1 flex items-center gap-1.5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/kasir/icon-jam.png" alt="" width={13} height={13} className="opacity-60" />
+            <img src="/images/kasir/konten/icon-jam.png" alt="" width={13} height={13} className="opacity-60" />
             Data diperbarui otomatis • 12 meja menunggu pembayaran
           </p>
         </div>
@@ -310,7 +310,7 @@ export default function KonfirmasiPembayaranPage() {
             return (
               <div key={table.id} className="bg-[#1E1E2E] rounded-xl border border-white/5 p-6 flex flex-col items-center justify-center min-h-[228px]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/images/kasir/icon-meja.png" alt="" width={32} height={32} className="opacity-30 mb-3" />
+                <img src="/images/kasir/konten/icon-meja.png" alt="" width={32} height={32} className="opacity-30 mb-3" />
                 <p className="text-slate-600 text-sm text-center leading-relaxed">
                   Meja Kosong /<br />Pesanan Aktif
                 </p>
@@ -346,7 +346,7 @@ export default function KonfirmasiPembayaranPage() {
                   <span className="text-white font-semibold flex items-center gap-1.5">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={table.method === "tunai" ? "/images/kasir/icon-tunai.png" : "/images/kasir/icon-transfer.png"}
+                      src={table.method === "tunai" ? "/images/kasir/konten/icon-tunai.png" : "/images/kasir/konten/icon-transfer.png"}
                       alt=""
                       width={13}
                       height={13}
@@ -370,7 +370,7 @@ export default function KonfirmasiPembayaranPage() {
                   className="w-full bg-[#00B954] hover:bg-[#009944] text-black text-sm font-semibold py-2.5 rounded-lg flex items-center justify-center gap-2 transition-colors"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/images/kasir/icon-konfirmasi.png" alt="" width={14} height={14} style={{ filter: "brightness(0)" }} />
+                  <img src="/images/kasir/konten/icon-konfirmasi.png" alt="" width={14} height={14} style={{ filter: "brightness(0)" }} />
                   Konfirmasi Bayar
                 </button>
                 <button className="w-full border border-white/10 text-slate-300 text-sm py-2.5 rounded-lg flex items-center justify-center gap-2 hover:bg-white/5 transition-colors">
@@ -387,7 +387,7 @@ export default function KonfirmasiPembayaranPage() {
         <div className="bg-[#1E1E2E] rounded-xl border border-white/5 p-5 flex items-center gap-4">
           <div className="w-12 h-12 bg-[#0e7490]/20 rounded-xl flex items-center justify-center shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/kasir/icon-estimasi.png" alt="" width={24} height={24} />
+            <img src="/images/kasir/konten/icon-estimasi.png" alt="" width={24} height={24} />
           </div>
           <div>
             <p className="text-slate-400 text-xs mb-1">Estimasi Pendapatan Pending</p>
@@ -398,7 +398,7 @@ export default function KonfirmasiPembayaranPage() {
         <div className="bg-[#1E1E2E] rounded-xl border border-white/5 p-5 flex items-center gap-4">
           <div className="w-12 h-12 bg-[#00B954]/15 rounded-xl flex items-center justify-center shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/kasir/icon-konfirmasi.png" alt="" width={24} height={24} />
+            <img src="/images/kasir/konten/icon-konfirmasi.png" alt="" width={24} height={24} />
           </div>
           <div>
             <p className="text-slate-400 text-xs mb-1">Meja Terkonfirmasi (Hari ini)</p>
@@ -409,7 +409,7 @@ export default function KonfirmasiPembayaranPage() {
         <div className="bg-[#1E1E2E] rounded-xl border border-white/5 p-5 flex items-center gap-4">
           <div className="w-12 h-12 bg-amber-500/15 rounded-xl flex items-center justify-center shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/kasir/icon-rata-waktu.png" alt="" width={24} height={24} />
+            <img src="/images/kasir/konten/icon-rata-waktu.png" alt="" width={24} height={24} />
           </div>
           <div>
             <p className="text-slate-400 text-xs mb-1">Rata-rata Waktu Pembayaran</p>
