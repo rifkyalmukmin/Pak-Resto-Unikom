@@ -6,31 +6,21 @@ import { LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  {
-    label: "Konfirmasi Pembayaran",
-    href: "/dashboard/cashier/konfirmasi-pembayaran",
-    icon: "/images/kasir/sidebar/icon-card.png",
-  },
-  {
-    label: "Pesanan Take Away",
-    href: "/dashboard/cashier/take-away",
-    icon: "/images/kasir/sidebar/icon-takeaway.png",
-  },
-  {
-    label: "Laporan Transaksi",
-    href: "/dashboard/cashier/laporan-transaksi",
-    icon: "/images/kasir/sidebar/icon-laporan.png",
-  },
+  { label: "Home", href: "/dashboard/waiter", icon: "/images/pelayan/sidebar/home.png", exact: true },
+  { label: "Informasi Meja", href: "/dashboard/waiter/informasi-meja", icon: "/images/pelayan/sidebar/informasi-meja.png" },
+  { label: "Pemesanan Makanan", href: "/dashboard/waiter/pemesanan", icon: "/images/pelayan/sidebar/pemesanan-makanan.png" },
+  { label: "Stok Bahan Baku", href: "/dashboard/waiter/stok", icon: "/images/pelayan/sidebar/stok-bahan-baku.png" },
+  { label: "Menu", href: "/dashboard/waiter/menu", icon: "/images/pelayan/sidebar/menu.png" },
 ];
 
-export function KasirSidebar() {
+export function PelayanSidebar() {
   const pathname = usePathname();
 
   return (
     <aside className="flex flex-col w-[240px] min-h-screen bg-[#1E1E2E] border-r border-white/5 shrink-0">
       {/* Logo */}
       <div className="px-5 pt-7 pb-5">
-        <h1 className="text-[22px] font-bold leading-tight text-[#22d3ee]">
+        <h1 className="text-[22px] font-bold leading-tight text-[#10B981]">
           Pak Resto
           <br />
           UNIKOM
@@ -43,7 +33,9 @@ export function KasirSidebar() {
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-2.5">
         {navItems.map((item) => {
-          const isActive = pathname.startsWith(item.href);
+          const isActive = item.exact
+            ? pathname === item.href
+            : pathname.startsWith(item.href);
           return (
             <Link
               key={item.href}
@@ -51,7 +43,7 @@ export function KasirSidebar() {
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150",
                 isActive
-                  ? "bg-[#00B954] text-black shadow-lg shadow-[#00B954]/20"
+                  ? "bg-[#10B981] text-black shadow-lg shadow-[#10B981]/20"
                   : "text-slate-400 hover:text-white hover:bg-white/5"
               )}
             >
@@ -73,13 +65,13 @@ export function KasirSidebar() {
       {/* User */}
       <div className="px-4 py-4 border-t border-white/5">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-[#0e7490] flex items-center justify-center text-white text-xs font-bold shrink-0">
-            A
+          <div className="w-8 h-8 rounded-full bg-[#10B981]/20 flex items-center justify-center shrink-0">
+            <span className="text-[#10B981] text-xs font-bold">B</span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-semibold text-white truncate">Admin Utama</p>
-            <p className="text-[10px] text-[#00B954] font-semibold uppercase tracking-wide">
-              Superuser
+            <p className="text-[13px] font-semibold text-white truncate">Budi Santoso</p>
+            <p className="text-[10px] text-[#10B981] font-semibold uppercase tracking-wide">
+              Waiter Level 2
             </p>
           </div>
           <button className="text-slate-500 hover:text-white transition-colors p-1">

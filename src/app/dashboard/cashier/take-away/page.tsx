@@ -97,7 +97,7 @@ export default function TakeAwayPage() {
       <div className="rounded-xl border border-white/5 overflow-hidden">
         <div className="grid grid-cols-[1fr_1.5fr_1fr_1.2fr_1.2fr_0.5fr] gap-4 px-5 py-3 bg-[#292839]">
           {["NO. PESANAN", "NAMA PELANGGAN", "JUMLAH ITEM", "TOTAL (IDR)", "STATUS", "AKSI"].map((h) => (
-            <p key={h} className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">{h}</p>
+            <p key={h} className="text-white text-sm font-bold uppercase tracking-wider">{h}</p>
           ))}
         </div>
 
@@ -107,10 +107,10 @@ export default function TakeAwayPage() {
             className="grid grid-cols-[1fr_1.5fr_1fr_1.2fr_1.2fr_0.5fr] gap-4 px-5 py-4 transition-colors"
             style={{ backgroundColor: i % 2 === 0 ? "#1E1E2E" : "#252538" }}
           >
-            <p className="text-slate-300 text-sm font-mono font-semibold self-center">{order.id}</p>
-            <p className="text-white text-sm self-center">{order.customer}</p>
-            <p className="text-slate-300 text-sm self-center">{order.items} Item</p>
-            <p className="text-slate-300 text-sm font-mono tabular-nums self-center">
+            <p className="text-sm font-normal self-center" style={{ color: "#E3E0F7" }}>{order.id}</p>
+            <p className="text-sm font-normal self-center" style={{ color: "#E3E0F7" }}>{order.customer}</p>
+            <p className="text-sm font-normal self-center" style={{ color: "#E3E0F7" }}>{order.items} Item</p>
+            <p className="text-sm font-normal tabular-nums self-center" style={{ color: "#E3E0F7" }}>
               {order.total.toLocaleString("id-ID")}
             </p>
             <div className="self-center">

@@ -1,0 +1,492 @@
+"use client";
+
+import { useState } from "react";
+import { X, Plus, Pencil, Check } from "lucide-react";
+
+type MejaStatus = "TERSEDIA" | "TERISI";
+
+interface Meja {
+  id: number;
+  nomor: string;
+  kapasitas: number;
+  status: MejaStatus;
+}
+
+const initialMeja: Meja[] = [
+  { id: 1, nomor: "01", kapasitas: 4, status: "TERSEDIA" },
+  { id: 2, nomor: "02", kapasitas: 2, status: "TERISI" },
+  { id: 3, nomor: "03", kapasitas: 6, status: "TERSEDIA" },
+  { id: 4, nomor: "04", kapasitas: 4, status: "TERISI" },
+  { id: 5, nomor: "05", kapasitas: 2, status: "TERSEDIA" },
+  { id: 6, nomor: "06", kapasitas: 8, status: "TERSEDIA" },
+  { id: 7, nomor: "07", kapasitas: 4, status: "TERSEDIA" },
+  { id: 8, nomor: "08", kapasitas: 4, status: "TERISI" },
+  { id: 9, nomor: "09", kapasitas: 2, status: "TERSEDIA" },
+  { id: 10, nomor: "10", kapasitas: 4, status: "TERSEDIA" },
+  { id: 11, nomor: "11", kapasitas: 6, status: "TERISI" },
+  { id: 12, nomor: "12", kapasitas: 4, status: "TERSEDIA" },
+];
+
+const capacityOptions = [
+  { value: 2, icon: "/images/pelayan/meja/1orang.png" },
+  { value: 4, icon: "/images/pelayan/meja/4orang.png" },
+  { value: 6, icon: "/images/pelayan/meja/6orang.png" },
+  { value: 8, icon: "/images/pelayan/meja/8orang.png" },
+];
+
+const GREEN_FILTER =
+  "brightness(0) saturate(100%) invert(62%) sepia(60%) saturate(500%) hue-rotate(110deg) brightness(95%)";
+const MINT_FILTER =
+  "brightness(0) saturate(100%) invert(78%) sepia(35%) saturate(500%) hue-rotate(105deg) brightness(105%)";
+const SLATE_FILTER = "brightness(0) invert(1) opacity(0.35)";
+
+type ModalMode = "tambah" | "edit" | null;
+type OverlayType = "konfirmasi" | "sukses-tambah" | "sukses-edit" | "konfirmasi-hapus" | null;
+
+export default function InformasiMejaPage() {
+  const [mejaList, setMejaList] = useState<Meja[]>(initialMeja);
+  const [modalMode, setModalMode] = useState<ModalMode>(null);
+  const [editTarget, setEditTarget] = useState<Meja | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
+  const [overlay, setOverlay] = useState<OverlayType>(null);
+
+  const [nomorInput, setNomorInput] = useState("");
+  const [kapasitasSelected, setKapasitasSelected] = useState<number | null>(4);
+  const [kapasitasManual, setKapasitasManual] = useState("");
+  const [useManual, setUseManual] = useState(false);
+
+  const tersedia = mejaList.filter((m) => m.status === "TERSEDIA").length;
+  const terisi = mejaList.filter((m) => m.status === "TERISI").length;
+
+  function openTambah() {
+    setNomorInput("");
+    setKapasitasSelected(4);
+    setKapasitasManual("");
+    setUseManual(false);
+    setModalMode("tambah");
+  }
+
+  function openEdit(meja: Meja) {
+    setEditTarget(meja);
+    setNomorInput(meja.nomor);
+    const preset = capacityOptions.find((c) => c.value === meja.kapasitas);
+    if (preset) {
+      setKapasitasSelected(meja.kapasitas);
+      setUseManual(false);
+      setKapasitasManual("");
+    } else {
+      setKapasitasSelected(null);
+      setUseManual(true);
+      setKapasitasManual(String(meja.kapasitas));
+    }
+    setModalMode("edit");
+  }
+
+  function closeModal() {
+    setModalMode(null);
+    setEditTarget(null);
+    setOverlay(null);
+  }
+
+  function handleHapusDraft() {
+    setNomorInput("");
+    setKapasitasSelected(4);
+    setKapasitasManual("");
+    setUseManual(false);
+  }
+
+  function getKapasitas(): number {
+    if (useManual) return parseInt(kapasitasManual) || 0;
+    return kapasitasSelected ?? 0;
+  }
+
+  // Klik Simpan → tampilkan konfirmasi dulu
+  function handleSimpanClick() {
+    const kap = getKapasitas();
+    if (!nomorInput.trim() || kap < 1) return;
+    setOverlay("konfirmasi");
+  }
+
+  // Konfirmasi "Yes" → simpan data → tampilkan sukses
+  function handleKonfirmasiYes() {
+    const kap = getKapasitas();
+    if (modalMode === "tambah") {
+      const newId = Math.max(...mejaList.map((m) => m.id)) + 1;
+      setMejaList((prev) => [
+        ...prev,
+        { id: newId, nomor: nomorInput.trim().padStart(2, "0"), kapasitas: kap, status: "TERSEDIA" },
+      ]);
+      setOverlay("sukses-tambah");
+    } else if (modalMode === "edit" && editTarget) {
+      setMejaList((prev) =>
+        prev.map((m) =>
+          m.id === editTarget.id
+            ? { ...m, nomor: nomorInput.trim().padStart(2, "0"), kapasitas: kap }
+            : m
+        )
+      );
+      setOverlay("sukses-edit");
+    }
+    setModalMode(null);
+  }
+
+  // Klik hapus kartu → konfirmasi hapus
+  function handleDeleteClick(id: number) {
+    setDeleteTarget(id);
+    setOverlay("konfirmasi-hapus");
+  }
+
+  function handleKonfirmasiHapusYes() {
+    if (deleteTarget !== null) {
+      setMejaList((prev) => prev.filter((m) => m.id !== deleteTarget));
+      setDeleteTarget(null);
+    }
+    setOverlay(null);
+  }
+
+  const isFormOpen = modalMode !== null;
+
+  /* ─── Info icon (teal circle "i") ─────────────────────────── */
+  const InfoIcon = () => (
+    <div
+      className="w-11 h-11 rounded-full flex items-center justify-center border-2 mb-5"
+      style={{ borderColor: "#10B981", backgroundColor: "#10B981" + "18" }}
+    >
+      <span className="text-[#10B981] font-bold text-lg leading-none select-none">i</span>
+    </div>
+  );
+
+  /* ─── Success icon (plain checkmark) ──────────────────────── */
+  const SuccessIcon = () => (
+    <div
+      className="w-11 h-11 rounded-full flex items-center justify-center border-2 mb-5"
+      style={{ borderColor: "#10B981", backgroundColor: "#10B98118" }}
+    >
+      <Check size={22} color="#10B981" strokeWidth={3} />
+    </div>
+  );
+
+  return (
+    <div className="p-6">
+      {/* Toolbar */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-[#10B981]" />
+            <span className="text-slate-400 text-sm">Tersedia: <span className="text-white font-semibold">{tersedia}</span></span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-red-500" />
+            <span className="text-slate-400 text-sm">Terisi: <span className="text-white font-semibold">{terisi}</span></span>
+          </div>
+        </div>
+        <button
+          onClick={openTambah}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition-opacity hover:opacity-90"
+          style={{ backgroundColor: "#10B981", color: "#000" }}
+        >
+          <Plus size={16} strokeWidth={2.5} />
+          Tambah Meja
+        </button>
+      </div>
+
+      {/* Grid meja */}
+      <div className="grid grid-cols-4 gap-4">
+        {mejaList.map((meja) => (
+          <div
+            key={meja.id}
+            className="rounded-2xl border border-white/5 p-4 flex flex-col items-center relative"
+            style={{ backgroundColor: "#1E1E2E" }}
+          >
+            <div className="absolute top-3 left-3">
+              <button
+                onClick={() => openEdit(meja)}
+                className="w-8 h-8 rounded-xl flex items-center justify-center border border-white/10 transition-colors hover:border-white/20 hover:bg-white/10 text-white"
+                style={{ backgroundColor: "#2a2a3e" }}
+              >
+                <Pencil size={13} color="white" />
+              </button>
+            </div>
+            <div className="absolute top-3 right-3">
+              <button
+                onClick={() => handleDeleteClick(meja.id)}
+                className="p-1.5 rounded-lg hover:bg-red-500/10 transition-colors"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/images/pelayan/meja/hapus-draft.png"
+                  alt="hapus"
+                  width={14}
+                  height={14}
+                  style={{ filter: "brightness(0) saturate(100%) invert(40%) sepia(80%) saturate(500%) hue-rotate(310deg)" }}
+                />
+              </button>
+            </div>
+
+            <p className="font-bold mt-6 mb-1.5" style={{ fontSize: "48px", lineHeight: 1, color: "#DAE2FD" }}>
+              {meja.nomor}
+            </p>
+            <p className="text-slate-400 text-sm font-semibold tracking-widest uppercase mb-4">
+              {meja.kapasitas} KURSI
+            </p>
+
+            <button
+              onClick={() =>
+                setMejaList((prev) =>
+                  prev.map((m) =>
+                    m.id === meja.id
+                      ? { ...m, status: m.status === "TERSEDIA" ? "TERISI" : "TERSEDIA" }
+                      : m
+                  )
+                )
+              }
+              className="transition-opacity hover:opacity-75"
+              title="Klik untuk ubah status"
+            >
+              {meja.status === "TERSEDIA" ? (
+                <span className="flex items-center gap-1.5 bg-[#10B981]/15 border border-[#10B981]/30 text-[#10B981] text-[11px] font-bold px-3 py-1 rounded-md cursor-pointer">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
+                  TERSEDIA
+                </span>
+              ) : (
+                <span className="flex items-center gap-1.5 bg-red-500/15 border border-red-500/30 text-red-400 text-[11px] font-bold px-3 py-1 rounded-md cursor-pointer">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                  TERISI
+                </span>
+              )}
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Form Modal (Tambah / Edit) ───────────────────────────── */}
+      {isFormOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={closeModal} />
+          <div className="relative w-[540px] rounded-2xl overflow-hidden border border-white/10 shadow-2xl z-10">
+            {/* Header */}
+            <div className="px-7 pt-7 pb-5" style={{ backgroundColor: "#2D3449" }}>
+              <div className="flex items-start justify-between">
+                <div>
+                  <h2 className="text-white font-bold text-xl">
+                    {modalMode === "tambah" ? "Tambah Meja Baru" : "Edit Informasi Meja"}
+                  </h2>
+                  <p className="text-slate-400 text-sm mt-1">
+                    {modalMode === "tambah"
+                      ? "Konfigurasi meja baru ke sistem operasional."
+                      : "Perbarui konfigurasi meja yang sudah terdaftar."}
+                  </p>
+                </div>
+                <button onClick={closeModal} className="text-slate-500 hover:text-white transition-colors p-1 mt-0.5">
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* Body */}
+            <div className="px-7 py-6 space-y-6" style={{ backgroundColor: "#222A3D" }}>
+              <div>
+                <label className="text-white text-sm font-semibold block mb-2">Nomor Meja</label>
+                <div className="flex items-center rounded-xl overflow-hidden border border-white/10" style={{ backgroundColor: "#060E20" }}>
+                  <div className="px-4 py-3 border-r border-white/10 flex items-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/images/pelayan/meja/no-meja.png" alt="" width={16} height={16} style={{ filter: GREEN_FILTER }} />
+                  </div>
+                  <input
+                    type="text"
+                    value={nomorInput}
+                    onChange={(e) => modalMode === "tambah" && setNomorInput(e.target.value)}
+                    placeholder="Contoh: 012"
+                    readOnly={modalMode === "edit"}
+                    className={`flex-1 bg-transparent text-sm px-4 py-3 focus:outline-none ${
+                      modalMode === "edit" ? "text-slate-400 cursor-not-allowed select-none" : "text-white placeholder-slate-600"
+                    }`}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-white text-sm font-semibold block mb-3">Kapasitas Kursi</label>
+                <div className="grid grid-cols-5 gap-3">
+                  {capacityOptions.map((opt) => {
+                    const isActive = !useManual && kapasitasSelected === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        onClick={() => { setKapasitasSelected(opt.value); setUseManual(false); setKapasitasManual(""); }}
+                        className="flex flex-col items-center gap-2 py-3 rounded-xl border transition-all"
+                        style={{
+                          backgroundColor: isActive ? "#10B98118" : "#131B2E",
+                          borderColor: isActive ? "#10B981" : "rgba(255,255,255,0.08)",
+                        }}
+                      >
+                        {/* container ketat agar semua icon ukurannya seragam */}
+                        <div className="w-5 h-5 flex items-center justify-center overflow-hidden">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={opt.icon} alt="" width={20} height={20} className="w-5 h-5 object-contain" style={{ filter: isActive ? GREEN_FILTER : MINT_FILTER }} />
+                        </div>
+                        <span className="text-sm font-bold" style={{ color: isActive ? "#10B981" : "#94a3b8" }}>{opt.value}</span>
+                      </button>
+                    );
+                  })}
+                  <button
+                    onClick={() => { setUseManual(true); setKapasitasSelected(null); }}
+                    className="flex flex-col items-center gap-2 py-3 rounded-xl border transition-all"
+                    style={{
+                      backgroundColor: useManual ? "#10B98118" : "#131B2E",
+                      borderColor: useManual ? "#10B981" : "rgba(255,255,255,0.08)",
+                    }}
+                  >
+                    <div className="w-5 h-5 flex items-center justify-center">
+                      <span className="text-base font-bold leading-none tracking-tight" style={{ color: useManual ? "#10B981" : "#94a3b8" }}>···</span>
+                    </div>
+                    <span className="text-[11px] font-semibold" style={{ color: useManual ? "#10B981" : "#94a3b8" }}>Lainnya</span>
+                  </button>
+                </div>
+                {useManual && (
+                  <div className="mt-3">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      value={kapasitasManual}
+                      onChange={(e) => setKapasitasManual(e.target.value.replace(/\D/g, ""))}
+                      placeholder="Masukkan jumlah kursi..."
+                      className="w-full rounded-xl border border-white/10 px-4 py-2.5 text-white placeholder-slate-600 text-sm focus:outline-none focus:border-[#10B981]/50 transition-colors"
+                      style={{ backgroundColor: "#060E20" }}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-7 py-5 flex items-center justify-between" style={{ backgroundColor: "#2D3449" }}>
+              <button onClick={handleHapusDraft} className="flex items-center gap-2 text-slate-500 hover:text-slate-300 text-sm transition-colors">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/images/pelayan/meja/hapus-draft.png" alt="" width={14} height={14} style={{ filter: SLATE_FILTER }} />
+                Hapus Draft
+              </button>
+              <div className="flex items-center gap-3">
+                <button onClick={closeModal} className="px-5 py-2.5 rounded-xl border border-white/10 text-white text-sm font-semibold hover:bg-white/5 transition-colors">
+                  Batal
+                </button>
+                <button
+                  onClick={handleSimpanClick}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-opacity hover:opacity-90"
+                  style={{ backgroundColor: "#10B981", color: "#000" }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/images/pelayan/meja/simpan-perubahan.png" alt="" width={14} height={14} style={{ filter: "brightness(0)" }} />
+                  {modalMode === "tambah" ? "Simpan Meja" : "Simpan Perubahan"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Konfirmasi Simpan ────────────────────────────────────── */}
+      {overlay === "konfirmasi" && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div className="relative w-[420px] rounded-2xl border border-white/10 shadow-2xl px-8 py-8 z-10" style={{ backgroundColor: "#1E2235" }}>
+            <InfoIcon />
+            <h3 className="text-white font-bold text-lg mb-2">Konfirmasi Perubahan</h3>
+            <p className="text-slate-400 text-sm leading-relaxed mb-7">
+              Apakah anda yakin dengan perubahan yang akan dilakukan?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setOverlay(null)}
+                className="flex-1 py-3 rounded-xl border-2 font-bold text-sm transition-colors hover:bg-[#10B981]/5"
+                style={{ borderColor: "#10B981", color: "#10B981" }}
+              >
+                No
+              </button>
+              <button
+                onClick={handleKonfirmasiYes}
+                className="flex-1 py-3 rounded-xl font-bold text-sm transition-opacity hover:opacity-90"
+                style={{ backgroundColor: "#10B981", color: "#000" }}
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Konfirmasi Hapus ─────────────────────────────────────── */}
+      {overlay === "konfirmasi-hapus" && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div className="relative w-[420px] rounded-2xl border border-white/10 shadow-2xl px-8 py-8 z-10" style={{ backgroundColor: "#1E2235" }}>
+            <InfoIcon />
+            <h3 className="text-white font-bold text-lg mb-2">Konfirmasi Hapus Meja</h3>
+            <p className="text-slate-400 text-sm leading-relaxed mb-7">
+              Apakah anda yakin ingin menghapus meja ini dari sistem?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setOverlay(null); setDeleteTarget(null); }}
+                className="flex-1 py-3 rounded-xl border-2 font-bold text-sm transition-colors hover:bg-[#10B981]/5"
+                style={{ borderColor: "#10B981", color: "#10B981" }}
+              >
+                No
+              </button>
+              <button
+                onClick={handleKonfirmasiHapusYes}
+                className="flex-1 py-3 rounded-xl font-bold text-sm transition-opacity hover:opacity-90"
+                style={{ backgroundColor: "#10B981", color: "#000" }}
+              >
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Sukses Tambah ────────────────────────────────────────── */}
+      {overlay === "sukses-tambah" && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setOverlay(null)} />
+          <div className="relative w-[420px] rounded-2xl border border-white/10 shadow-2xl px-8 py-8 z-10" style={{ backgroundColor: "#1E2235" }}>
+            <SuccessIcon />
+            <h3 className="text-white font-bold text-lg mb-2">Meja Berhasil Ditambahkan</h3>
+            <p className="text-slate-400 text-sm leading-relaxed mb-7">
+              Meja baru telah berhasil dikonfigurasi dan siap digunakan.
+            </p>
+            <button
+              onClick={() => setOverlay(null)}
+              className="w-full py-3 rounded-xl font-bold text-sm transition-opacity hover:opacity-90"
+              style={{ backgroundColor: "#10B981", color: "#000" }}
+            >
+              Oke
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Sukses Edit ──────────────────────────────────────────── */}
+      {overlay === "sukses-edit" && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setOverlay(null)} />
+          <div className="relative w-[420px] rounded-2xl border border-white/10 shadow-2xl px-8 py-8 z-10" style={{ backgroundColor: "#1E2235" }}>
+            <SuccessIcon />
+            <h3 className="text-white font-bold text-lg mb-2">Perubahan Berhasil Disimpan</h3>
+            <p className="text-slate-400 text-sm leading-relaxed mb-7">
+              Informasi meja telah berhasil diperbarui dalam sistem.
+            </p>
+            <button
+              onClick={() => setOverlay(null)}
+              className="w-full py-3 rounded-xl font-bold text-sm transition-opacity hover:opacity-90"
+              style={{ backgroundColor: "#10B981", color: "#000" }}
+            >
+              Oke
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
