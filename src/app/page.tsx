@@ -62,7 +62,7 @@ export default function RoleSelectionPage() {
             <RoleCard
               title="Koki"
               subtitleLines={["Manajemen", "Dapur"]}
-              href="/dashboard/chef"
+              href="/dashboard/koki"
               iconSrc="/images/role-selection/icon-chef.svg"
               iconAlt="Ikon koki"
               iconClassName="h-6 w-[30.35px] object-contain"
