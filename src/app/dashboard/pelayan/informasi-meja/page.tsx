@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { X, Plus, Pencil, Check } from "lucide-react";
+import { X, Plus, Pencil, Check, QrCode, ExternalLink } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 
 type MejaStatus = "TERSEDIA" | "TERISI";
 
@@ -49,6 +50,10 @@ export default function InformasiMejaPage() {
   const [editTarget, setEditTarget] = useState<Meja | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
   const [overlay, setOverlay] = useState<OverlayType>(null);
+  const [qrTarget, setQrTarget] = useState<Meja | null>(null);
+
+  const BASE_URL = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
+  function mejaUrl(nomor: string) { return `${BASE_URL}/customer?meja=${nomor}`; }
 
   const [nomorInput, setNomorInput] = useState("");
   const [kapasitasSelected, setKapasitasSelected] = useState<number | null>(4);
@@ -198,13 +203,21 @@ export default function InformasiMejaPage() {
             className="rounded-2xl border border-white/5 p-4 flex flex-col items-center relative"
             style={{ backgroundColor: "#1E1E2E" }}
           >
-            <div className="absolute top-3 left-3">
+            <div className="absolute top-3 left-3 flex items-center gap-1.5">
               <button
                 onClick={() => openEdit(meja)}
                 className="w-8 h-8 rounded-xl flex items-center justify-center border border-white/10 transition-colors hover:border-white/20 hover:bg-white/10 text-white"
                 style={{ backgroundColor: "#2a2a3e" }}
               >
                 <Pencil size={13} color="white" />
+              </button>
+              <button
+                onClick={() => setQrTarget(meja)}
+                className="w-8 h-8 rounded-xl flex items-center justify-center border border-white/10 transition-colors hover:border-[#10B981]/50 hover:bg-[#10B981]/10"
+                style={{ backgroundColor: "#2a2a3e", color: "#10B981" }}
+                title="Lihat QR Meja"
+              >
+                <QrCode size={13} />
               </button>
             </div>
             <div className="absolute top-3 right-3">
@@ -463,6 +476,52 @@ export default function InformasiMejaPage() {
             >
               Oke
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal QR Code ───────────────────────────────────────── */}
+      {qrTarget && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setQrTarget(null)} />
+          <div className="relative w-[360px] rounded-2xl border border-white/10 shadow-2xl overflow-hidden z-10" style={{ backgroundColor: "#1E2235" }}>
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 pt-6 pb-4">
+              <div>
+                <p className="text-xs font-bold tracking-widest uppercase mb-0.5" style={{ color: "#10B981" }}>QR Code</p>
+                <h3 className="text-white font-bold text-lg">Meja {qrTarget.nomor}</h3>
+              </div>
+              <button onClick={() => setQrTarget(null)} className="text-slate-500 hover:text-white transition-colors p-1">
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* QR */}
+            <div className="flex justify-center px-6 pb-5">
+              <div className="p-4 rounded-2xl" style={{ backgroundColor: "#fff" }}>
+                <QRCodeSVG value={mejaUrl(qrTarget.nomor)} size={200} />
+              </div>
+            </div>
+
+            {/* Link */}
+            <div className="px-6 pb-6 space-y-3">
+              <p className="text-xs font-semibold" style={{ color: "#64748b" }}>Link Customer</p>
+              <div className="flex items-center gap-2 rounded-xl border px-3 py-2.5" style={{ backgroundColor: "#080F17", borderColor: "rgba(255,255,255,0.08)" }}>
+                <span className="flex-1 text-xs truncate font-mono" style={{ color: "#94a3b8" }}>
+                  {mejaUrl(qrTarget.nomor)}
+                </span>
+                <a
+                  href={mejaUrl(qrTarget.nomor)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 flex items-center gap-1.5 text-xs font-bold px-2.5 py-1.5 rounded-lg transition-opacity hover:opacity-80"
+                  style={{ backgroundColor: "#10B981", color: "#000" }}
+                >
+                  <ExternalLink size={11} />
+                  Coba
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       )}

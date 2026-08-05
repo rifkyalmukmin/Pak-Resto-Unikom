@@ -70,16 +70,14 @@ export function KokiSidebar() {
       {/* User */}
       <div className="px-4 py-4 border-t border-white/5">
         <div className="flex items-center gap-3">
-          <div
-            className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-            style={{ backgroundColor: `${ACCENT}28`, color: ACCENT }}
-          >
-            J
+          <div className="w-8 h-8 rounded-xl overflow-hidden shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/images/manager/user-default.webp" alt="" className="w-full h-full object-cover" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[13px] font-semibold text-white truncate">Chef Jatmiko</p>
             <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: ACCENT }}>
-              Head of Station
+              Koki
             </p>
           </div>
           <button className="text-slate-500 hover:text-white transition-colors p-1">

@@ -14,7 +14,7 @@ export function KasirTopbar() {
   const title = titleMap[pathname] ?? "Kasir";
 
   return (
-    <header className="h-14 bg-[#121221] border-b border-white/5 flex items-center px-6 shrink-0">
+    <header className="h-14 bg-[#1E1E2E] border-b border-white/5 flex items-center px-6 shrink-0">
       <h2 className="text-white font-semibold text-[15px]">{title}</h2>
     </header>
   );

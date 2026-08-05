@@ -65,13 +65,14 @@ export function PelayanSidebar() {
       {/* User */}
       <div className="px-4 py-4 border-t border-white/5">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-[#10B981]/20 flex items-center justify-center shrink-0">
-            <span className="text-[#10B981] text-xs font-bold">B</span>
+          <div className="w-8 h-8 rounded-xl overflow-hidden shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/images/manager/user-default.webp" alt="" className="w-full h-full object-cover" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[13px] font-semibold text-white truncate">Budi Santoso</p>
-            <p className="text-[10px] text-[#10B981] font-semibold uppercase tracking-wide">
-              Waiter Level 2
+            <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: "#10B981" }}>
+              Pelayan
             </p>
           </div>
           <button className="text-slate-500 hover:text-white transition-colors p-1">
