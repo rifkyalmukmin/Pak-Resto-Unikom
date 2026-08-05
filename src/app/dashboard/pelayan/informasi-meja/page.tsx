@@ -263,9 +263,9 @@ export default function InformasiMejaPage() {
       {isFormOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={closeModal} />
-          <div className="relative w-[540px] rounded-2xl overflow-hidden border border-white/10 shadow-2xl z-10">
+          <div className="relative w-[540px] rounded-2xl overflow-hidden border shadow-2xl z-10" style={{ borderColor: "#3C4A42" }}>
             {/* Header */}
-            <div className="px-7 pt-7 pb-5" style={{ backgroundColor: "#2D3449" }}>
+            <div className="px-7 pt-7 pb-5 border-b" style={{ backgroundColor: "#2D3449", borderBottomColor: "#3C4A42" }}>
               <div className="flex items-start justify-between">
                 <div>
                   <h2 className="text-white font-bold text-xl">
@@ -287,8 +287,8 @@ export default function InformasiMejaPage() {
             <div className="px-7 py-6 space-y-6" style={{ backgroundColor: "#222A3D" }}>
               <div>
                 <label className="text-white text-sm font-semibold block mb-2">Nomor Meja</label>
-                <div className="flex items-center rounded-xl overflow-hidden border border-white/10" style={{ backgroundColor: "#060E20" }}>
-                  <div className="px-4 py-3 border-r border-white/10 flex items-center">
+                <div className="flex items-center rounded-xl overflow-hidden border" style={{ backgroundColor: "#060E20", borderColor: "#3C4A42" }}>
+                  <div className="px-4 py-3 border-r flex items-center" style={{ borderRightColor: "#3C4A42" }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src="/images/pelayan/meja/no-meja.png" alt="" width={16} height={16} style={{ filter: GREEN_FILTER }} />
                   </div>
@@ -317,7 +317,7 @@ export default function InformasiMejaPage() {
                         className="flex flex-col items-center gap-2 py-3 rounded-xl border transition-all"
                         style={{
                           backgroundColor: isActive ? "#10B98118" : "#131B2E",
-                          borderColor: isActive ? "#10B981" : "rgba(255,255,255,0.08)",
+                          borderColor: isActive ? "#10B981" : "#3C4A42",
                         }}
                       >
                         {/* container ketat agar semua icon ukurannya seragam */}
@@ -352,8 +352,8 @@ export default function InformasiMejaPage() {
                       value={kapasitasManual}
                       onChange={(e) => setKapasitasManual(e.target.value.replace(/\D/g, ""))}
                       placeholder="Masukkan jumlah kursi..."
-                      className="w-full rounded-xl border border-white/10 px-4 py-2.5 text-white placeholder-slate-600 text-sm focus:outline-none focus:border-[#10B981]/50 transition-colors"
-                      style={{ backgroundColor: "#060E20" }}
+                      className="w-full rounded-xl border px-4 py-2.5 text-white placeholder-slate-600 text-sm focus:outline-none transition-colors"
+                      style={{ backgroundColor: "#060E20", borderColor: "#3C4A42" }}
                     />
                   </div>
                 )}
@@ -361,14 +361,14 @@ export default function InformasiMejaPage() {
             </div>
 
             {/* Footer */}
-            <div className="px-7 py-5 flex items-center justify-between" style={{ backgroundColor: "#2D3449" }}>
+            <div className="px-7 py-5 flex items-center justify-between border-t" style={{ backgroundColor: "#2D3449", borderTopColor: "#3C4A42" }}>
               <button onClick={handleHapusDraft} className="flex items-center gap-2 text-slate-500 hover:text-slate-300 text-sm transition-colors">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/images/pelayan/meja/hapus-draft.png" alt="" width={14} height={14} style={{ filter: SLATE_FILTER }} />
                 Hapus Draft
               </button>
               <div className="flex items-center gap-3">
-                <button onClick={closeModal} className="px-5 py-2.5 rounded-xl border border-white/10 text-white text-sm font-semibold hover:bg-white/5 transition-colors">
+                <button onClick={closeModal} className="px-5 py-2.5 rounded-xl border text-white text-sm font-semibold hover:bg-white/5 transition-colors" style={{ borderColor: "#3C4A42" }}>
                   Batal
                 </button>
                 <button

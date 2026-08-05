@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -8,17 +8,17 @@ import { cn } from "@/lib/utils";
 const navItems = [
   {
     label: "Konfirmasi Pembayaran",
-    href: "/dashboard/cashier/konfirmasi-pembayaran",
+    href: "/dashboard/kasir/konfirmasi-pembayaran",
     icon: "/images/kasir/sidebar/icon-card.png",
   },
   {
     label: "Pesanan Take Away",
-    href: "/dashboard/cashier/take-away",
+    href: "/dashboard/kasir/take-away",
     icon: "/images/kasir/sidebar/icon-takeaway.png",
   },
   {
     label: "Laporan Transaksi",
-    href: "/dashboard/cashier/laporan-transaksi",
+    href: "/dashboard/kasir/laporan-transaksi",
     icon: "/images/kasir/sidebar/icon-laporan.png",
   },
 ];
@@ -29,14 +29,14 @@ export function KasirSidebar() {
   return (
     <aside className="flex flex-col w-[240px] min-h-screen bg-[#1E1E2E] border-r border-white/5 shrink-0">
       {/* Logo */}
-      <div className="px-5 pt-7 pb-5">
+      <Link href="/dashboard/kasir" className="px-5 pt-7 pb-5 block hover:opacity-80 transition-opacity">
         <h1 className="text-[22px] font-bold leading-tight text-[#22d3ee]">
           Pak Resto
           <br />
           UNIKOM
         </h1>
         <p className="text-xs text-slate-500 mt-1.5">Management System</p>
-      </div>
+      </Link>
 
       <div className="mx-5 border-t border-white/5" />
 

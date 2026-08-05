@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import { Check } from "lucide-react";
+
 interface OrderItem {
   name: string;
   qty: number;
@@ -7,7 +10,6 @@ interface OrderItem {
 
 interface Order {
   meja: string;
-  location: string;
   timeAgo: string;
   items: OrderItem[];
 }
@@ -15,7 +17,6 @@ interface Order {
 const orders: Order[] = [
   {
     meja: "MEJA 08",
-    location: "Area Teras",
     timeAgo: "2m ago",
     items: [
       { name: "Ayam Bakar Madu", qty: 2 },
@@ -24,7 +25,6 @@ const orders: Order[] = [
   },
   {
     meja: "MEJA 12",
-    location: "V.I.P Room",
     timeAgo: "5m ago",
     items: [
       { name: "Wagyu Steak Medium", qty: 1 },
@@ -33,7 +33,6 @@ const orders: Order[] = [
   },
   {
     meja: "MEJA 02",
-    location: "Main Hall",
     timeAgo: "Just now",
     items: [{ name: "Nasi Goreng Spesial", qty: 3 }],
   },
@@ -63,7 +62,40 @@ const activities = [
   },
 ];
 
+type OverlayType = "konfirmasi" | "sukses" | null;
+
+const InfoIcon = () => (
+  <div className="w-11 h-11 rounded-full flex items-center justify-center border-2 mb-5"
+    style={{ borderColor: "#10B981", backgroundColor: "#10B98118" }}>
+    <span className="text-[#10B981] font-bold text-lg leading-none select-none">i</span>
+  </div>
+);
+
+const SuccessIcon = () => (
+  <div className="w-11 h-11 rounded-full flex items-center justify-center border-2 mb-5"
+    style={{ borderColor: "#10B981", backgroundColor: "#10B98118" }}>
+    <Check size={22} color="#10B981" strokeWidth={3} />
+  </div>
+);
+
 export default function WaiterBerandaPage() {
+  const [overlay, setOverlay]         = useState<OverlayType>(null);
+  const [targetOrder, setTargetOrder] = useState<Order | null>(null);
+
+  function handleAmbilClick(order: Order) {
+    setTargetOrder(order);
+    setOverlay("konfirmasi");
+  }
+
+  function handleKonfirmasiYes() {
+    setOverlay("sukses");
+  }
+
+  function handleClose() {
+    setOverlay(null);
+    setTargetOrder(null);
+  }
+
   return (
     <div className="p-6 space-y-6">
       {/* Welcome */}
@@ -122,9 +154,6 @@ export default function WaiterBerandaPage() {
                   </div>
                 </div>
 
-                {/* Location */}
-                <p className="text-white font-bold text-lg leading-tight">{order.location}</p>
-
                 {/* Items */}
                 <div className="space-y-2">
                   {order.items.map((item, j) => (
@@ -146,6 +175,7 @@ export default function WaiterBerandaPage() {
 
                 {/* Button */}
                 <button
+                  onClick={() => handleAmbilClick(order)}
                   className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-opacity hover:opacity-90 mt-1"
                   style={{ backgroundColor: "#10B981", color: "#000" }}
                 >
@@ -196,13 +226,7 @@ export default function WaiterBerandaPage() {
                     style={{ backgroundColor: act.circleBg }}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={act.icon}
-                      alt=""
-                      width={15}
-                      height={15}
-                      style={{ filter: act.iconFilter }}
-                    />
+                    <img src={act.icon} alt="" width={15} height={15} style={{ filter: act.iconFilter }} />
                   </div>
                   <div>
                     <p className="text-white text-sm font-semibold leading-tight">{act.label}</p>
@@ -229,17 +253,45 @@ export default function WaiterBerandaPage() {
               style={{ backgroundColor: "#2a2a3e" }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/images/pelayan/konten/butuh-bantuan-manajer.png"
-                alt=""
-                width={22}
-                height={22}
-                style={{ filter: "brightness(0) invert(0.5)" }}
-              />
+              <img src="/images/pelayan/konten/butuh-bantuan-manajer.png" alt="" width={22} height={22} style={{ filter: "brightness(0) invert(0.5)" }} />
             </div>
           </div>
         </div>
       </div>
+
+      {/* ── Modal Konfirmasi Ambil Pesanan ─────────── */}
+      {overlay === "konfirmasi" && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div className="relative w-[420px] rounded-2xl border border-white/10 shadow-2xl px-8 py-8 z-10" style={{ backgroundColor: "#1E2235" }}>
+            <InfoIcon />
+            <h3 className="text-white font-bold text-lg mb-2">Konfirmasi Ambil Pesanan</h3>
+            <p className="text-slate-400 text-sm leading-relaxed mb-7">
+              Apakah anda yakin ingin mengambil pesanan{" "}
+              <span className="text-white font-semibold">{targetOrder?.meja}</span>?
+            </p>
+            <div className="flex gap-3">
+              <button onClick={handleClose} className="flex-1 py-3 rounded-xl border-2 font-bold text-sm" style={{ borderColor: "#10B981", color: "#10B981" }}>No</button>
+              <button onClick={handleKonfirmasiYes} className="flex-1 py-3 rounded-xl font-bold text-sm" style={{ backgroundColor: "#10B981", color: "#000" }}>Yes</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal Sukses Ambil Pesanan ─────────────── */}
+      {overlay === "sukses" && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
+          <div className="relative w-[420px] rounded-2xl border border-white/10 shadow-2xl px-8 py-8 z-10" style={{ backgroundColor: "#1E2235" }}>
+            <SuccessIcon />
+            <h3 className="text-white font-bold text-lg mb-2">Pesanan Berhasil Diambil!</h3>
+            <p className="text-slate-400 text-sm leading-relaxed mb-7">
+              Pesanan <span className="text-white font-semibold">{targetOrder?.meja}</span> telah berhasil diambil dan sedang diantarkan ke pelanggan.
+            </p>
+            <button onClick={handleClose} className="w-full py-3 rounded-xl font-bold text-sm" style={{ backgroundColor: "#10B981", color: "#000" }}>Oke</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

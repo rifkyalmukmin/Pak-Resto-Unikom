@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Filter, Download } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { ListFilter, Download, Check } from "lucide-react";
 
 interface Transaction {
   time: string;
@@ -34,8 +34,34 @@ const statusStyles: Record<string, string> = {
   KITCHEN: "bg-[#22d3ee]/15 text-[#22d3ee] border border-[#22d3ee]/30",
 };
 
+type FilterStatus = "SEMUA" | "PAID" | "PENDING" | "KITCHEN";
+
+const filterOptions: { value: FilterStatus; label: string; dot: string }[] = [
+  { value: "SEMUA",   label: "Semua Status", dot: "#94a3b8" },
+  { value: "PAID",    label: "Paid",         dot: "#00B954" },
+  { value: "PENDING", label: "Pending",      dot: "#f59e0b" },
+  { value: "KITCHEN", label: "Kitchen",      dot: "#22d3ee" },
+];
+
 export default function LaporanTransaksiPage() {
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage]       = useState(1);
+  const [filterStatus, setFilterStatus]     = useState<FilterStatus>("SEMUA");
+  const [filterOpen, setFilterOpen]         = useState(false);
+  const filterRef                           = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (filterRef.current && !filterRef.current.contains(e.target as Node)) {
+        setFilterOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const filtered = filterStatus === "SEMUA"
+    ? mockTransactions
+    : mockTransactions.filter((tx) => tx.status === filterStatus);
 
   return (
     <div className="p-6 space-y-5">
@@ -87,10 +113,35 @@ export default function LaporanTransaksiPage() {
         <div className="px-5 py-4 flex items-center justify-between" style={{ backgroundColor: "#292839" }}>
           <h3 className="text-white font-semibold text-base">Riwayat Transaksi Terkini</h3>
           <div className="flex items-center gap-2">
-            <button className="flex items-center gap-2 border border-white/10 text-slate-300 text-sm px-3.5 py-2 rounded-lg hover:bg-white/5 transition-colors" style={{ backgroundColor: "#333344" }}>
-              <Filter size={13} />
-              Filter
-            </button>
+            <div className="relative" ref={filterRef}>
+              <button
+                onClick={() => setFilterOpen((o) => !o)}
+                className="flex items-center gap-2 border border-white/10 text-slate-300 text-sm px-3.5 py-2 rounded-lg hover:bg-white/5 transition-colors"
+                style={{ backgroundColor: "#333344" }}
+              >
+                <ListFilter size={13} />
+                Filter
+              </button>
+              {filterOpen && (
+                <div className="absolute right-0 top-full mt-1 w-44 rounded-xl border overflow-hidden z-50 shadow-xl"
+                  style={{ backgroundColor: "#1A1A2A", borderColor: "#333344" }}>
+                  {filterOptions.map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => { setFilterStatus(opt.value); setFilterOpen(false); }}
+                      className="w-full flex items-center justify-between px-4 py-2.5 text-sm hover:bg-white/5 transition-colors"
+                      style={{ color: filterStatus === opt.value ? "#4CD7F6" : "#94a3b8" }}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: opt.dot }} />
+                        <span>{opt.label}</span>
+                      </div>
+                      {filterStatus === opt.value && <Check size={13} style={{ color: "#4CD7F6" }} />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             <button className="flex items-center gap-2 bg-[#4CD7F6] text-black text-sm px-3.5 py-2 rounded-lg hover:bg-[#3bc5e3] transition-colors font-semibold">
               <Download size={13} />
               Ekspor CSV
@@ -106,7 +157,7 @@ export default function LaporanTransaksiPage() {
         </div>
 
         {/* Rows */}
-        {mockTransactions.map((tx, i) => (
+        {filtered.map((tx, i) => (
           <div
             key={i}
             className="grid grid-cols-[1fr_1.5fr_1.2fr_1.5fr_1fr_0.5fr] gap-4 px-5 py-4 border-t border-white/[0.04]"
