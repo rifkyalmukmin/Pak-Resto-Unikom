@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -6,11 +6,11 @@ import { LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { label: "Home", href: "/dashboard/waiter", icon: "/images/pelayan/sidebar/home.png", exact: true },
-  { label: "Informasi Meja", href: "/dashboard/waiter/informasi-meja", icon: "/images/pelayan/sidebar/informasi-meja.png" },
-  { label: "Pemesanan Makanan", href: "/dashboard/waiter/pemesanan", icon: "/images/pelayan/sidebar/pemesanan-makanan.png" },
-  { label: "Stok Bahan Baku", href: "/dashboard/waiter/stok", icon: "/images/pelayan/sidebar/stok-bahan-baku.png" },
-  { label: "Menu", href: "/dashboard/waiter/menu", icon: "/images/pelayan/sidebar/menu.png" },
+  { label: "Home", href: "/dashboard/pelayan", icon: "/images/pelayan/sidebar/home.png", exact: true },
+  { label: "Informasi Meja", href: "/dashboard/pelayan/informasi-meja", icon: "/images/pelayan/sidebar/informasi-meja.png" },
+  { label: "Pemesanan Makanan", href: "/dashboard/pelayan/pemesanan", icon: "/images/pelayan/sidebar/pemesanan-makanan.png" },
+  { label: "Stok Bahan Baku", href: "/dashboard/pelayan/stok", icon: "/images/pelayan/sidebar/stok-bahan-baku.png" },
+  { label: "Menu", href: "/dashboard/pelayan/menu", icon: "/images/pelayan/sidebar/menu.png" },
 ];
 
 export function PelayanSidebar() {
@@ -19,14 +19,14 @@ export function PelayanSidebar() {
   return (
     <aside className="flex flex-col w-[240px] min-h-screen bg-[#1E1E2E] border-r border-white/5 shrink-0">
       {/* Logo */}
-      <div className="px-5 pt-7 pb-5">
+      <Link href="/dashboard/pelayan" className="px-5 pt-7 pb-5 block hover:opacity-80 transition-opacity">
         <h1 className="text-[22px] font-bold leading-tight text-[#10B981]">
           Pak Resto
           <br />
           UNIKOM
         </h1>
         <p className="text-xs text-slate-500 mt-1.5">Management System</p>
-      </div>
+      </Link>
 
       <div className="mx-5 border-t border-white/5" />
 

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -85,7 +85,7 @@ export default function TakeAwayPage() {
         </select>
 
         <Link
-          href="/dashboard/cashier/take-away/tambah"
+          href="/dashboard/kasir/take-away/tambah"
           className="ml-auto flex items-center gap-2 bg-[#06B6D4] hover:bg-[#0597B0] text-black text-sm font-bold px-4 py-2.5 rounded-lg transition-colors"
         >
           <PlusCircle size={16} strokeWidth={2} />

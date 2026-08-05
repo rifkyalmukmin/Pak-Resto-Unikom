@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { RoleCard } from "@/components/role/role-card";
 
 export default function RoleSelectionPage() {
@@ -54,7 +54,7 @@ export default function RoleSelectionPage() {
             <RoleCard
               title="Pelayan"
               subtitleLines={["Order &", "Layanan"]}
-              href="/dashboard/waiter"
+              href="/dashboard/pelayan"
               iconSrc="/images/role-selection/icon-waiter.svg"
               iconAlt="Ikon pelayan"
               iconClassName="h-[29.25px] w-[21px] object-contain"
@@ -70,7 +70,7 @@ export default function RoleSelectionPage() {
             <RoleCard
               title="Kasir"
               subtitleLines={["Transaksi", "& Billing"]}
-              href="/dashboard/cashier"
+              href="/dashboard/kasir"
               iconSrc="/images/role-selection/icon-cashier.svg"
               iconAlt="Ikon kasir"
               iconClassName="h-[22.04px] w-[30.46px] object-contain"

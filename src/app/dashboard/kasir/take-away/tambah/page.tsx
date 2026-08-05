@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -190,7 +190,7 @@ export default function TambahPesananPage() {
           </div>
           <div className="flex gap-3 pt-1">
             <Link
-              href="/dashboard/cashier/take-away"
+              href="/dashboard/kasir/take-away"
               className="flex-1 py-3 rounded-xl border border-white/15 text-white text-sm font-semibold text-center hover:bg-white/5 transition-colors"
             >
               Batal

@@ -1,12 +1,12 @@
-"use client";
+﻿"use client";
 
 import { usePathname } from "next/navigation";
 
 const titleMap: Record<string, string> = {
-  "/dashboard/cashier/konfirmasi-pembayaran": "Konfirmasi Pembayaran",
-  "/dashboard/cashier/take-away": "Pesanan Take Away",
-  "/dashboard/cashier/take-away/tambah": "Tambah Pesanan Take Away",
-  "/dashboard/cashier/laporan-transaksi": "Laporan Transaksi",
+  "/dashboard/kasir/konfirmasi-pembayaran": "Konfirmasi Pembayaran",
+  "/dashboard/kasir/take-away": "Pesanan Take Away",
+  "/dashboard/kasir/take-away/tambah": "Tambah Pesanan Take Away",
+  "/dashboard/kasir/laporan-transaksi": "Laporan Transaksi",
 };
 
 export function KasirTopbar() {

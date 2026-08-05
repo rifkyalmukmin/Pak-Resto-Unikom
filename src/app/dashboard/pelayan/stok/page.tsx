@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Filter, Download, X, Check, AlertTriangle, Pencil, Trash2, BellRing, BellOff, ChevronDown } from "lucide-react";
+import { Search, ListFilter, Download, X, Check, AlertTriangle, Pencil, Trash2, BellRing, BellOff, ChevronDown } from "lucide-react";
 
 type StokStatus = "TERSEDIA" | "HAMPIR HABIS" | "HABIS";
 type Satuan = "KG" | "PCS" | "GR" | "Ltr" | "ML";
@@ -50,6 +50,8 @@ type OverlayType = "konfirmasi" | "sukses-tambah" | "sukses-edit" | "konfirmasi-
 export default function StokBahanBakuPage() {
   const [bahanList, setBahanList] = useState<Bahan[]>(initialBahan);
   const [search, setSearch]       = useState("");
+  const [filterStatus, setFilterStatus] = useState<StokStatus | "SEMUA">("SEMUA");
+  const [filterOpen, setFilterOpen]     = useState(false);
   const [modalMode, setModalMode] = useState<ModalMode>(null);
   const [editTarget, setEditTarget]   = useState<Bahan | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
@@ -59,7 +61,10 @@ export default function StokBahanBakuPage() {
   const [jumlahInput, setJumlahInput] = useState("");
   const [satuanInput, setSatuanInput] = useState<Satuan>("KG");
 
-  const filtered      = bahanList.filter((b) => b.nama.toLowerCase().includes(search.toLowerCase()));
+  const filtered      = bahanList.filter((b) =>
+    b.nama.toLowerCase().includes(search.toLowerCase()) &&
+    (filterStatus === "SEMUA" || b.status === filterStatus)
+  );
   const totalItem     = bahanList.length;
   const stokTersedia  = bahanList.filter((b) => b.status === "TERSEDIA").length;
   const hampirHabis   = bahanList.filter((b) => b.status === "HAMPIR HABIS").length;
@@ -195,9 +200,59 @@ export default function StokBahanBakuPage() {
               />
             </div>
             <div className="flex-1" />
-            <button className="flex items-center gap-2 border border-white/10 text-slate-300 text-sm px-3.5 py-2.5 rounded-lg hover:bg-white/5 transition-colors" style={{ backgroundColor: "#1E293B" }}>
-              <Filter size={13} /> Filter Kategori
-            </button>
+            {/* Filter Status Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setFilterOpen((p) => !p)}
+                className="flex items-center gap-2 border border-white/10 text-slate-300 text-sm px-3.5 py-2.5 rounded-lg hover:bg-white/5 transition-colors"
+                style={{ backgroundColor: "#1E293B" }}
+              >
+                <ListFilter size={13} />
+                <span>{filterStatus === "SEMUA" ? "Filter Status" : filterStatus}</span>
+                <ChevronDown size={12} className={`transition-transform ${filterOpen ? "rotate-180" : ""}`} />
+              </button>
+
+              {filterOpen && (
+                <div
+                  className="absolute right-0 top-full mt-1 w-52 rounded-xl border overflow-hidden z-50 shadow-xl"
+                  style={{ backgroundColor: "#0D1625", borderColor: "#3C4A42" }}
+                >
+                  <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider px-4 pt-3 pb-2">Status Inventaris</p>
+                  {([
+                    { value: "SEMUA",       label: "Semua Status",  dot: "#64748b" },
+                    { value: "TERSEDIA",    label: "Tersedia",      dot: "#10B981" },
+                    { value: "HAMPIR HABIS",label: "Hampir Habis",  dot: "#F59E0B" },
+                    { value: "HABIS",       label: "Habis",         dot: "#FFB4AB" },
+                  ] as const).map(({ value, label, dot }) => (
+                    <button
+                      key={value}
+                      onClick={() => { setFilterStatus(value); setFilterOpen(false); }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-white/5"
+                      style={{ color: filterStatus === value ? "#fff" : "#94a3b8" }}
+                    >
+                      <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: dot }} />
+                      <span className="flex-1 text-left font-medium">{label}</span>
+                      {filterStatus === value && (
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4EDEA3" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                      )}
+                    </button>
+                  ))}
+                  {filterStatus !== "SEMUA" && (
+                    <div className="px-4 py-2.5 border-t" style={{ borderColor: "#3C4A42" }}>
+                      <button
+                        onClick={() => { setFilterStatus("SEMUA"); setFilterOpen(false); }}
+                        className="text-xs font-semibold transition-colors hover:opacity-70"
+                        style={{ color: "#4EDEA3" }}
+                      >
+                        Reset filter
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
             <button className="flex items-center gap-2 border border-white/10 text-sm px-3.5 py-2.5 rounded-lg font-semibold transition-colors hover:opacity-90"
               style={{ backgroundColor: "#1E293B", color: "#cbd5e1" }}>
               <Download size={13} /> Export CSV/PDF
@@ -329,9 +384,9 @@ export default function StokBahanBakuPage() {
       {modalMode !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={closeModal} />
-          <div className="relative w-[580px] rounded-2xl overflow-hidden border border-white/10 shadow-2xl z-10">
+          <div className="relative w-[580px] rounded-2xl overflow-hidden border shadow-2xl z-10" style={{ borderColor: "#3C4A42" }}>
             {/* Header */}
-            <div className="px-7 pt-6 pb-5 border-b border-white/5" style={{ backgroundColor: "#2D3449" }}>
+            <div className="px-7 pt-6 pb-5 border-b" style={{ backgroundColor: "#2D3449", borderBottomColor: "#3C4A42" }}>
               <div className="flex items-start justify-between">
                 <div>
                   <h2 className="font-bold text-xl text-white">
@@ -356,14 +411,14 @@ export default function StokBahanBakuPage() {
                   type="text" value={namaInput}
                   onChange={(e) => setNamaInput(e.target.value)}
                   placeholder="Contoh: Daging Sapi Wagyu"
-                  className="w-full rounded-xl border border-white/10 px-4 py-3 text-white placeholder-slate-600 text-sm focus:outline-none focus:border-[#10B981]/50 transition-colors"
-                  style={{ backgroundColor: "#060E20" }}
+                  className="w-full rounded-xl border px-4 py-3 text-white placeholder-slate-600 text-sm focus:outline-none transition-colors"
+                  style={{ backgroundColor: "#060E20", borderColor: "#3C4A42" }}
                 />
               </div>
               <div>
                 <label className="text-white text-xs font-bold uppercase tracking-wider block mb-2">Jumlah Stok</label>
                 <div className="flex gap-3">
-                  <div className="flex-1 flex items-center rounded-xl border border-white/10 overflow-hidden" style={{ backgroundColor: "#060E20" }}>
+                  <div className="flex-1 flex items-center rounded-xl border overflow-hidden" style={{ backgroundColor: "#060E20", borderColor: "#3C4A42" }}>
                     <input
                       type="text" inputMode="decimal"
                       value={jumlahInput}
@@ -379,8 +434,8 @@ export default function StokBahanBakuPage() {
                     <div className="relative shrink-0">
                       <select value={satuanInput}
                         onChange={(e) => setSatuanInput(e.target.value as Satuan)}
-                        className="appearance-none rounded-xl border border-white/10 pl-3 pr-7 py-3 text-white text-sm focus:outline-none cursor-pointer w-[76px]"
-                        style={{ backgroundColor: "#060E20" }}>
+                        className="appearance-none rounded-xl border pl-3 pr-7 py-3 text-white text-sm focus:outline-none cursor-pointer w-[76px]"
+                        style={{ backgroundColor: "#060E20", borderColor: "#3C4A42" }}>
                         {satuanOptions.map((s) => <option key={s} value={s}>{s}</option>)}
                       </select>
                       <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -390,8 +445,8 @@ export default function StokBahanBakuPage() {
               </div>
             </div>
             {/* Footer */}
-            <div className="px-7 py-5 flex items-center justify-end gap-3" style={{ backgroundColor: "#2D3449" }}>
-              <button onClick={closeModal} className="px-5 py-2.5 rounded-xl border border-white/10 text-white text-sm font-semibold hover:bg-white/5 transition-colors">
+            <div className="px-7 py-5 flex items-center justify-end gap-3 border-t" style={{ backgroundColor: "#2D3449", borderTopColor: "#3C4A42" }}>
+              <button onClick={closeModal} className="px-5 py-2.5 rounded-xl border text-white text-sm font-semibold hover:bg-white/5 transition-colors" style={{ borderColor: "#3C4A42" }}>
                 Batal
               </button>
               <button onClick={handleSimpanClick}
