@@ -73,13 +73,14 @@ export function KasirSidebar() {
       {/* User */}
       <div className="px-4 py-4 border-t border-white/5">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-[#0e7490] flex items-center justify-center text-white text-xs font-bold shrink-0">
-            A
+          <div className="w-8 h-8 rounded-xl overflow-hidden shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/images/manager/user-default.webp" alt="" className="w-full h-full object-cover" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[13px] font-semibold text-white truncate">Admin Utama</p>
-            <p className="text-[10px] text-[#00B954] font-semibold uppercase tracking-wide">
-              Superuser
+            <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: "#00B954" }}>
+              Kasir
             </p>
           </div>
           <button className="text-slate-500 hover:text-white transition-colors p-1">
