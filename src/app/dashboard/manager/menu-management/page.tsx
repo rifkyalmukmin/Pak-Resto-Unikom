@@ -12,13 +12,14 @@ interface MenuItem {
   harga: string;
   available: boolean;
   image: string;
+  bahanBaku: string[];
 }
 
 const initialItems: MenuItem[] = [
-  { id: "M001", name: "Nasi Goreng Kambing Special", description: "Daging kambing premium dengan bumbu rempah UNIKOM.",   category: "Main Course", harga: "Rp 45.000", available: true,  image: "/images/menu/nasi-goreng.png" },
-  { id: "M002", name: "Lava Cake Gold Dust",          description: "Cokelat Belgia 70% dengan taburan emas 24k edible.", category: "Dessert",     harga: "Rp 75.000", available: false, image: "/images/menu/chocolate-lava.png" },
-  { id: "M003", name: "Signature UNIKOM Coffee",      description: "Perpaduan biji kopi pilihan dengan sirup rahasia.",  category: "Beverage",    harga: "Rp 32.000", available: true,  image: "/images/menu/iced-cappucino.png" },
-  { id: "M004", name: "Ayam Bakar Madu UNIKOM",       description: "Ayam pejantan bakar dengan olesan madu hutan asli.", category: "Main Course", harga: "Rp 52.000", available: true,  image: "/images/menu/ayam-goreng.png" },
+  { id: "M001", name: "Nasi Goreng Kambing Special", description: "Daging kambing premium dengan bumbu rempah UNIKOM.",   category: "Main Course", harga: "Rp 45.000", available: true,  image: "/images/menu/nasi-goreng.png",      bahanBaku: ["Nasi", "Daging Kambing", "Bawang Merah", "Bawang Putih", "Kecap Manis", "Minyak Goreng"] },
+  { id: "M002", name: "Lava Cake Gold Dust",          description: "Cokelat Belgia 70% dengan taburan emas 24k edible.", category: "Dessert",     harga: "Rp 75.000", available: false, image: "/images/menu/chocolate-lava.png",   bahanBaku: ["Cokelat", "Tepung Terigu", "Telur", "Mentega", "Susu", "Gula"] },
+  { id: "M003", name: "Signature UNIKOM Coffee",      description: "Perpaduan biji kopi pilihan dengan sirup rahasia.",  category: "Beverage",    harga: "Rp 32.000", available: true,  image: "/images/menu/iced-cappucino.png",   bahanBaku: ["Susu", "Gula", "Mentega"] },
+  { id: "M004", name: "Ayam Bakar Madu UNIKOM",       description: "Ayam pejantan bakar dengan olesan madu hutan asli.", category: "Main Course", harga: "Rp 52.000", available: true,  image: "/images/menu/ayam-goreng.png",      bahanBaku: ["Ayam", "Madu", "Bawang Putih", "Jahe", "Kecap Manis", "Garam"] },
 ];
 
 const categoryColor: Record<string, { bg: string; color: string }> = {
@@ -105,7 +106,7 @@ export default function MenuManagementPage() {
           <table className="w-full text-sm">
             <thead>
               <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                {["THUMBNAIL", "NAMA MENU", "KATEGORI", "HARGA", "STATUS", "AKSI"].map((h) => (
+                {["THUMBNAIL", "NAMA MENU", "BAHAN BAKU", "KATEGORI", "HARGA", "STATUS", "AKSI"].map((h) => (
                   <th key={h} className="px-5 py-3.5 text-left text-[10px] font-bold tracking-widest" style={{ color: "#CBC3D7" }}>{h}</th>
                 ))}
               </tr>
@@ -127,6 +128,23 @@ export default function MenuManagementPage() {
                     <td className="px-5 py-4">
                       <p className="text-white font-semibold leading-tight">{item.name}</p>
                       <p className="text-xs mt-0.5 max-w-[240px]" style={{ color: "#64748b" }}>{item.description}</p>
+                    </td>
+                    {/* Bahan Baku */}
+                    <td className="px-5 py-4 max-w-[200px]">
+                      <div className="flex flex-wrap gap-1">
+                        {item.bahanBaku.slice(0, 3).map((b) => (
+                          <span key={b} className="px-2 py-0.5 rounded-md text-[10px] font-semibold"
+                            style={{ backgroundColor: "rgba(208,188,255,0.12)", color: "#CBC3D7" }}>
+                            {b}
+                          </span>
+                        ))}
+                        {item.bahanBaku.length > 3 && (
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold"
+                            style={{ backgroundColor: "rgba(255,255,255,0.05)", color: "#64748b" }}>
+                            +{item.bahanBaku.length - 3}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     {/* Kategori */}
                     <td className="px-5 py-4">
@@ -242,6 +260,17 @@ export default function MenuManagementPage() {
                         : { backgroundColor: "rgba(100,116,139,0.12)", color: "#94a3b8" }}>
                       {detailTarget.available ? "Tersedia" : "Habis"}
                     </span>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold tracking-widest mb-2" style={{ color: "#CBC3D7" }}>BAHAN BAKU</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {detailTarget.bahanBaku.map((b) => (
+                      <span key={b} className="px-2.5 py-1 rounded-md text-xs font-semibold"
+                        style={{ backgroundColor: "rgba(208,188,255,0.12)", color: "#D0BCFF", border: "1px solid rgba(208,188,255,0.2)" }}>
+                        {b}
+                      </span>
+                    ))}
                   </div>
                 </div>
               </div>
