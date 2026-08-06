@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Plus, Minus, User } from "lucide-react";
+import { Plus, Minus, User, Check } from "lucide-react";
 
 interface MenuItem {
   id: number;
@@ -37,6 +37,8 @@ export default function TambahPesananPage() {
   const [activeCategory, setActiveCategory] = useState("Semua Menu");
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [customerName, setCustomerName] = useState("");
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const filteredMenu =
     activeCategory === "Semua Menu"
@@ -197,13 +199,79 @@ export default function TambahPesananPage() {
             </Link>
             <button
               disabled={orderItems.length === 0}
-              className="flex-1 py-3 rounded-xl bg-[#00B954] hover:bg-[#009944] disabled:opacity-40 disabled:cursor-not-allowed text-black text-sm font-bold transition-colors"
+              onClick={() => setShowConfirm(true)}
+              className="flex-1 py-3 rounded-xl bg-[#22C55E] hover:bg-[#16A34A] disabled:opacity-40 disabled:cursor-not-allowed text-black text-sm font-bold transition-colors"
             >
               Simpan Pesanan
             </button>
           </div>
         </div>
       </div>
+
+      {/* Modal konfirmasi simpan */}
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-[400px] rounded-2xl border border-white/10 bg-[#1E2235] p-7 space-y-5">
+            <div>
+              <h3 className="text-white font-bold text-lg mb-1">Simpan Pesanan?</h3>
+              <p className="text-slate-400 text-sm">Pastikan semua item sudah benar sebelum menyimpan.</p>
+            </div>
+            <div className="bg-[#292839] rounded-xl px-4 py-3 space-y-2 text-sm">
+              {customerName && (
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Nama Pelanggan</span>
+                  <span className="text-white font-semibold">{customerName}</span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span className="text-slate-400">Jumlah Item</span>
+                <span className="text-white">{orderItems.reduce((s, o) => s + o.qty, 0)} item</span>
+              </div>
+              <div className="flex justify-between border-t border-white/5 pt-2">
+                <span className="text-slate-400">Total</span>
+                <span className="text-[#22C55E] font-bold tabular-nums">IDR {total.toLocaleString("id-ID")}</span>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="flex-1 py-2.5 rounded-xl border border-white/10 text-white font-semibold hover:bg-white/5 transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => { setShowConfirm(false); setShowSuccess(true); }}
+                className="flex-1 py-2.5 rounded-xl font-bold text-black transition-opacity hover:opacity-90"
+                style={{ backgroundColor: "#22C55E" }}
+              >
+                Ya, Simpan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal berhasil disimpan */}
+      {showSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-[360px] rounded-2xl border border-white/10 bg-[#1E2235] p-8 flex flex-col items-center text-center space-y-5">
+            <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(34,197,94,0.15)" }}>
+              <Check size={28} style={{ color: "#22C55E" }} />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-white font-bold text-lg">Pesanan Berhasil Disimpan!</h3>
+              <p className="text-slate-400 text-sm">Pesanan take away telah ditambahkan ke sistem.</p>
+            </div>
+            <Link
+              href="/dashboard/kasir/take-away"
+              className="w-full py-2.5 rounded-xl font-bold text-black text-center transition-opacity hover:opacity-90"
+              style={{ backgroundColor: "#22C55E" }}
+            >
+              Kembali ke Daftar
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -37,7 +37,7 @@ const statusDot: Record<StokStatus, string> = {
   "HABIS":        "bg-red-500",
 };
 
-type OverlayType = "konfirmasi" | "sukses-edit" | null;
+type OverlayType = "konfirmasi" | "sukses-edit" | "sukses-export" | null;
 
 export default function InventarisStokPage() {
   const [bahanList, setBahanList] = useState<Bahan[]>(initialBahan);
@@ -210,8 +210,11 @@ export default function InventarisStokPage() {
                 </div>
               )}
             </div>
-            <button className="flex items-center gap-2 border border-white/10 text-sm px-3.5 py-2.5 rounded-lg font-semibold hover:opacity-90"
-              style={{ backgroundColor: "#BFC6DC", color: "#1a1a2e" }}>
+            <button
+              onClick={() => setOverlay("sukses-export")}
+              className="flex items-center gap-2 border border-white/10 text-sm px-3.5 py-2.5 rounded-lg font-semibold hover:opacity-90"
+              style={{ backgroundColor: "#BFC6DC", color: "#1a1a2e" }}
+            >
               <Download size={13} /> Export CSV/PDF
             </button>
           </div>
@@ -386,6 +389,23 @@ export default function InventarisStokPage() {
               <button onClick={() => setOverlay(null)} className="flex-1 py-3 rounded-xl border-2 font-bold text-sm" style={{ borderColor: ACCENT, color: ACCENT }}>No</button>
               <button onClick={handleKonfirmasiYes} className="flex-1 py-3 rounded-xl font-bold text-sm" style={{ backgroundColor: ACCENT, color: "#000" }}>Yes</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sukses Export */}
+      {overlay === "sukses-export" && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setOverlay(null)} />
+          <div className="relative w-[380px] rounded-2xl border border-white/10 shadow-2xl px-8 py-8 z-10 flex flex-col items-center text-center space-y-5" style={{ backgroundColor: "#1E2235" }}>
+            <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: `${ACCENT}20` }}>
+              <Download size={26} style={{ color: ACCENT }} />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-white font-bold text-lg">Data Berhasil Diekspor!</h3>
+              <p className="text-slate-400 text-sm">File laporan inventaris stok telah berhasil diunduh.</p>
+            </div>
+            <button onClick={() => setOverlay(null)} className="w-full py-3 rounded-xl font-bold text-black text-sm" style={{ backgroundColor: ACCENT }}>OK</button>
           </div>
         </div>
       )}

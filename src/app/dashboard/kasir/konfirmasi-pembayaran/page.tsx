@@ -23,9 +23,9 @@ interface TableData {
 
 const mockTables: TableData[] = [
   { id: 1, number: "08", status: "pending", invoice: "INV/2023/1029", items: 12, method: "tunai", total: 458000 },
-  { id: 2, number: "12", status: "pending", invoice: "INV/2023/1031", items: 4, method: "transfer", total: 125500 },
+  { id: 2, number: "12", status: "pending", invoice: "INV/2023/1031", items: 4, method: "tunai", total: 125500 },
   { id: 3, number: "03", status: "pending", invoice: "INV/2023/1032", items: 22, method: "tunai", total: 1120000 },
-  { id: 4, number: "15", status: "pending", invoice: "INV/2023/1035", items: 7, method: "transfer", total: 289400 },
+  { id: 4, number: "15", status: "pending", invoice: "INV/2023/1035", items: 7, method: "tunai", total: 289400 },
   { id: 5, number: "09", status: "empty" },
   { id: 6, number: "14", status: "empty" },
 ];
@@ -52,9 +52,11 @@ function formatRp(amount: number) {
 export default function KonfirmasiPembayaranPage() {
   const [selectedTable, setSelectedTable] = useState<TableData | null>(null);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
+  const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
   const [paymentInput, setPaymentInput] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("tunai");
   const [search, setSearch] = useState("");
+  const [showCetakModal, setShowCetakModal] = useState(false);
 
   const handleNumpad = (val: string) => {
     if (val === "C") { setPaymentInput(""); return; }
@@ -64,9 +66,7 @@ export default function KonfirmasiPembayaranPage() {
 
   const handleConfirm = () => {
     setShowVerifyModal(false);
-    setSelectedTable(null);
-    setPaymentInput("");
-    setPaymentMethod("tunai");
+    setShowPaymentSuccess(true);
   };
 
   // ── Detail / payment view ──────────────────────────────────────────────────
@@ -230,21 +230,37 @@ export default function KonfirmasiPembayaranPage() {
                   </p>
                 </div>
 
-                <div className="bg-[#2a2a3e] rounded-xl p-4 flex justify-between items-start mb-6">
-                  <div>
-                    <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-widest mb-1">
-                      Total Pembayaran
-                    </p>
-                    <p className="text-[#00B954] text-xl font-bold tabular-nums">
-                      {formatRp(total)}
-                    </p>
+                <div className="bg-[#2a2a3e] rounded-xl p-4 mb-6 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-widest mb-1">
+                        Total Pembayaran
+                      </p>
+                      <p className="text-[#00B954] text-xl font-bold tabular-nums">
+                        {formatRp(total)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-widest mb-1">
+                        ID Transaksi
+                      </p>
+                      <p className="text-white font-semibold">TX-9021</p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-widest mb-1">
-                      ID Transaksi
-                    </p>
-                    <p className="text-white font-semibold">TX-9021</p>
-                  </div>
+                  {paymentMethod === "tunai" && paid > 0 && (
+                    <>
+                      <div className="border-t border-white/5 pt-3 flex justify-between items-center">
+                        <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-widest">Dibayar</p>
+                        <p className="text-[#22d3ee] font-bold tabular-nums">{formatRp(paid)}</p>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-widest">Kembalian</p>
+                        <p className={`font-bold tabular-nums ${change >= 0 ? "text-[#00B954]" : "text-red-400"}`}>
+                          {change >= 0 ? formatRp(change) : "Kurang " + formatRp(Math.abs(change))}
+                        </p>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 <div className="flex gap-3">
@@ -268,6 +284,79 @@ export default function KonfirmasiPembayaranPage() {
                   Pak Resto Unikom Security Protocol
                 </p>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Payment Success modal ── */}
+        {showPaymentSuccess && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+            <div className="bg-[#1E1E2E] rounded-2xl border border-white/10 w-[380px] overflow-hidden shadow-2xl">
+              <div className="h-1 bg-[#22C55E]" />
+              <div className="px-8 py-8 flex flex-col items-center text-center space-y-5">
+                <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(34,197,94,0.15)" }}>
+                  <Printer size={30} style={{ color: "#22C55E" }} />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-white font-bold text-xl">Pembayaran Berhasil!</h3>
+                  <p className="text-slate-400 text-sm leading-relaxed">
+                    Meja <span className="text-white font-semibold">{selectedTable?.number}</span> telah berhasil dikonfirmasi.
+                  </p>
+                </div>
+                <div className="bg-[#2a2a3e] rounded-xl px-5 py-3 w-full text-sm space-y-1.5">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Total Dibayar</span>
+                    <span className="text-[#22C55E] font-bold">{formatRp(selectedTable?.total ?? 0)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Metode</span>
+                    <span className="text-white font-semibold capitalize">{paymentMethod}</span>
+                  </div>
+                </div>
+                <div className="flex gap-3 w-full">
+                  <button
+                    onClick={() => setShowCetakModal(true)}
+                    className="flex-1 py-2.5 rounded-xl border border-white/10 text-white font-semibold hover:bg-white/5 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Printer size={14} />
+                    Cetak Struk
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowPaymentSuccess(false);
+                      setSelectedTable(null);
+                      setPaymentInput("");
+                      setPaymentMethod("tunai");
+                    }}
+                    className="flex-1 py-2.5 rounded-xl font-bold text-black transition-opacity hover:opacity-90"
+                    style={{ backgroundColor: "#22C55E" }}
+                  >
+                    Selesai
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Cetak Struk modal ── */}
+        {showCetakModal && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[60]">
+            <div className="bg-[#1E1E2E] rounded-2xl border border-white/10 w-[360px] p-8 flex flex-col items-center text-center space-y-5">
+              <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(34,197,94,0.15)" }}>
+                <Printer size={26} style={{ color: "#22C55E" }} />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-white font-bold text-lg">Struk Berhasil Dicetak!</h3>
+                <p className="text-slate-400 text-sm">Struk pembayaran telah dikirim ke printer kasir.</p>
+              </div>
+              <button
+                onClick={() => setShowCetakModal(false)}
+                className="w-full py-2.5 rounded-xl font-bold text-black transition-opacity hover:opacity-90"
+                style={{ backgroundColor: "#22C55E" }}
+              >
+                OK
+              </button>
             </div>
           </div>
         )}
@@ -373,7 +462,10 @@ export default function KonfirmasiPembayaranPage() {
                   <img src="/images/kasir/konten/icon-konfirmasi.png" alt="" width={14} height={14} style={{ filter: "brightness(0)" }} />
                   Konfirmasi Bayar
                 </button>
-                <button className="w-full border border-white/10 text-slate-300 text-sm py-2.5 rounded-lg flex items-center justify-center gap-2 hover:bg-white/5 transition-colors">
+                <button
+                  onClick={() => setShowCetakModal(true)}
+                  className="w-full border border-white/10 text-slate-300 text-sm py-2.5 rounded-lg flex items-center justify-center gap-2 hover:bg-white/5 transition-colors"
+                >
                   <Printer size={13} />
                   Cetak Struk
                 </button>

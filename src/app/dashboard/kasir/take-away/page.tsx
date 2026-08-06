@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Search, PlusCircle, XCircle } from "lucide-react";
+import { Search, PlusCircle, XCircle, Check } from "lucide-react";
 
 type OrderStatus = "MENUNGGU BAYAR" | "DIPROSES" | "SELESAI";
 
@@ -34,6 +34,8 @@ const statuses = ["Semua Status", "MENUNGGU BAYAR", "DIPROSES", "SELESAI"] as co
 export default function TakeAwayPage() {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("Semua Status");
+  const [cancelTarget, setCancelTarget] = useState<string | null>(null);
+  const [showCancelSuccess, setShowCancelSuccess] = useState(false);
 
   const filtered = mockOrders.filter((o) => {
     const matchSearch =
@@ -119,13 +121,70 @@ export default function TakeAwayPage() {
               </span>
             </div>
             <div className="self-center flex justify-center">
-              <button className="text-white hover:text-red-400 transition-colors p-1 rounded-full hover:bg-red-500/10">
+              <button
+                onClick={() => setCancelTarget(order.id)}
+                className="text-white hover:text-red-400 transition-colors p-1 rounded-full hover:bg-red-500/10"
+              >
                 <XCircle size={18} strokeWidth={1.5} />
               </button>
             </div>
           </div>
         ))}
       </div>
+
+      {/* Modal konfirmasi batalkan */}
+      {cancelTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-[380px] rounded-2xl border border-white/10 bg-[#1E2235] p-8 flex flex-col items-center text-center space-y-5">
+            <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(239,68,68,0.15)" }}>
+              <XCircle size={28} className="text-red-400" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-white font-bold text-lg">Batalkan Pesanan?</h3>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Pesanan <span className="text-white font-semibold">{cancelTarget}</span> akan dibatalkan dan dihapus dari daftar.
+              </p>
+            </div>
+            <div className="flex gap-3 w-full">
+              <button
+                onClick={() => setCancelTarget(null)}
+                className="flex-1 py-2.5 rounded-xl border border-white/10 text-white font-semibold hover:bg-white/5 transition-colors"
+              >
+                Kembali
+              </button>
+              <button
+                onClick={() => { setCancelTarget(null); setShowCancelSuccess(true); }}
+                className="flex-1 py-2.5 rounded-xl font-bold text-black transition-colors"
+                style={{ backgroundColor: "#22C55E" }}
+              >
+                Ya, Batalkan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal berhasil dibatalkan */}
+      {showCancelSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-[360px] rounded-2xl border border-white/10 bg-[#1E2235] p-8 flex flex-col items-center text-center space-y-5">
+            <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(34,197,94,0.15)" }}>
+              <Check size={28} style={{ color: "#22C55E" }} />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-white font-bold text-lg">Pesanan Dibatalkan!</h3>
+              <p className="text-slate-400 text-sm">Pesanan berhasil dibatalkan dari sistem.</p>
+            </div>
+            <button
+              onClick={() => setShowCancelSuccess(false)}
+              className="w-full py-2.5 rounded-xl font-bold text-black transition-opacity hover:opacity-90"
+              style={{ backgroundColor: "#22C55E" }}
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Pagination */}
       <div className="flex items-center justify-between text-sm text-slate-400">

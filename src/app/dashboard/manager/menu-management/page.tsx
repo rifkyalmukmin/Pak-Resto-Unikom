@@ -49,6 +49,9 @@ export default function MenuManagementPage() {
   const [deleteTarget, setDeleteTarget] = useState<MenuItem | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [detailTarget, setDetailTarget] = useState<MenuItem | null>(null);
+  const [toggleTarget, setToggleTarget] = useState<MenuItem | null>(null);
+  const [showToggleSuccess, setShowToggleSuccess] = useState(false);
+  const [toggledItem, setToggledItem] = useState<MenuItem | null>(null);
 
   function toggleAvailability(id: string) {
     setItems((prev) => prev.map((it) => it.id === id ? { ...it, available: !it.available } : it));
@@ -139,7 +142,7 @@ export default function MenuManagementPage() {
                     {/* Status */}
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-2">
-                        <Toggle on={item.available} onToggle={() => toggleAvailability(item.id)} />
+                        <Toggle on={item.available} onToggle={() => setToggleTarget(item)} />
                         <span className="text-xs font-semibold"
                           style={{ color: item.available ? "#10B981" : "#64748b" }}>
                           {item.available ? "Tersedia" : "Habis"}
@@ -277,6 +280,76 @@ export default function MenuManagementPage() {
                 Ya, Hapus
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Konfirmasi Toggle Ketersediaan */}
+      {toggleTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+          onClick={() => setToggleTarget(null)}>
+          <div className="w-[380px] rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
+            style={{ backgroundColor: "#1E2530", borderColor: "rgba(255,255,255,0.08)" }}
+            onClick={(e) => e.stopPropagation()}>
+            <div className="w-14 h-14 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: "rgba(208,188,255,0.15)" }}>
+              <AlertCircle size={28} style={{ color: "#D0BCFF" }} />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-white font-bold text-lg leading-snug">Ubah Status Menu?</h3>
+              <p className="text-sm leading-relaxed" style={{ color: "#94a3b8" }}>
+                Status <span className="text-white font-semibold">{toggleTarget.name}</span> akan diubah menjadi{" "}
+                <span className="font-semibold" style={{ color: "#D0BCFF" }}>
+                  {toggleTarget.available ? "Stok Habis" : "Tersedia"}
+                </span>.
+              </p>
+            </div>
+            <div className="flex items-center gap-3 w-full pt-1">
+              <button onClick={() => setToggleTarget(null)}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold border hover:bg-white/5 transition-colors"
+                style={{ borderColor: "rgba(255,255,255,0.12)", color: "#94a3b8", backgroundColor: "rgba(255,255,255,0.05)" }}>
+                Batal
+              </button>
+              <button
+                onClick={() => {
+                  toggleAvailability(toggleTarget.id);
+                  setToggledItem(toggleTarget);
+                  setToggleTarget(null);
+                  setShowToggleSuccess(true);
+                }}
+                className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-opacity hover:opacity-90"
+                style={{ backgroundColor: "#D0BCFF", color: "#000" }}>
+                Ya, Ubah
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Berhasil Ubah Status */}
+      {showToggleSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ backgroundColor: "rgba(0,0,0,0.6)" }}>
+          <div className="w-[360px] rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
+            style={{ backgroundColor: "#1E2530", borderColor: "rgba(255,255,255,0.08)" }}>
+            <div className="w-14 h-14 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: "rgba(208,188,255,0.15)" }}>
+              <Check size={28} style={{ color: "#D0BCFF" }} />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-white font-bold text-lg leading-snug">Status Berhasil Diubah!</h3>
+              <p className="text-sm leading-relaxed" style={{ color: "#94a3b8" }}>
+                {toggledItem ? (
+                  <>Menu <span className="text-white font-semibold">{toggledItem.name}</span> kini berstatus <span className="font-semibold" style={{ color: "#D0BCFF" }}>{toggledItem.available ? "Stok Habis" : "Tersedia"}</span>.</>
+                ) : "Status menu telah berhasil diperbarui."}
+              </p>
+            </div>
+            <button onClick={() => { setShowToggleSuccess(false); setToggledItem(null); }}
+              className="w-full py-2.5 rounded-xl text-sm font-bold transition-opacity hover:opacity-90"
+              style={{ backgroundColor: "#D0BCFF", color: "#000" }}>
+              Tutup
+            </button>
           </div>
         </div>
       )}
