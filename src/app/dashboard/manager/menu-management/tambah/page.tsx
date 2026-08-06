@@ -2,16 +2,37 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { ChevronRight, ChevronDown, ImageIcon, Check, AlertCircle } from "lucide-react";
+import { ChevronRight, ChevronDown, ImageIcon, Check, AlertCircle, Search, X } from "lucide-react";
 
 const categories = ["Main Course", "Beverage", "Dessert", "Snack", "Appetizer"];
+
+const allBahanBaku = [
+  "Nasi", "Ayam", "Daging Sapi", "Daging Kambing", "Udang", "Ikan",
+  "Telur", "Tahu", "Tempe", "Mie",
+  "Bawang Merah", "Bawang Putih", "Cabai Merah", "Cabai Rawit", "Jahe", "Kunyit",
+  "Minyak Goreng", "Mentega", "Santan", "Kecap Manis",
+  "Garam", "Gula", "Merica", "Tepung Terigu", "Tepung Beras",
+  "Susu", "Keju", "Cokelat", "Sayuran Segar", "Tomat",
+];
 
 export default function TambahMenuPage() {
   const [available, setAvailable] = useState(true);
   const [kategoriOpen, setKategoriOpen] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [selectedBahan, setSelectedBahan] = useState<string[]>([]);
+  const [bahanSearch, setBahanSearch] = useState("");
   const kategoriRef = useRef<HTMLDivElement>(null);
+
+  const filteredBahan = allBahanBaku.filter((b) =>
+    b.toLowerCase().includes(bahanSearch.toLowerCase())
+  );
+
+  function toggleBahan(bahan: string) {
+    setSelectedBahan((prev) =>
+      prev.includes(bahan) ? prev.filter((b) => b !== bahan) : [...prev, bahan]
+    );
+  }
 
   useEffect(() => {
     function handler(e: MouseEvent) {
@@ -180,6 +201,68 @@ export default function TambahMenuPage() {
                   color: "#fff",
                 }}
               />
+            </div>
+          </div>
+
+          {/* Bahan Baku */}
+          <div className="rounded-xl p-6 border space-y-4"
+            style={{ backgroundColor: "#151C25", borderColor: "#494454" }}>
+            <div>
+              <h3 className="font-bold text-base" style={{ color: "#D0BCFF" }}>Bahan Baku</h3>
+              <p className="text-xs mt-1" style={{ color: "#94a3b8" }}>Pilih bahan baku yang digunakan dalam menu ini.</p>
+            </div>
+
+            {/* Selected pills */}
+            {selectedBahan.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {selectedBahan.map((b) => (
+                  <span key={b} className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+                    style={{ backgroundColor: "rgba(208,188,255,0.15)", color: "#D0BCFF", border: "1px solid rgba(208,188,255,0.3)" }}>
+                    {b}
+                    <button onClick={() => toggleBahan(b)} className="hover:opacity-70 transition-opacity">
+                      <X size={11} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Search */}
+            <div className="relative">
+              <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#64748b" }} />
+              <input
+                type="text"
+                placeholder="Cari bahan baku..."
+                value={bahanSearch}
+                onChange={(e) => setBahanSearch(e.target.value)}
+                className="w-full h-9 pl-9 pr-4 rounded-lg text-sm outline-none border"
+                style={{ backgroundColor: "#080F17", borderColor: "#494454", color: "#fff" }}
+              />
+            </div>
+
+            {/* Grid list */}
+            <div className="grid grid-cols-3 gap-2">
+              {filteredBahan.map((b) => {
+                const active = selectedBahan.includes(b);
+                return (
+                  <button key={b} onClick={() => toggleBahan(b)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border transition-colors text-left"
+                    style={{
+                      backgroundColor: active ? "rgba(208,188,255,0.12)" : "#080F17",
+                      borderColor: active ? "rgba(208,188,255,0.4)" : "#494454",
+                      color: active ? "#D0BCFF" : "#94a3b8",
+                    }}>
+                    <span className="w-3.5 h-3.5 rounded flex items-center justify-center shrink-0 border"
+                      style={{ backgroundColor: active ? "#D0BCFF" : "transparent", borderColor: active ? "#D0BCFF" : "#494454" }}>
+                      {active && <Check size={9} color="#000" />}
+                    </span>
+                    {b}
+                  </button>
+                );
+              })}
+              {filteredBahan.length === 0 && (
+                <p className="col-span-3 text-center text-xs py-4" style={{ color: "#64748b" }}>Bahan tidak ditemukan.</p>
+              )}
             </div>
           </div>
 
