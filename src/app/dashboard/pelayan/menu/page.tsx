@@ -48,6 +48,9 @@ export default function KatalogMenuPage() {
   const [menuList, setMenuList]             = useState<MenuItem[]>(initialMenu);
   const [activeCategory, setActiveCategory] = useState<Category>("Semua");
   const [viewItem, setViewItem]             = useState<MenuItem | null>(null);
+  const [toggleTarget, setToggleTarget]     = useState<MenuItem | null>(null);
+  const [showToggleSuccess, setShowToggleSuccess] = useState(false);
+  const [toggledItem, setToggledItem]       = useState<MenuItem | null>(null);
 
   const filtered = menuList.filter((m) =>
     activeCategory === "Semua" || m.category === activeCategory
@@ -153,13 +156,82 @@ export default function KatalogMenuPage() {
                       {item.status === "Tersedia" ? "Tersedia" : "Habis"}
                     </span>
                   </div>
-                  <Toggle checked={item.status === "Tersedia"} onChange={() => toggleStatus(item.id)} />
+                  <Toggle checked={item.status === "Tersedia"} onChange={() => setToggleTarget(item)} />
                 </div>
               </div>
             </div>
           ))}
         </div>
       </div>
+
+      {/* Modal konfirmasi toggle ketersediaan */}
+      {toggleTarget && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-[380px] rounded-2xl border border-white/10 bg-[#1E293B] p-8 flex flex-col items-center text-center space-y-5">
+            <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(16,185,129,0.15)" }}>
+              <Check size={28} style={{ color: "#10B981" }} strokeWidth={2.5} />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-white font-bold text-lg">Ubah Ketersediaan?</h3>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                <span className="text-white font-semibold">{toggleTarget.name}</span> akan diubah menjadi{" "}
+                <span className="font-semibold" style={{ color: "#10B981" }}>
+                  {toggleTarget.status === "Tersedia" ? "Habis" : "Tersedia"}
+                </span>.
+              </p>
+            </div>
+            <div className="flex gap-3 w-full">
+              <button
+                onClick={() => setToggleTarget(null)}
+                className="flex-1 py-2.5 rounded-xl border border-white/10 text-white font-semibold hover:bg-white/5 transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => {
+                  toggleStatus(toggleTarget.id);
+                  setToggledItem(toggleTarget);
+                  setToggleTarget(null);
+                  setShowToggleSuccess(true);
+                }}
+                className="flex-1 py-2.5 rounded-xl font-bold text-black transition-opacity hover:opacity-90"
+                style={{ backgroundColor: "#10B981" }}
+              >
+                Ya, Ubah
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal berhasil ubah ketersediaan */}
+      {showToggleSuccess && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-[360px] rounded-2xl border border-white/10 bg-[#1E293B] p-8 flex flex-col items-center text-center space-y-5">
+            <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(16,185,129,0.15)" }}>
+              <Check size={28} style={{ color: "#10B981" }} strokeWidth={2.5} />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-white font-bold text-lg">Status Berhasil Diubah!</h3>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                {toggledItem && (
+                  <><span className="text-white font-semibold">{toggledItem.name}</span> kini berstatus{" "}
+                  <span className="font-semibold" style={{ color: "#10B981" }}>
+                    {toggledItem.status === "Tersedia" ? "Habis" : "Tersedia"}
+                  </span>.</>
+                )}
+              </p>
+            </div>
+            <button
+              onClick={() => { setShowToggleSuccess(false); setToggledItem(null); }}
+              className="w-full py-2.5 rounded-xl font-bold text-black transition-opacity hover:opacity-90"
+              style={{ backgroundColor: "#10B981" }}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* View detail popup */}
       {viewItemLive && (
@@ -221,7 +293,7 @@ export default function KatalogMenuPage() {
                 <span className="text-slate-400 text-sm">Ubah ketersediaan</span>
                 <Toggle
                   checked={viewItemLive.status === "Tersedia"}
-                  onChange={() => toggleStatus(viewItemLive.id)}
+                  onChange={() => setToggleTarget(viewItemLive)}
                 />
               </div>
             </div>

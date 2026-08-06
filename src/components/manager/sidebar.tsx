@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { LogOut, Tag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
@@ -19,6 +20,8 @@ const navItems: { label: string; href: string; img?: string; Icon?: LucideIcon }
 
 export function ManagerSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const [showLogout, setShowLogout] = useState(false);
 
   return (
     <aside className="flex flex-col w-[240px] min-h-screen bg-[#151C25] border-r border-white/5 shrink-0">
@@ -74,11 +77,40 @@ export function ManagerSidebar() {
               Manager
             </p>
           </div>
-          <button className="text-slate-500 hover:text-white transition-colors p-1">
+          <button onClick={() => setShowLogout(true)} className="text-slate-500 hover:text-white transition-colors p-1">
             <LogOut size={15} />
           </button>
         </div>
       </div>
+
+      {showLogout && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-[360px] rounded-2xl border border-white/10 bg-[#1E2235] p-8 flex flex-col items-center text-center space-y-5">
+            <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(208,188,255,0.15)" }}>
+              <LogOut size={26} style={{ color: ACCENT }} />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-white font-bold text-lg">Keluar dari Sistem?</h3>
+              <p className="text-slate-400 text-sm">Anda akan keluar dari sesi manager ini.</p>
+            </div>
+            <div className="flex gap-3 w-full">
+              <button
+                onClick={() => setShowLogout(false)}
+                className="flex-1 py-2.5 rounded-xl border border-white/10 text-white font-semibold hover:bg-white/5 transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => router.push("/login")}
+                className="flex-1 py-2.5 rounded-xl font-bold text-black transition-opacity hover:opacity-90"
+                style={{ backgroundColor: ACCENT }}
+              >
+                Ya, Keluar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </aside>
   );
 }

@@ -1,7 +1,9 @@
-﻿import Link from "next/link";
+﻿import { redirect } from "next/navigation";
+import Link from "next/link";
 import { RoleCard } from "@/components/role/role-card";
 
 export default function RoleSelectionPage() {
+  redirect("/login");
   return (
     <div className="relative flex min-h-screen flex-col bg-[#faf9f6]">
       {/* Top Navigation */}

@@ -47,6 +47,8 @@ export default function KategoriManagementPage() {
   const [showConfirm, setShowConfirm] = useState<"simpan" | "hapus" | null>(null);
   const [showSuccess, setShowSuccess] = useState<"simpan" | "hapus" | null>(null);
   const [pendingMode, setPendingMode] = useState<ModalMode>(null);
+  const [toggleTarget, setToggleTarget] = useState<Kategori | null>(null);
+  const [showToggleSuccess, setShowToggleSuccess] = useState<Kategori | null>(null);
 
   function openTambah() {
     setNamaInput(""); setDescInput(""); setWarnaPick(WARNA_OPTIONS[0].value);
@@ -168,7 +170,7 @@ export default function KategoriManagementPage() {
                 </td>
                 {/* Status */}
                 <td className="px-5 py-4">
-                  <button onClick={() => toggleAktif(k.id)}
+                  <button onClick={() => setToggleTarget(k)}
                     className="relative inline-flex w-10 h-5 rounded-full transition-colors"
                     style={{ backgroundColor: k.aktif ? "#10B981" : "#374151" }}>
                     <span className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform"
@@ -384,6 +386,82 @@ export default function KategoriManagementPage() {
                 Ya, Hapus
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Konfirmasi Toggle Aktif */}
+      {toggleTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+          onClick={() => setToggleTarget(null)}>
+          <div className="w-[380px] rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
+            style={{ backgroundColor: "#1E2530", borderColor: "rgba(255,255,255,0.08)" }}
+            onClick={(e) => e.stopPropagation()}>
+            <div className="w-14 h-14 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: "rgba(208,188,255,0.15)" }}>
+              <AlertCircle size={28} style={{ color: ACCENT }} />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-white font-bold text-lg">Ubah Status Kategori?</h3>
+              <p className="text-sm leading-relaxed" style={{ color: "#94a3b8" }}>
+                Kategori <span className="text-white font-semibold">{toggleTarget.nama}</span> akan diubah menjadi{" "}
+                <span className="font-semibold" style={{ color: ACCENT }}>
+                  {toggleTarget.aktif ? "Nonaktif" : "Aktif"}
+                </span>.
+                {toggleTarget.aktif && (
+                  <span className="block mt-1 text-xs" style={{ color: "#ef4444" }}>
+                    Ini akan mempengaruhi {toggleTarget.jumlahMenu} menu yang terdaftar.
+                  </span>
+                )}
+              </p>
+            </div>
+            <div className="flex items-center gap-3 w-full pt-1">
+              <button onClick={() => setToggleTarget(null)}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold border hover:bg-white/5 transition-colors"
+                style={{ borderColor: "rgba(255,255,255,0.12)", color: "#94a3b8", backgroundColor: "rgba(255,255,255,0.05)" }}>
+                Batal
+              </button>
+              <button
+                onClick={() => {
+                  const prev = toggleTarget;
+                  toggleAktif(prev.id);
+                  setToggleTarget(null);
+                  setShowToggleSuccess(prev);
+                }}
+                className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-opacity hover:opacity-90"
+                style={{ backgroundColor: ACCENT, color: "#000" }}>
+                Ya, Ubah
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Sukses Toggle Aktif */}
+      {showToggleSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ backgroundColor: "rgba(0,0,0,0.6)" }}>
+          <div className="w-[360px] rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
+            style={{ backgroundColor: "#1E2530", borderColor: "rgba(255,255,255,0.08)" }}>
+            <div className="w-14 h-14 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: "rgba(208,188,255,0.15)" }}>
+              <Check size={28} style={{ color: ACCENT }} />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-white font-bold text-lg">Status Berhasil Diubah!</h3>
+              <p className="text-sm leading-relaxed" style={{ color: "#94a3b8" }}>
+                Kategori <span className="text-white font-semibold">{showToggleSuccess.nama}</span> kini berstatus{" "}
+                <span className="font-semibold" style={{ color: ACCENT }}>
+                  {showToggleSuccess.aktif ? "Nonaktif" : "Aktif"}
+                </span>.
+              </p>
+            </div>
+            <button onClick={() => setShowToggleSuccess(null)}
+              className="w-full py-2.5 rounded-xl text-sm font-bold transition-opacity hover:opacity-90"
+              style={{ backgroundColor: ACCENT, color: "#000" }}>
+              Tutup
+            </button>
           </div>
         </div>
       )}

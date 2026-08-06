@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { ListFilter, Download, Check } from "lucide-react";
+import { ListFilter, Download, Check, X } from "lucide-react";
 
 interface Transaction {
   time: string;
@@ -48,6 +48,8 @@ export default function LaporanTransaksiPage() {
   const [filterStatus, setFilterStatus]     = useState<FilterStatus>("SEMUA");
   const [filterOpen, setFilterOpen]         = useState(false);
   const filterRef                           = useRef<HTMLDivElement>(null);
+  const [detail, setDetail]                 = useState<Transaction | null>(null);
+  const [showExportSuccess, setShowExportSuccess] = useState(false);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -142,7 +144,10 @@ export default function LaporanTransaksiPage() {
                 </div>
               )}
             </div>
-            <button className="flex items-center gap-2 bg-[#4CD7F6] text-black text-sm px-3.5 py-2 rounded-lg hover:bg-[#3bc5e3] transition-colors font-semibold">
+            <button
+              onClick={() => setShowExportSuccess(true)}
+              className="flex items-center gap-2 bg-[#4CD7F6] text-black text-sm px-3.5 py-2 rounded-lg hover:bg-[#3bc5e3] transition-colors font-semibold"
+            >
               <Download size={13} />
               Ekspor CSV
             </button>
@@ -187,7 +192,7 @@ export default function LaporanTransaksiPage() {
               </span>
             </div>
             <div className="self-center flex justify-center">
-              <button className="p-1 transition-opacity hover:opacity-80">
+              <button onClick={() => setDetail(tx)} className="p-1 transition-opacity hover:opacity-80">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/images/kasir/laporan/icon-eye.png"
@@ -238,6 +243,72 @@ export default function LaporanTransaksiPage() {
           </div>
         </div>
       </div>
+      {/* Modal detail transaksi */}
+      {detail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setDetail(null)}>
+          <div className="w-[440px] rounded-2xl border border-white/10 bg-[#1E1E2E] overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="h-1 bg-[#22C55E]" />
+            <div className="flex items-center justify-between px-6 py-5 border-b border-white/5">
+              <div>
+                <p className="text-[10px] font-bold tracking-widest uppercase text-slate-500 mb-1">Detail Transaksi</p>
+                <h3 className="text-white font-bold text-lg">TX-9021</h3>
+              </div>
+              <button onClick={() => setDetail(null)} className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/5 transition-colors">
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-3">
+              {[
+                { label: "Waktu Transaksi", value: detail.time },
+                { label: "No. Meja / Tipe", value: `${detail.tableOrType} — ${detail.type}` },
+                { label: "Metode Pembayaran", value: detail.paymentMethod },
+                { label: "Total", value: `Rp ${detail.total.toLocaleString("id-ID")}`, highlight: true },
+                { label: "Status", value: detail.status },
+              ].map(({ label, value, highlight }) => (
+                <div key={label} className="flex justify-between items-center py-2.5 border-b border-white/[0.04] last:border-0">
+                  <span className="text-slate-400 text-sm">{label}</span>
+                  <span className={`text-sm font-semibold ${highlight ? "text-[#22C55E] font-bold text-base tabular-nums" : "text-white"}`}>
+                    {value}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="px-6 pb-6">
+              <button
+                onClick={() => setDetail(null)}
+                className="w-full py-2.5 rounded-xl font-bold text-black text-sm transition-opacity hover:opacity-90"
+                style={{ backgroundColor: "#22C55E" }}
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal sukses ekspor */}
+      {showExportSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-[360px] rounded-2xl border border-white/10 bg-[#1E1E2E] p-8 flex flex-col items-center text-center space-y-5">
+            <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(34,197,94,0.15)" }}>
+              <Download size={26} style={{ color: "#22C55E" }} />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-white font-bold text-lg">Data Berhasil Diekspor!</h3>
+              <p className="text-slate-400 text-sm">File CSV laporan transaksi telah berhasil diunduh.</p>
+            </div>
+            <button
+              onClick={() => setShowExportSuccess(false)}
+              className="w-full py-2.5 rounded-xl font-bold text-black transition-opacity hover:opacity-90"
+              style={{ backgroundColor: "#22C55E" }}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

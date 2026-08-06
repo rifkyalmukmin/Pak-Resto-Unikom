@@ -111,6 +111,8 @@ export default function PesananAktifPage() {
   const [successId, setSuccessId] = useState<number | null>(null);
   const [updateItem, setUpdateItem] = useState<InventoryItem | null>(null);
   const [updateValue, setUpdateValue] = useState("");
+  const [confirmUpdate, setConfirmUpdate] = useState(false);
+  const [successUpdate, setSuccessUpdate] = useState(false);
 
   const dineInCount = orders.filter((o) => o.type === "dine-in" && o.status !== "done").length;
   const takeawayCount = orders.filter((o) => o.type === "takeaway" && o.status !== "done").length;
@@ -444,7 +446,7 @@ export default function PesananAktifPage() {
                 Batal
               </button>
               <button
-                onClick={handleUpdateStock}
+                onClick={() => setConfirmUpdate(true)}
                 className="flex-1 py-3 rounded-xl font-bold text-black transition-colors"
                 style={{ backgroundColor: ACCENT }}
               >
@@ -455,6 +457,60 @@ export default function PesananAktifPage() {
         </div>
       )}
 
+      {/* Modal konfirmasi update stok */}
+      {confirmUpdate && updateItem && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-[380px] rounded-2xl border border-white/10 bg-[#1E2235] p-8 flex flex-col items-center text-center space-y-5">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ backgroundColor: `${ACCENT}20` }}>
+              <CheckCircle2 size={28} style={{ color: ACCENT }} />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-white font-bold text-lg">Simpan Perubahan Stok?</h3>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Stok <span className="text-white font-semibold">{updateItem.name}</span> akan diubah menjadi{" "}
+                <span style={{ color: ACCENT }} className="font-bold">{updateValue} {updateItem.unit}</span>.
+              </p>
+            </div>
+            <div className="flex gap-3 w-full">
+              <button
+                onClick={() => setConfirmUpdate(false)}
+                className="flex-1 py-2.5 rounded-xl border border-white/10 text-white font-semibold hover:bg-white/5 transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => { handleUpdateStock(); setConfirmUpdate(false); setSuccessUpdate(true); }}
+                className="flex-1 py-2.5 rounded-xl font-bold text-black transition-colors"
+                style={{ backgroundColor: ACCENT }}
+              >
+                Ya, Simpan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal berhasil update stok */}
+      {successUpdate && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-[360px] rounded-2xl border border-white/10 bg-[#1E2235] p-8 flex flex-col items-center text-center space-y-5">
+            <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: `${ACCENT}20` }}>
+              <CheckCircle2 size={28} style={{ color: ACCENT }} />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-white font-bold text-lg">Stok Berhasil Diperbarui!</h3>
+              <p className="text-slate-400 text-sm">Perubahan stok telah disimpan ke sistem.</p>
+            </div>
+            <button
+              onClick={() => setSuccessUpdate(false)}
+              className="w-full py-2.5 rounded-xl font-bold text-black transition-opacity hover:opacity-90"
+              style={{ backgroundColor: ACCENT }}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );

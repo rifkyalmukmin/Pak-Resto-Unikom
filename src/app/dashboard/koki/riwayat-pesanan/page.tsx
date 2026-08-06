@@ -50,6 +50,7 @@ export default function RiwayatPesananPage() {
   const [detail, setDetail] = useState<HistoryOrder | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
   const [filterType, setFilterType] = useState<"semua" | "dine-in" | "takeaway">("semua");
+  const [showExportSuccess, setShowExportSuccess] = useState(false);
   const totalPages = 12;
   const totalOrders = 124;
   const avgDuration = "11m 20s";
@@ -136,6 +137,7 @@ export default function RiwayatPesananPage() {
           </div>
 
           <button
+            onClick={() => setShowExportSuccess(true)}
             className="text-sm font-semibold px-4 py-2 rounded-lg transition-colors hover:opacity-80"
             style={{ backgroundColor: "#BFC6DC", color: "#1E1E2E" }}
           >
@@ -151,7 +153,7 @@ export default function RiwayatPesananPage() {
             <thead>
               <tr className="border-b border-white/5">
                 {["ID", "TIPE", "ITEM PESANAN", "WAKTU SELESAI", "DURASI", "AKSI"].map((h) => (
-                  <th key={h} className="text-left px-5 py-3.5 text-[10px] font-bold text-slate-500 tracking-widest uppercase whitespace-nowrap">
+                  <th key={h} className="text-left px-5 py-3.5 text-[10px] font-bold tracking-widest uppercase whitespace-nowrap" style={{ color: "#CBC3D7" }}>
                     {h}
                   </th>
                 ))}
@@ -252,6 +254,30 @@ export default function RiwayatPesananPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal sukses export */}
+      {showExportSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-[360px] rounded-2xl border border-white/10 bg-[#1E1E2E] p-8 flex flex-col items-center text-center space-y-5">
+            <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: `${ACCENT}20` }}>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={ACCENT} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-white font-bold text-lg">Laporan Berhasil Diekspor!</h3>
+              <p className="text-slate-400 text-sm">File CSV riwayat pesanan telah berhasil diunduh.</p>
+            </div>
+            <button
+              onClick={() => setShowExportSuccess(false)}
+              className="w-full py-2.5 rounded-xl font-bold text-black transition-opacity hover:opacity-90"
+              style={{ backgroundColor: ACCENT }}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Detail popup */}
       {detail && (

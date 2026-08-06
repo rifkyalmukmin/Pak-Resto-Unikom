@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { TrendingUp, TrendingDown, FileText, FileSpreadsheet, Search, ListFilter, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { TrendingUp, TrendingDown, FileText, FileSpreadsheet, Search, ListFilter, ChevronDown, ChevronLeft, ChevronRight, Check, X } from "lucide-react";
 import { DateRangePicker } from "@/components/manager/date-range-picker";
 
 const ACCENT = "#D0BCFF";
@@ -39,6 +39,7 @@ export default function FinancialReportsPage() {
   const [search, setSearch]             = useState("");
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("Semua");
   const [filterOpen, setFilterOpen]     = useState(false);
+  const [exportType, setExportType]     = useState<"PDF" | "Excel" | null>(null);
 
   const filtered = salesRows.filter((r) =>
     r.tanggal.toLowerCase().includes(search.toLowerCase()) &&
@@ -55,6 +56,7 @@ export default function FinancialReportsPage() {
         </div>
         <div className="flex items-center gap-3">
           <button
+            onClick={() => setExportType("PDF")}
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold border transition-colors hover:bg-white/5"
             style={{ borderColor: "rgba(255,255,255,0.15)", color: "#94a3b8" }}
           >
@@ -62,6 +64,7 @@ export default function FinancialReportsPage() {
             Export PDF
           </button>
           <button
+            onClick={() => setExportType("Excel")}
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-opacity hover:opacity-90"
             style={{ backgroundColor: "#D0BCFF", color: "#000" }}
           >
@@ -221,6 +224,33 @@ export default function FinancialReportsPage() {
           </div>
         </div>
       </div>
+      {/* Modal sukses ekspor */}
+      {exportType && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.6)" }}>
+          <div className="w-[360px] rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
+            style={{ backgroundColor: "#151C25", borderColor: "rgba(255,255,255,0.08)" }}>
+            <div className="w-14 h-14 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: "rgba(208,188,255,0.15)" }}>
+              {exportType === "PDF"
+                ? <FileText size={26} style={{ color: "#D0BCFF" }} />
+                : <FileSpreadsheet size={26} style={{ color: "#D0BCFF" }} />}
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-white font-bold text-lg">Laporan Berhasil Diekspor!</h3>
+              <p className="text-sm" style={{ color: "#64748b" }}>
+                File {exportType} laporan keuangan telah berhasil diunduh.
+              </p>
+            </div>
+            <button
+              onClick={() => setExportType(null)}
+              className="w-full py-2.5 rounded-xl font-bold text-black transition-opacity hover:opacity-90"
+              style={{ backgroundColor: "#D0BCFF" }}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

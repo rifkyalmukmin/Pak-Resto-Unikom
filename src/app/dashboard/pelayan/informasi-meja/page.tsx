@@ -42,7 +42,7 @@ const MINT_FILTER =
 const SLATE_FILTER = "brightness(0) invert(1) opacity(0.35)";
 
 type ModalMode = "tambah" | "edit" | null;
-type OverlayType = "konfirmasi" | "sukses-tambah" | "sukses-edit" | "konfirmasi-hapus" | null;
+type OverlayType = "konfirmasi" | "sukses-tambah" | "sukses-edit" | "konfirmasi-hapus" | "sukses-hapus" | "konfirmasi-toggle" | null;
 
 export default function InformasiMejaPage() {
   const [mejaList, setMejaList] = useState<Meja[]>(initialMeja);
@@ -51,9 +51,10 @@ export default function InformasiMejaPage() {
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
   const [overlay, setOverlay] = useState<OverlayType>(null);
   const [qrTarget, setQrTarget] = useState<Meja | null>(null);
+  const [toggleStatusTarget, setToggleStatusTarget] = useState<Meja | null>(null);
 
   const BASE_URL = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
-  function mejaUrl(nomor: string) { return `${BASE_URL}/customer?meja=${nomor}`; }
+  function mejaUrl(nomor: string) { return `${BASE_URL}/pesan?meja=${nomor}`; }
 
   const [nomorInput, setNomorInput] = useState("");
   const [kapasitasSelected, setKapasitasSelected] = useState<number | null>(4);
@@ -145,6 +146,20 @@ export default function InformasiMejaPage() {
     if (deleteTarget !== null) {
       setMejaList((prev) => prev.filter((m) => m.id !== deleteTarget));
       setDeleteTarget(null);
+    }
+    setOverlay("sukses-hapus");
+  }
+
+  function handleKonfirmasiToggleYes() {
+    if (toggleStatusTarget) {
+      setMejaList((prev) =>
+        prev.map((m) =>
+          m.id === toggleStatusTarget.id
+            ? { ...m, status: m.status === "TERSEDIA" ? "TERISI" : "TERSEDIA" }
+            : m
+        )
+      );
+      setToggleStatusTarget(null);
     }
     setOverlay(null);
   }
@@ -244,15 +259,7 @@ export default function InformasiMejaPage() {
             </p>
 
             <button
-              onClick={() =>
-                setMejaList((prev) =>
-                  prev.map((m) =>
-                    m.id === meja.id
-                      ? { ...m, status: m.status === "TERSEDIA" ? "TERISI" : "TERSEDIA" }
-                      : m
-                  )
-                )
-              }
+              onClick={() => { setToggleStatusTarget(meja); setOverlay("konfirmasi-toggle"); }}
               className="transition-opacity hover:opacity-75"
               title="Klik untuk ubah status"
             >
@@ -521,6 +528,60 @@ export default function InformasiMejaPage() {
                   Coba
                 </a>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Sukses Hapus ─────────────────────────────────────────── */}
+      {overlay === "sukses-hapus" && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setOverlay(null)} />
+          <div className="relative w-[420px] rounded-2xl border border-white/10 shadow-2xl px-8 py-8 z-10" style={{ backgroundColor: "#1E2235" }}>
+            <SuccessIcon />
+            <h3 className="text-white font-bold text-lg mb-2">Meja Berhasil Dihapus</h3>
+            <p className="text-slate-400 text-sm leading-relaxed mb-7">
+              Meja telah dihapus dari sistem dan tidak akan muncul di daftar.
+            </p>
+            <button
+              onClick={() => setOverlay(null)}
+              className="w-full py-3 rounded-xl font-bold text-sm transition-opacity hover:opacity-90"
+              style={{ backgroundColor: "#10B981", color: "#000" }}
+            >
+              Oke
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Konfirmasi Toggle Status Meja ────────────────────────── */}
+      {overlay === "konfirmasi-toggle" && toggleStatusTarget && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div className="relative w-[420px] rounded-2xl border border-white/10 shadow-2xl px-8 py-8 z-10" style={{ backgroundColor: "#1E2235" }}>
+            <InfoIcon />
+            <h3 className="text-white font-bold text-lg mb-2">Ubah Status Meja?</h3>
+            <p className="text-slate-400 text-sm leading-relaxed mb-7">
+              Status meja <span className="text-white font-semibold">{toggleStatusTarget.nomor}</span> akan diubah menjadi{" "}
+              <span className="font-semibold" style={{ color: "#10B981" }}>
+                {toggleStatusTarget.status === "TERSEDIA" ? "TERISI" : "TERSEDIA"}
+              </span>.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setOverlay(null); setToggleStatusTarget(null); }}
+                className="flex-1 py-3 rounded-xl border-2 font-bold text-sm transition-colors hover:bg-[#10B981]/5"
+                style={{ borderColor: "#10B981", color: "#10B981" }}
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleKonfirmasiToggleYes}
+                className="flex-1 py-3 rounded-xl font-bold text-sm transition-opacity hover:opacity-90"
+                style={{ backgroundColor: "#10B981", color: "#000" }}
+              >
+                Ya, Ubah
+              </button>
             </div>
           </div>
         </div>

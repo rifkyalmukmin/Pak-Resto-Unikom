@@ -197,7 +197,7 @@ export default function TambahMenuPage() {
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-sm font-semibold" style={{ color: available ? "#4EDEA3" : "#64748b" }}>
-                  {available ? "Tersedia" : "Tidak Tersedia"}
+                  {available ? "Tersedia" : "Habis"}
                 </span>
                 <button
                   onClick={() => setAvailable(!available)}
