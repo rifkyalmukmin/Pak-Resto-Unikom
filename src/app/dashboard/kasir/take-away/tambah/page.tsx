@@ -34,7 +34,7 @@ export default function TambahPesananPage() {
   }, [loadMenu]);
 
   const allMenu = categories.flatMap((c) =>
-    c.menu.map((m) => ({ ...m, kategori: c.nama_kategori }))
+    (c.menu ?? []).map((m) => ({ ...m, kategori: c.nama_kategori }))
   );
 
   const filtered =

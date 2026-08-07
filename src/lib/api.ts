@@ -1,13 +1,21 @@
 import type {
   ApiBahanBaku,
   ApiKategori,
+  ApiLaporanPendapatan,
   ApiMeja,
+  ApiMenu,
   ApiPembayaran,
   ApiPesanan,
   ApiResponse,
   CreateOrderItem,
 } from "@/types/api";
-import type { MetodePembayaran, StatusBahan, StatusPesanan, TipePesanan } from "@prisma/client";
+import type {
+  MetodePembayaran,
+  StatusBahan,
+  StatusMenu,
+  StatusPesanan,
+  TipePesanan,
+} from "@prisma/client";
 
 class ApiError extends Error {
   constructor(message: string) {
@@ -34,6 +42,84 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   getMenu: () => request<ApiKategori[]>("/api/menu"),
+
+  getMenuAdmin: () => request<ApiMenu[]>("/api/menu?all=true"),
+
+  getMenuById: (id: number) => request<ApiMenu>(`/api/menu/${id}`),
+
+  createMenu: (body: {
+    nama_menu: string;
+    id_kategori: number;
+    harga: number;
+    deskripsi?: string | null;
+    status?: StatusMenu;
+    gambar?: string | null;
+    bahan?: Array<{ id_bahan: number; jumlah_pakai?: number }>;
+  }) =>
+    request<ApiMenu>("/api/menu", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  updateMenu: (
+    id: number,
+    body: {
+      nama_menu?: string;
+      id_kategori?: number;
+      harga?: number;
+      deskripsi?: string | null;
+      status?: StatusMenu;
+      gambar?: string | null;
+      bahan?: Array<{ id_bahan: number; jumlah_pakai?: number }>;
+    }
+  ) =>
+    request<ApiMenu>(`/api/menu/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
+
+  deleteMenu: (id: number) =>
+    request<{ id_menu: number }>(`/api/menu/${id}`, { method: "DELETE" }),
+
+  getKategori: () => request<ApiKategori[]>("/api/kategori"),
+
+  createKategori: (body: {
+    nama_kategori: string;
+    deskripsi?: string | null;
+    warna?: string | null;
+    aktif?: boolean;
+  }) =>
+    request<ApiKategori>("/api/kategori", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  updateKategori: (
+    id: number,
+    body: {
+      nama_kategori?: string;
+      deskripsi?: string | null;
+      warna?: string | null;
+      aktif?: boolean;
+    }
+  ) =>
+    request<ApiKategori>(`/api/kategori/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
+
+  deleteKategori: (id: number) =>
+    request<{ id_kategori: number }>(`/api/kategori/${id}`, { method: "DELETE" }),
+
+  getLaporanPendapatan: (params?: { from?: string; to?: string }) => {
+    const q = new URLSearchParams();
+    if (params?.from) q.set("from", params.from);
+    if (params?.to) q.set("to", params.to);
+    const qs = q.toString();
+    return request<ApiLaporanPendapatan>(
+      `/api/reports/pendapatan${qs ? `?${qs}` : ""}`
+    );
+  },
 
   getTables: () => request<ApiMeja[]>("/api/tables"),
 
@@ -112,6 +198,10 @@ export const api = {
       method: "DELETE",
     }),
 };
+
+export function formatRp(n: number): string {
+  return `Rp ${n.toLocaleString("id-ID")}`;
+}
 
 export function orderElapsed(waktu_pesanan: string): string {
   const diff = Date.now() - new Date(waktu_pesanan).getTime();

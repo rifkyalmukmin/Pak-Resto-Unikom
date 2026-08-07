@@ -70,7 +70,7 @@ export default function PemesananMakananPage() {
   }, [loadData]);
 
   const allMenu = categories.flatMap((c) =>
-    c.menu.map((m) => ({ ...m, kategori: c.nama_kategori }))
+    (c.menu ?? []).map((m) => ({ ...m, kategori: c.nama_kategori }))
   );
 
   const filtered =

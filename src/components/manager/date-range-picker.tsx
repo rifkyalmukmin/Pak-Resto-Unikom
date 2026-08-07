@@ -18,9 +18,10 @@ function formatDate(d: Date) {
 
 interface Props {
   iconSrc: string;
+  onChange?: (range: { start: Date | null; end: Date | null }) => void;
 }
 
-export function DateRangePicker({ iconSrc }: Props) {
+export function DateRangePicker({ iconSrc, onChange }: Props) {
   const today = new Date();
 
   const [open, setOpen]           = useState(false);
@@ -41,7 +42,7 @@ export function DateRangePicker({ iconSrc }: Props) {
   }, []);
 
   function displayLabel() {
-    if (!applied.start) return "24 Okt 2023 – Hari Ini";
+    if (!applied.start) return "30 hari terakhir";
     const start = formatDate(applied.start);
     const end   = applied.end ? formatDate(applied.end) : "Hari Ini";
     return `${start} – ${end}`;
@@ -77,7 +78,9 @@ export function DateRangePicker({ iconSrc }: Props) {
   }
 
   function apply() {
-    setApplied({ start: startDate, end: endDate });
+    const next = { start: startDate, end: endDate };
+    setApplied(next);
+    onChange?.(next);
     setOpen(false);
   }
 
@@ -85,6 +88,7 @@ export function DateRangePicker({ iconSrc }: Props) {
     setStartDate(null);
     setEndDate(null);
     setApplied({ start: null, end: null });
+    onChange?.({ start: null, end: null });
   }
 
   return (

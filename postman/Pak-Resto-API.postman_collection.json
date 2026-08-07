@@ -279,6 +279,100 @@
       ]
     },
     {
+      "name": "Kategori & Menu (Manajer)",
+      "item": [
+        {
+          "name": "List Kategori",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/kategori"
+          }
+        },
+        {
+          "name": "Create Kategori",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama_kategori\": \"Dessert\",\n  \"deskripsi\": \"Hidangan penutup\",\n  \"warna\": \"#f59e0b\",\n  \"aktif\": true\n}"
+            },
+            "url": "{{baseUrl}}/api/kategori"
+          }
+        },
+        {
+          "name": "Update Kategori",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"aktif\": false\n}"
+            },
+            "url": "{{baseUrl}}/api/kategori/1"
+          }
+        },
+        {
+          "name": "List Menu Admin (all)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/menu?all=true"
+          }
+        },
+        {
+          "name": "Create Menu",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama_menu\": \"Nasi Goreng Spesial\",\n  \"id_kategori\": 1,\n  \"harga\": 25000,\n  \"deskripsi\": \"Nasi goreng telur\",\n  \"status\": \"AKTIF\",\n  \"bahan\": [{ \"id_bahan\": 1, \"jumlah_pakai\": 1 }]\n}"
+            },
+            "url": "{{baseUrl}}/api/menu"
+          }
+        },
+        {
+          "name": "Update Menu",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"harga\": 28000,\n  \"status\": \"AKTIF\"\n}"
+            },
+            "url": "{{baseUrl}}/api/menu/1"
+          }
+        },
+        {
+          "name": "Delete Menu",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/menu/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Laporan",
+      "item": [
+        {
+          "name": "Laporan Pendapatan",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/pendapatan",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "pendapatan"],
+              "query": [
+                { "key": "from", "value": "2026-01-01", "disabled": true },
+                { "key": "to", "value": "2026-12-31", "disabled": true }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "Bahan Baku",
       "item": [
         {

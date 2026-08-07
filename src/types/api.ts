@@ -22,6 +22,15 @@ export interface ApiMenu {
   harga: number;
   status: string;
   gambar: string | null;
+  kategori?: ApiKategori;
+  menu_bahan?: ApiMenuBahan[];
+}
+
+export interface ApiMenuBahan {
+  id_bahan: number;
+  id_menu: number;
+  jumlah_pakai: number;
+  bahan_baku?: ApiBahanBaku;
 }
 
 export interface ApiKategori {
@@ -31,7 +40,29 @@ export interface ApiKategori {
   warna: string | null;
   jumlah_menu: number;
   aktif: boolean;
-  menu: ApiMenu[];
+  menu?: ApiMenu[];
+}
+
+export interface ApiLaporanHarian {
+  tanggal: string;
+  tanggal_label: string;
+  transaksi: number;
+  pendapatan: number;
+  rata_rata: number;
+  status: "Finalized";
+}
+
+export interface ApiLaporanPendapatan {
+  periode: { from: string; to: string };
+  ringkasan: {
+    total_pendapatan: number;
+    total_transaksi: number;
+    rata_rata: number;
+    perubahan_pendapatan_pct: number | null;
+    perubahan_transaksi_pct: number | null;
+    perubahan_rata_pct: number | null;
+  };
+  harian: ApiLaporanHarian[];
 }
 
 export interface ApiMeja {
