@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { StatusMenu } from "@prisma/client";
-import { isAuthFailure, requireAuth } from "@/lib/api-auth";
+import { isAuthFailure, requireAuth, STAFF_ROLES } from "@/lib/api-auth";
 import {
   menuAdminInclude,
   parsePositiveInt,
@@ -11,6 +11,9 @@ import {
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function GET(_req: Request, { params }: RouteContext) {
+  const auth = await requireAuth(STAFF_ROLES);
+  if (isAuthFailure(auth)) return auth.error;
+
   try {
     const { id } = await params;
     const id_menu = parsePositiveInt(id);

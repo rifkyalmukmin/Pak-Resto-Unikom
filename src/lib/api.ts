@@ -7,10 +7,12 @@ import type {
   ApiPembayaran,
   ApiPesanan,
   ApiResponse,
+  ApiUser,
   CreateOrderItem,
 } from "@/types/api";
 import type {
   MetodePembayaran,
+  Role,
   StatusBahan,
   StatusMenu,
   StatusPesanan,
@@ -120,6 +122,43 @@ export const api = {
       `/api/reports/pendapatan${qs ? `?${qs}` : ""}`
     );
   },
+
+  getUsers: (params?: { role?: Role | string }) => {
+    const q = new URLSearchParams();
+    if (params?.role) q.set("role", String(params.role));
+    const qs = q.toString();
+    return request<ApiUser[]>(`/api/users${qs ? `?${qs}` : ""}`);
+  },
+
+  getUser: (id: number) => request<ApiUser>(`/api/users/${id}`),
+
+  createUser: (body: {
+    nama_lengkap: string;
+    username: string;
+    password: string;
+    role: Role | string;
+  }) =>
+    request<ApiUser>("/api/users", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  updateUser: (
+    id: number,
+    body: {
+      nama_lengkap?: string;
+      username?: string;
+      password?: string;
+      role?: Role | string;
+    }
+  ) =>
+    request<ApiUser>(`/api/users/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
+
+  deleteUser: (id: number) =>
+    request<{ id_user: number }>(`/api/users/${id}`, { method: "DELETE" }),
 
   getTables: () => request<ApiMeja[]>("/api/tables"),
 

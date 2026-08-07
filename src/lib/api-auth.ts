@@ -3,6 +3,10 @@ import { NextResponse } from "next/server";
 import type { Session } from "next-auth";
 import type { Role } from "@prisma/client";
 
+export const STAFF_ROLES: Role[] = ["PELAYAN", "CHEF", "KASIR", "MANAJER"];
+
+export const ROLE_VALUES: Role[] = ["PELAYAN", "CHEF", "KASIR", "MANAJER"];
+
 type AuthSuccess = {
   session: Session;
   userId: number;

@@ -93,6 +93,26 @@
             },
             "url": "{{baseUrl}}/api/auth/callback/credentials"
           }
+        },
+        {
+          "name": "Login (Manajer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/x-www-form-urlencoded" }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "csrfToken", "value": "{{csrfToken}}", "type": "text" },
+                { "key": "username", "value": "manajer", "type": "text" },
+                { "key": "password", "value": "password123", "type": "text" },
+                { "key": "callbackUrl", "value": "/dashboard/manager", "type": "text" },
+                { "key": "json", "value": "true", "type": "text" }
+              ]
+            },
+            "url": "{{baseUrl}}/api/auth/callback/credentials"
+          }
         }
       ]
     },
@@ -368,6 +388,63 @@
                 { "key": "to", "value": "2026-12-31", "disabled": true }
               ]
             }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users (Manajer)",
+      "item": [
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"],
+              "query": [
+                { "key": "role", "value": "PELAYAN", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/users/1"
+          }
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama_lengkap\": \"Ahmad Suherman\",\n  \"username\": \"ahmad.suherman\",\n  \"password\": \"password123\",\n  \"role\": \"PELAYAN\"\n}"
+            },
+            "url": "{{baseUrl}}/api/users"
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama_lengkap\": \"Ahmad Suherman Updated\",\n  \"role\": \"KASIR\"\n}"
+            },
+            "url": "{{baseUrl}}/api/users/1"
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/users/1"
           }
         }
       ]

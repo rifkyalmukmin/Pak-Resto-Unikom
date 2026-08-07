@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { isAuthFailure, requireAuth } from "@/lib/api-auth";
+import { isAuthFailure, requireAuth, STAFF_ROLES } from "@/lib/api-auth";
 
 // GET /api/kategori — semua kategori (termasuk nonaktif) untuk manajer
 export async function GET() {
-  const auth = await requireAuth(["MANAJER", "PELAYAN", "CHEF", "KASIR"]);
+  const auth = await requireAuth(STAFF_ROLES);
   if (isAuthFailure(auth)) return auth.error;
 
   try {

@@ -113,6 +113,20 @@ export interface ApiPembayaran {
   pesanan?: ApiPesanan;
 }
 
+export interface ApiUser {
+  id_user: number;
+  nama_lengkap: string;
+  username: string;
+  role: string;
+}
+
+export interface ApiUser {
+  id_user: number;
+  nama_lengkap: string;
+  username: string;
+  role: string;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;

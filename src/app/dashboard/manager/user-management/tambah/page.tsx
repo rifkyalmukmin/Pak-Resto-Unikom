@@ -2,7 +2,10 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChevronRight, ChevronDown, Eye, EyeOff, ImageIcon, AlertCircle, Check } from "lucide-react";
+import { api } from "@/lib/api";
+import { LABEL_TO_ROLE, initialsFromName } from "@/lib/user-helpers";
 
 const roleOptions = ["Pelayan", "Koki", "Kasir", "Manager"];
 
@@ -14,12 +17,15 @@ const ROLE_COLORS: Record<string, string> = {
 };
 
 export default function TambahUserPage() {
+  const router = useRouter();
   const [form, setForm]           = useState({ nama: "", username: "", role: "", password: "" });
   const [showPass, setShowPass]   = useState(false);
   const [roleOpen, setRoleOpen]   = useState(false);
   const [preview, setPreview]     = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [error, setError]         = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const roleRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -38,10 +44,40 @@ export default function TambahUserPage() {
   }
 
   const roleColor = form.role ? ROLE_COLORS[form.role] : "#64748b";
+  const canSubmit = form.nama.trim() && form.username.trim() && form.role && form.password.trim();
+
+  function handleSaveClick() {
+    if (!canSubmit) {
+      setError("Lengkapi semua field wajib: nama, username, role, dan password.");
+      return;
+    }
+    setError(null);
+    setShowConfirm(true);
+  }
+
+  async function handleSubmit() {
+    if (!canSubmit) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      await api.createUser({
+        nama_lengkap: form.nama.trim(),
+        username: form.username.trim(),
+        password: form.password,
+        role: LABEL_TO_ROLE[form.role],
+      });
+      setShowConfirm(false);
+      setShowSuccess(true);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Gagal menyimpan user");
+      setShowConfirm(false);
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
     <div className="p-6 space-y-6">
-      {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm" style={{ color: "#64748b" }}>
         <Link href="/dashboard/manager/user-management" className="hover:text-white transition-colors">
           Manajemen User
@@ -50,7 +86,6 @@ export default function TambahUserPage() {
         <span className="font-medium" style={{ color: "#D0BCFF" }}>Tambah User Baru</span>
       </div>
 
-      {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Tambah User Baru</h1>
         <div className="flex items-center gap-3">
@@ -62,8 +97,9 @@ export default function TambahUserPage() {
             Batal
           </Link>
           <button
-            onClick={() => setShowConfirm(true)}
-            className="px-4 py-2.5 rounded-lg text-sm font-semibold transition-opacity hover:opacity-90"
+            onClick={handleSaveClick}
+            disabled={!canSubmit || submitting}
+            className="px-4 py-2.5 rounded-lg text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-40"
             style={{ backgroundColor: "#D0BCFF", color: "#000" }}
           >
             Simpan User
@@ -71,19 +107,25 @@ export default function TambahUserPage() {
         </div>
       </div>
 
-      {/* Body */}
+      {error && (
+        <div
+          className="rounded-xl px-4 py-3 text-sm border"
+          style={{ backgroundColor: "rgba(239,68,68,0.1)", borderColor: "rgba(239,68,68,0.3)", color: "#ef4444" }}
+        >
+          {error}
+        </div>
+      )}
+
       <div className="grid gap-5 items-start" style={{ gridTemplateColumns: "1fr 440px" }}>
 
-        {/* ── Left: Form ── */}
         <div className="rounded-xl p-6 border space-y-5" style={{ backgroundColor: "#151C25", borderColor: "#494454" }}>
           <h3 className="font-bold text-base" style={{ color: "#D0BCFF" }}>Informasi Akun</h3>
 
-          {/* Row 1: ID User + Nama */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold mb-2" style={{ color: "#94a3b8" }}>ID User (Otomatis)</label>
               <input
-                type="text" value="USR-007" readOnly
+                type="text" value="" readOnly placeholder="Otomatis"
                 className="w-full h-10 px-4 rounded-lg text-sm border"
                 style={{ backgroundColor: "#080F17", borderColor: "#494454", color: "#64748b", cursor: "not-allowed" }}
               />
@@ -99,7 +141,6 @@ export default function TambahUserPage() {
             </div>
           </div>
 
-          {/* Row 2: Username + Role */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold mb-2" style={{ color: "#94a3b8" }}>Username</label>
@@ -157,7 +198,6 @@ export default function TambahUserPage() {
             </div>
           </div>
 
-          {/* Row 3: Password */}
           <div>
             <label className="block text-xs font-semibold mb-2" style={{ color: "#94a3b8" }}>Password Akun</label>
             <div className="relative">
@@ -182,11 +222,9 @@ export default function TambahUserPage() {
           </div>
         </div>
 
-        {/* ── Right: Foto Profil ── */}
         <div className="rounded-xl p-6 border space-y-5" style={{ backgroundColor: "#151C25", borderColor: "#494454" }}>
           <h3 className="text-xs font-bold tracking-widest uppercase" style={{ color: "#D0BCFF" }}>Foto Profil</h3>
 
-          {/* Upload area */}
           <label
             className="flex flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed cursor-pointer transition-colors hover:border-white/20"
             style={{ borderColor: "#494454", minHeight: 180, backgroundColor: "#080F17" }}
@@ -207,7 +245,6 @@ export default function TambahUserPage() {
           </label>
           <p className="text-xs text-center" style={{ color: "#64748b" }}>Rekomendasi ukuran: 1:1 (Min. 400×400px)</p>
 
-          {/* Pratinjau */}
           <div>
             <p className="text-sm font-semibold mb-3" style={{ color: "#D0BCFF" }}>Pratinjau Profil</p>
             <div
@@ -222,7 +259,7 @@ export default function TambahUserPage() {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={preview} alt="preview" className="w-full h-full object-cover" />
                 ) : form.nama ? (
-                  form.nama.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase()
+                  initialsFromName(form.nama)
                 ) : (
                   <ImageIcon size={28} style={{ color: "#374151" }} />
                 )}
@@ -241,12 +278,11 @@ export default function TambahUserPage() {
         </div>
       </div>
 
-      {/* Modal Konfirmasi */}
       {showConfirm && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center"
           style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
-          onClick={() => setShowConfirm(false)}
+          onClick={() => !submitting && setShowConfirm(false)}
         >
           <div
             className="w-[360px] rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
@@ -265,24 +301,25 @@ export default function TambahUserPage() {
             <div className="flex items-center gap-3 w-full pt-1">
               <button
                 onClick={() => setShowConfirm(false)}
-                className="flex-1 py-2.5 rounded-xl text-sm font-semibold border hover:bg-white/5 transition-colors"
+                disabled={submitting}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold border hover:bg-white/5 transition-colors disabled:opacity-50"
                 style={{ borderColor: "rgba(255,255,255,0.12)", color: "#94a3b8", backgroundColor: "rgba(255,255,255,0.05)" }}
               >
                 Tidak
               </button>
               <button
-                onClick={() => { setShowConfirm(false); setShowSuccess(true); }}
-                className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-opacity hover:opacity-90"
+                onClick={handleSubmit}
+                disabled={submitting}
+                className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-opacity hover:opacity-90 disabled:opacity-50"
                 style={{ backgroundColor: "#D0BCFF", color: "#000" }}
               >
-                Ya
+                {submitting ? "Menyimpan..." : "Ya"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal Berhasil */}
       {showSuccess && (
         <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.6)" }}>
           <div className="w-[360px] rounded-2xl border p-8 flex flex-col items-center text-center space-y-5" style={{ backgroundColor: "#1E2530", borderColor: "#494454" }}>
@@ -295,13 +332,13 @@ export default function TambahUserPage() {
                 Akun <span className="text-white font-semibold">{form.nama || "baru"}</span> telah berhasil dibuat dan dapat digunakan untuk login.
               </p>
             </div>
-            <Link
-              href="/dashboard/manager/user-management"
+            <button
+              onClick={() => router.push("/dashboard/manager/user-management")}
               className="w-full py-2.5 rounded-xl text-sm font-bold text-center transition-opacity hover:opacity-90"
               style={{ backgroundColor: "#D0BCFF", color: "#000" }}
             >
               Kembali ke Manajemen User
-            </Link>
+            </button>
           </div>
         </div>
       )}

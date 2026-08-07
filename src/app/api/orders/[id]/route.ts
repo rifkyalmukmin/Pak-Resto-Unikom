@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { isAuthFailure, requireAuth } from "@/lib/api-auth";
+import { isAuthFailure, requireAuth, STAFF_ROLES } from "@/lib/api-auth";
 import { orderInclude } from "@/lib/prisma-includes";
 import {
-  buildOrderWhere,
   ORDER_STATUS_VALUES,
-  ORDER_TYPE_VALUES,
-  parseOptionalEnum,
   parseOrderId,
   releaseMejaIfIdle,
 } from "@/lib/order-helpers";
@@ -16,7 +13,7 @@ import type { StatusPesanan } from "@prisma/client";
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function GET(_req: Request, { params }: RouteContext) {
-  const auth = await requireAuth(["PELAYAN", "CHEF", "KASIR", "MANAJER"]);
+  const auth = await requireAuth(STAFF_ROLES);
   if (isAuthFailure(auth)) return auth.error;
 
   try {
@@ -52,7 +49,7 @@ export async function GET(_req: Request, { params }: RouteContext) {
 }
 
 export async function PATCH(request: Request, { params }: RouteContext) {
-  const auth = await requireAuth(["PELAYAN", "CHEF", "KASIR", "MANAJER"]);
+  const auth = await requireAuth(STAFF_ROLES);
   if (isAuthFailure(auth)) return auth.error;
 
   try {

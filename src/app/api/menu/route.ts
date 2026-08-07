@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { StatusMenu } from "@prisma/client";
-import { isAuthFailure, requireAuth } from "@/lib/api-auth";
+import { isAuthFailure, requireAuth, STAFF_ROLES } from "@/lib/api-auth";
 import { menuAdminInclude } from "@/lib/menu-helpers";
 
 // GET /api/menu
-// - default: kategori aktif + menu AKTIF (publik / pemesanan)
-// - ?all=true: semua menu (butuh MANAJER)
+// - default: kategori aktif + menu AKTIF (staff)
+// - ?all=true: semua menu (MANAJER)
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -22,6 +22,9 @@ export async function GET(request: Request) {
       });
       return NextResponse.json({ success: true, data: menus });
     }
+
+    const auth = await requireAuth(STAFF_ROLES);
+    if (isAuthFailure(auth)) return auth.error;
 
     const categories = await prisma.kategori.findMany({
       where: { aktif: true },
