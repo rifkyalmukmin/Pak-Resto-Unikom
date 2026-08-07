@@ -134,8 +134,9 @@ export default function TambahPesananPage() {
                       setQty((p) => {
                         const n = (p[item.id_menu] ?? 0) - 1;
                         if (n <= 0) {
-                          const { [item.id_menu]: _, ...rest } = p;
-                          return rest;
+                          const next = { ...p };
+                          delete next[item.id_menu];
+                          return next;
                         }
                         return { ...p, [item.id_menu]: n };
                       })

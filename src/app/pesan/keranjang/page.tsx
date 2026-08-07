@@ -20,9 +20,7 @@ export default function KeranjangPage() {
     tax,
     grandTotal,
     updateQty,
-    updateNotes,
     removeItem,
-    clearCart,
   } = useCart();
 
   const [customerName, setCustomerName] = useState("");
@@ -30,7 +28,7 @@ export default function KeranjangPage() {
   const [paymentCategory, setPaymentCategory] = useState<"LANGSUNG" | "NANTI">("LANGSUNG");
   const [paymentMethod, setPaymentMethod] = useState<"QRIS" | "EWALLET" | "DEBIT">("QRIS");
   const [showConfirm, setShowConfirm] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const [submitting] = useState(false);
 
   function handleSubmit() {
     if (items.length === 0) return;

@@ -5,7 +5,7 @@ import { Check, CheckCircle2, Circle, PlusCircle, RefreshCw } from "lucide-react
 import type { ApiPesanan } from "@/types/api";
 import { api, orderElapsed } from "@/lib/api";
 import { useLiveClock } from "@/hooks/use-live-clock";
-import type { StatusPesanan, TipePesanan } from "@prisma/client";
+import type { StatusPesanan } from "@prisma/client";
 
 const ACCENT = "#F59E0B";
 const ACTIVE_STATUSES: StatusPesanan[] = ["MENUNGGU", "DIPROSES"];

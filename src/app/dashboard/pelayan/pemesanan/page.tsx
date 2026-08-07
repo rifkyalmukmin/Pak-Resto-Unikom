@@ -8,7 +8,6 @@ import {
   ChefHat,
   ChevronDown,
   TableProperties,
-  X,
   Check,
 } from "lucide-react";
 import type { ApiKategori, ApiMeja } from "@/types/api";
@@ -96,8 +95,9 @@ export default function PemesananMakananPage() {
     setQty((p) => {
       const next = (p[id] ?? 0) - 1;
       if (next <= 0) {
-        const { [id]: _, ...rest } = p;
-        return rest;
+        const updated = { ...p };
+        delete updated[id];
+        return updated;
       }
       return { ...p, [id]: next };
     });

@@ -8,12 +8,6 @@ import { api, formatRp } from "@/lib/api";
 const ACCENT = "#F59E0B";
 const PAD = (n: number) => String(n).padStart(2, "0");
 
-function durationStyle(min: number): { bg: string; color: string } {
-  if (min < 10) return { bg: "#10B98125", color: "#10B981" };
-  if (min < 16) return { bg: "#37415180", color: "#9ca3af" };
-  return { bg: "#7f1d1d80", color: "#f87171" };
-}
-
 function formatTime(iso: string) {
   const d = new Date(iso);
   return `${PAD(d.getHours())}:${PAD(d.getMinutes())}`;
