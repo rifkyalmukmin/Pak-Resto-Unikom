@@ -2,9 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 import { LogOut, Tag } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ROLE_LABEL } from "@/lib/auth-routes";
+import type { Role } from "@prisma/client";
 import type { LucideIcon } from "lucide-react";
 
 const ACCENT = "#D0BCFF";
@@ -20,8 +23,9 @@ const navItems: { label: string; href: string; img?: string; Icon?: LucideIcon }
 
 export function ManagerSidebar() {
   const pathname = usePathname();
-  const router = useRouter();
+  const { data: session } = useSession();
   const [showLogout, setShowLogout] = useState(false);
+  const role = session?.user?.role as Role | undefined;
 
   return (
     <aside className="flex flex-col w-[240px] min-h-screen bg-[#151C25] border-r border-white/5 shrink-0">
@@ -72,9 +76,11 @@ export function ManagerSidebar() {
             <img src="/images/manager/user-default.webp" alt="" className="w-full h-full object-cover" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-semibold text-white truncate">Budi Santoso</p>
+            <p className="text-[13px] font-semibold text-white truncate">
+              {session?.user?.name ?? "Staff"}
+            </p>
             <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: "#D0BCFF" }}>
-              Manager
+              {role ? ROLE_LABEL[role] : "Manajer"}
             </p>
           </div>
           <button onClick={() => setShowLogout(true)} className="text-slate-500 hover:text-white transition-colors p-1">
@@ -101,7 +107,7 @@ export function ManagerSidebar() {
                 Batal
               </button>
               <button
-                onClick={() => router.push("/login")}
+                onClick={() => void signOut({ callbackUrl: "/login" })}
                 className="flex-1 py-2.5 rounded-xl font-bold text-black transition-opacity hover:opacity-90"
                 style={{ backgroundColor: ACCENT }}
               >
