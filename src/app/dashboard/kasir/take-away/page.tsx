@@ -1,58 +1,95 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Search, PlusCircle, XCircle, Check } from "lucide-react";
+import { Search, PlusCircle, XCircle, Check, RefreshCw } from "lucide-react";
+import type { ApiPesanan } from "@/types/api";
+import { api } from "@/lib/api";
+import { formatCurrency } from "@/lib/utils";
+import type { StatusPesanan } from "@prisma/client";
 
-type OrderStatus = "MENUNGGU BAYAR" | "DIPROSES" | "SELESAI";
-
-interface TakeAwayOrder {
-  id: string;
-  customer: string;
-  items: number;
-  total: number;
-  status: OrderStatus;
+function mapStatusLabel(order: ApiPesanan): string {
+  if (!order.pembayaran || order.pembayaran.status_pembayaran !== "LUNAS") {
+    if (["MENUNGGU", "DIPROSES", "SIAP"].includes(order.status_pesanan)) {
+      return "MENUNGGU BAYAR";
+    }
+  }
+  if (order.status_pesanan === "SELESAI" || order.status_pesanan === "DIBATALKAN") {
+    return "SELESAI";
+  }
+  if (order.status_pesanan === "DIPROSES" || order.status_pesanan === "SIAP") {
+    return "DIPROSES";
+  }
+  return order.status_pesanan;
 }
 
-const mockOrders: TakeAwayOrder[] = [
-  { id: "#TKW-9821", customer: "Andi Wijaya", items: 4, total: 152000, status: "MENUNGGU BAYAR" },
-  { id: "#TKW-9820", customer: "Siti Aminah", items: 2, total: 85500, status: "DIPROSES" },
-  { id: "#TKW-9819", customer: "Bambang Hero", items: 7, total: 243000, status: "SELESAI" },
-  { id: "#TKW-9818", customer: "Ratna Sari", items: 1, total: 32000, status: "SELESAI" },
-  { id: "#TKW-9817", customer: "Doni Tata", items: 3, total: 112000, status: "DIPROSES" },
-  { id: "#TKW-9816", customer: "Eka Putra", items: 5, total: 198500, status: "MENUNGGU BAYAR" },
-];
-
-const statusStyles: Record<OrderStatus, string> = {
+const statusStyles: Record<string, string> = {
   "MENUNGGU BAYAR": "bg-red-500/15 text-red-400 border border-red-500/30",
   DIPROSES: "bg-amber-500/15 text-amber-400 border border-amber-500/30",
   SELESAI: "bg-[#00B954]/15 text-[#00B954] border border-[#00B954]/30",
+  MENUNGGU: "bg-slate-500/15 text-slate-400 border border-slate-500/30",
 };
 
-const statuses = ["Semua Status", "MENUNGGU BAYAR", "DIPROSES", "SELESAI"] as const;
-
 export default function TakeAwayPage() {
+  const [orders, setOrders] = useState<ApiPesanan[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [filterStatus, setFilterStatus] = useState<string>("Semua Status");
-  const [cancelTarget, setCancelTarget] = useState<string | null>(null);
+  const [filterStatus, setFilterStatus] = useState("Semua Status");
+  const [cancelTarget, setCancelTarget] = useState<number | null>(null);
   const [showCancelSuccess, setShowCancelSuccess] = useState(false);
+  const [error, setError] = useState("");
 
-  const filtered = mockOrders.filter((o) => {
+  const loadOrders = useCallback(async () => {
+    setError("");
+    try {
+      const data = await api.getOrders({ tipe_pesanan: "TAKEAWAY" });
+      setOrders(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Gagal memuat pesanan");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadOrders();
+    const interval = setInterval(() => void loadOrders(), 15000);
+    return () => clearInterval(interval);
+  }, [loadOrders]);
+
+  const filtered = orders.filter((o) => {
+    const label = mapStatusLabel(o);
     const matchSearch =
-      o.id.toLowerCase().includes(search.toLowerCase()) ||
-      o.customer.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = filterStatus === "Semua Status" || o.status === filterStatus;
+      String(o.id_pesanan).includes(search) ||
+      o.user.nama_lengkap.toLowerCase().includes(search.toLowerCase());
+    const matchStatus = filterStatus === "Semua Status" || label === filterStatus;
     return matchSearch && matchStatus;
   });
 
-  const counts = { total: 124, menunggu: 12, diproses: 8, selesai: 104 };
+  const counts = {
+    total: orders.length,
+    menunggu: orders.filter((o) => mapStatusLabel(o) === "MENUNGGU BAYAR").length,
+    diproses: orders.filter((o) => mapStatusLabel(o) === "DIPROSES").length,
+    selesai: orders.filter((o) => mapStatusLabel(o) === "SELESAI").length,
+  };
+
+  async function handleCancel(id: number) {
+    try {
+      await api.updateOrderStatus(id, "DIBATALKAN" as StatusPesanan);
+      setCancelTarget(null);
+      setShowCancelSuccess(true);
+      await loadOrders();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Gagal membatalkan pesanan");
+      setCancelTarget(null);
+    }
+  }
 
   return (
     <div className="p-6 space-y-5">
-      {/* Stat cards */}
       <div className="grid grid-cols-4 gap-4">
         {[
-          { label: "Total Pesanan Hari Ini", value: counts.total, color: "text-white" },
+          { label: "Total Pesanan", value: counts.total, color: "text-white" },
           { label: "Menunggu Pembayaran", value: counts.menunggu, color: "text-[#4CD7F6]" },
           { label: "Sedang Diproses", value: counts.diproses, color: "text-[#FFB873]" },
           { label: "Selesai", value: counts.selesai, color: "text-[#4AE176]" },
@@ -64,98 +101,122 @@ export default function TakeAwayPage() {
         ))}
       </div>
 
-      {/* Toolbar */}
+      {error && (
+        <p className="text-red-400 bg-red-950/40 border border-red-800 rounded-lg px-4 py-2 text-sm">
+          {error}
+        </p>
+      )}
+
       <div className="flex items-center gap-3">
+        <button
+          onClick={() => void loadOrders()}
+          className="p-2.5 rounded-lg border border-white/10 text-slate-400"
+        >
+          <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+        </button>
         <div className="relative flex-1 max-w-xs">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cari No. Pesanan atau Nama..."
-            className="w-full bg-[#1E1E2E] border border-white/10 text-white placeholder-slate-500 text-sm rounded-lg pl-9 pr-4 py-2.5 focus:outline-none focus:border-white/25 transition-colors"
+            placeholder="Cari No. Pesanan..."
+            className="w-full bg-[#1E1E2E] border border-white/10 text-white text-sm rounded-lg pl-9 pr-4 py-2.5"
           />
         </div>
 
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="bg-[#1E1E2E] border border-white/10 text-slate-300 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:border-white/25 transition-colors cursor-pointer"
+          className="bg-[#1E1E2E] border border-white/10 text-slate-300 text-sm rounded-lg px-3 py-2.5"
         >
-          {statuses.map((s) => (
-            <option key={s} value={s}>{s}</option>
+          {["Semua Status", "MENUNGGU BAYAR", "DIPROSES", "SELESAI"].map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
           ))}
         </select>
 
         <Link
           href="/dashboard/kasir/take-away/tambah"
-          className="ml-auto flex items-center gap-2 bg-[#06B6D4] hover:bg-[#0597B0] text-black text-sm font-bold px-4 py-2.5 rounded-lg transition-colors"
+          className="ml-auto flex items-center gap-2 bg-[#06B6D4] text-black text-sm font-bold px-4 py-2.5 rounded-lg"
         >
-          <PlusCircle size={16} strokeWidth={2} />
+          <PlusCircle size={16} />
           Tambah Pesanan
         </Link>
       </div>
 
-      {/* Table */}
       <div className="rounded-xl border border-white/5 overflow-hidden">
         <div className="grid grid-cols-[1fr_1.5fr_1fr_1.2fr_1.2fr_0.5fr] gap-4 px-5 py-3 bg-[#292839]">
-          {["NO. PESANAN", "NAMA PELANGGAN", "JUMLAH ITEM", "TOTAL (IDR)", "STATUS", "AKSI"].map((h) => (
-            <p key={h} className="text-white text-sm font-bold uppercase tracking-wider">{h}</p>
+          {["NO. PESANAN", "PELAYAN", "JUMLAH ITEM", "TOTAL", "STATUS", "AKSI"].map((h) => (
+            <p key={h} className="text-white text-sm font-bold uppercase tracking-wider">
+              {h}
+            </p>
           ))}
         </div>
 
-        {filtered.map((order, i) => (
-          <div
-            key={order.id}
-            className="grid grid-cols-[1fr_1.5fr_1fr_1.2fr_1.2fr_0.5fr] gap-4 px-5 py-4 transition-colors"
-            style={{ backgroundColor: i % 2 === 0 ? "#1E1E2E" : "#252538" }}
-          >
-            <p className="text-sm font-normal self-center" style={{ color: "#E3E0F7" }}>{order.id}</p>
-            <p className="text-sm font-normal self-center" style={{ color: "#E3E0F7" }}>{order.customer}</p>
-            <p className="text-sm font-normal self-center" style={{ color: "#E3E0F7" }}>{order.items} Item</p>
-            <p className="text-sm font-normal tabular-nums self-center" style={{ color: "#E3E0F7" }}>
-              {order.total.toLocaleString("id-ID")}
-            </p>
-            <div className="self-center">
-              <span className={`text-[10px] font-bold px-2.5 py-1 rounded-md ${statusStyles[order.status]}`}>
-                {order.status}
-              </span>
-            </div>
-            <div className="self-center flex justify-center">
-              <button
-                onClick={() => setCancelTarget(order.id)}
-                className="text-white hover:text-red-400 transition-colors p-1 rounded-full hover:bg-red-500/10"
+        {loading && orders.length === 0 ? (
+          <p className="text-slate-500 text-center py-10">Memuat pesanan...</p>
+        ) : filtered.length === 0 ? (
+          <p className="text-slate-500 text-center py-10">Tidak ada pesanan takeaway</p>
+        ) : (
+          filtered.map((order, i) => {
+            const label = mapStatusLabel(order);
+            return (
+              <div
+                key={order.id_pesanan}
+                className="grid grid-cols-[1fr_1.5fr_1fr_1.2fr_1.2fr_0.5fr] gap-4 px-5 py-4"
+                style={{ backgroundColor: i % 2 === 0 ? "#1E1E2E" : "#252538" }}
               >
-                <XCircle size={18} strokeWidth={1.5} />
-              </button>
-            </div>
-          </div>
-        ))}
+                <p className="text-sm self-center text-[#E3E0F7]">#{order.id_pesanan}</p>
+                <p className="text-sm self-center text-[#E3E0F7]">{order.user.nama_lengkap}</p>
+                <p className="text-sm self-center text-[#E3E0F7]">
+                  {order.detail_pesanan.length} Item
+                </p>
+                <p className="text-sm self-center text-[#E3E0F7]">
+                  {formatCurrency(order.total_harga)}
+                </p>
+                <div className="self-center">
+                  <span
+                    className={`text-[10px] font-bold px-2.5 py-1 rounded-md ${
+                      statusStyles[label] ?? statusStyles.MENUNGGU
+                    }`}
+                  >
+                    {label}
+                  </span>
+                </div>
+                <div className="self-center flex justify-center">
+                  {order.status_pesanan !== "DIBATALKAN" &&
+                    order.status_pesanan !== "SELESAI" && (
+                      <button
+                        onClick={() => setCancelTarget(order.id_pesanan)}
+                        className="text-white hover:text-red-400 p-1"
+                      >
+                        <XCircle size={18} />
+                      </button>
+                    )}
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
 
-      {/* Modal konfirmasi batalkan */}
-      {cancelTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="w-[380px] rounded-2xl border border-white/10 bg-[#1E2235] p-8 flex flex-col items-center text-center space-y-5">
-            <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(239,68,68,0.15)" }}>
-              <XCircle size={28} className="text-red-400" />
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-white font-bold text-lg">Batalkan Pesanan?</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">
-                Pesanan <span className="text-white font-semibold">{cancelTarget}</span> akan dibatalkan dan dihapus dari daftar.
-              </p>
-            </div>
-            <div className="flex gap-3 w-full">
+      {cancelTarget !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="w-[380px] rounded-2xl border border-white/10 bg-[#1E2235] p-8 text-center space-y-5">
+            <XCircle size={28} className="text-red-400 mx-auto" />
+            <h3 className="text-white font-bold text-lg">Batalkan Pesanan?</h3>
+            <p className="text-slate-400 text-sm">Pesanan #{cancelTarget} akan dibatalkan.</p>
+            <div className="flex gap-3">
               <button
                 onClick={() => setCancelTarget(null)}
-                className="flex-1 py-2.5 rounded-xl border border-white/10 text-white font-semibold hover:bg-white/5 transition-colors"
+                className="flex-1 py-2.5 rounded-xl border border-white/10 text-white"
               >
                 Kembali
               </button>
               <button
-                onClick={() => { setCancelTarget(null); setShowCancelSuccess(true); }}
-                className="flex-1 py-2.5 rounded-xl font-bold text-black transition-colors"
-                style={{ backgroundColor: "#22C55E" }}
+                onClick={() => void handleCancel(cancelTarget)}
+                className="flex-1 py-2.5 rounded-xl bg-[#22C55E] text-black font-bold"
               >
                 Ya, Batalkan
               </button>
@@ -164,52 +225,20 @@ export default function TakeAwayPage() {
         </div>
       )}
 
-      {/* Modal berhasil dibatalkan */}
       {showCancelSuccess && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="w-[360px] rounded-2xl border border-white/10 bg-[#1E2235] p-8 flex flex-col items-center text-center space-y-5">
-            <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(34,197,94,0.15)" }}>
-              <Check size={28} style={{ color: "#22C55E" }} />
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-white font-bold text-lg">Pesanan Dibatalkan!</h3>
-              <p className="text-slate-400 text-sm">Pesanan berhasil dibatalkan dari sistem.</p>
-            </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="w-[360px] rounded-2xl border border-white/10 bg-[#1E2235] p-8 text-center space-y-5">
+            <Check size={28} className="text-[#22C55E] mx-auto" />
+            <h3 className="text-white font-bold text-lg">Pesanan Dibatalkan</h3>
             <button
               onClick={() => setShowCancelSuccess(false)}
-              className="w-full py-2.5 rounded-xl font-bold text-black transition-opacity hover:opacity-90"
-              style={{ backgroundColor: "#22C55E" }}
+              className="w-full py-2.5 rounded-xl bg-[#22C55E] text-black font-bold"
             >
               Tutup
             </button>
           </div>
         </div>
       )}
-
-      {/* Pagination */}
-      <div className="flex items-center justify-between text-sm text-slate-400">
-        <p>Menampilkan 1-6 dari {counts.total} pesanan</p>
-        <div className="flex items-center gap-1">
-          <button className="px-3 py-1.5 rounded-lg bg-[#1E1E2E] border border-white/10 text-slate-300 hover:bg-white/10 transition-colors">
-            Sebelumnya
-          </button>
-          {[1, 2, 3].map((p) => (
-            <button
-              key={p}
-              className={`w-8 h-8 rounded-lg text-sm font-semibold transition-colors ${
-                p === 1
-                  ? "bg-[#06B6D4] text-black"
-                  : "bg-[#1E1E2E] border border-white/10 text-slate-300 hover:bg-white/10"
-              }`}
-            >
-              {p}
-            </button>
-          ))}
-          <button className="px-3 py-1.5 rounded-lg bg-[#1E1E2E] border border-white/10 text-slate-300 hover:bg-white/10 transition-colors">
-            Selanjutnya
-          </button>
-        </div>
-      </div>
     </div>
   );
 }

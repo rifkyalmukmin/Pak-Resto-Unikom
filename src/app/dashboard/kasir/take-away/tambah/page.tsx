@@ -1,82 +1,92 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Minus, User, Check } from "lucide-react";
+import { Plus, Minus, Check } from "lucide-react";
+import type { ApiKategori } from "@/types/api";
+import { api } from "@/lib/api";
 
-interface MenuItem {
-  id: number;
-  name: string;
-  price: number;
-  category: string;
-  tag?: string;
-  image: string;
-}
-
-interface OrderItem {
-  item: MenuItem;
-  qty: number;
-}
-
-const categories = ["Semua Menu", "Main Course", "Appetizers", "Minuman", "Dessert"];
-
-const mockMenu: MenuItem[] = [
-  { id: 1, name: "Nasi Goreng Spesial", price: 35000, category: "Main Course", tag: "BEST SELLER", image: "/images/menu/nasi-goreng.png" },
-  { id: 2, name: "Ayam Goreng", price: 28000, category: "Main Course", image: "/images/menu/ayam-goreng.png" },
-  { id: 3, name: "Es Teh Lychee", price: 15000, category: "Minuman", image: "/images/menu/lychee-tea.png" },
-  { id: 4, name: "Rendang Sapi", price: 45000, category: "Main Course", image: "/images/menu/rendang-sapi.png" },
-  { id: 5, name: "Caesar Salad", price: 32000, category: "Appetizers", image: "/images/menu/caesar-salad.png" },
-  { id: 6, name: "Iced Cappuccino", price: 22000, category: "Minuman", image: "/images/menu/iced-cappucino.png" },
-  { id: 7, name: "Mix Dim Sum", price: 25000, category: "Appetizers", image: "/images/menu/mix-dim-sum.png" },
-  { id: 8, name: "Chocolate Lava", price: 30000, category: "Dessert", image: "/images/menu/chocolate-lava.png" },
-];
-
-const TAX_RATE = 0.1;
+const fmt = (n: number) => "Rp" + n.toLocaleString("id-ID");
 
 export default function TambahPesananPage() {
+  const [categories, setCategories] = useState<ApiKategori[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [activeCategory, setActiveCategory] = useState("Semua Menu");
-  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
-  const [customerName, setCustomerName] = useState("");
+  const [qty, setQty] = useState<Record<number, number>>({});
   const [showConfirm, setShowConfirm] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const filteredMenu =
+  const loadMenu = useCallback(async () => {
+    try {
+      const data = await api.getMenu();
+      setCategories(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Gagal memuat menu");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadMenu();
+  }, [loadMenu]);
+
+  const allMenu = categories.flatMap((c) =>
+    c.menu.map((m) => ({ ...m, kategori: c.nama_kategori }))
+  );
+
+  const filtered =
     activeCategory === "Semua Menu"
-      ? mockMenu
-      : mockMenu.filter((m) => m.category === activeCategory);
+      ? allMenu
+      : allMenu.filter((m) => m.kategori === activeCategory);
 
-  const addItem = (item: MenuItem) => {
-    setOrderItems((prev) => {
-      const existing = prev.find((o) => o.item.id === item.id);
-      if (existing) return prev.map((o) => (o.item.id === item.id ? { ...o, qty: o.qty + 1 } : o));
-      return [...prev, { item, qty: 1 }];
-    });
-  };
+  const cartItems = allMenu.filter((m) => (qty[m.id_menu] ?? 0) > 0);
+  const total = cartItems.reduce((s, m) => s + m.harga * (qty[m.id_menu] ?? 0), 0);
 
-  const changeQty = (id: number, delta: number) => {
-    setOrderItems((prev) =>
-      prev.map((o) => (o.item.id === id ? { ...o, qty: o.qty + delta } : o)).filter((o) => o.qty > 0)
-    );
-  };
+  async function handleSubmit() {
+    setSubmitting(true);
+    setError("");
+    try {
+      await api.createOrder({
+        tipe_pesanan: "TAKEAWAY",
+        items: cartItems.map((m) => ({
+          id_menu: m.id_menu,
+          jumlah: qty[m.id_menu] ?? 0,
+        })),
+      });
+      setQty({});
+      setShowConfirm(false);
+      setShowSuccess(true);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Gagal membuat pesanan");
+      setShowConfirm(false);
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
-  const subtotal = orderItems.reduce((sum, o) => sum + o.item.price * o.qty, 0);
-  const tax = Math.round(subtotal * TAX_RATE);
-  const total = subtotal + tax;
+  const categoryTabs = ["Semua Menu", ...categories.map((c) => c.nama_kategori)];
 
   return (
     <div className="flex h-full">
-      {/* Left — menu catalog */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Category tabs */}
-        <div className="flex gap-2 px-6 pt-5 pb-3 shrink-0 overflow-x-auto">
-          {categories.map((cat) => (
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden p-6">
+        {error && (
+          <p className="text-red-400 bg-red-950/40 border border-red-800 rounded-lg px-4 py-2 text-sm mb-4">
+            {error}
+          </p>
+        )}
+
+        <div className="flex gap-2 mb-4 overflow-x-auto">
+          {categoryTabs.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-colors ${
+              className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap ${
                 activeCategory === cat
                   ? "bg-[#22d3ee] text-black"
-                  : "bg-[#1E1E2E] text-slate-400 border border-white/5 hover:text-white"
+                  : "bg-[#1E1E2E] text-slate-400 border border-white/5"
               }`}
             >
               {cat}
@@ -84,190 +94,123 @@ export default function TambahPesananPage() {
           ))}
         </div>
 
-        {/* Menu grid */}
-        <div className="flex-1 overflow-auto px-6 pb-6 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
-          <div className="grid grid-cols-3 gap-4">
-            {filteredMenu.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => addItem(item)}
-                className="bg-[#1E1E2E] rounded-xl border border-white/5 p-4 text-left hover:border-white/15 hover:bg-[#2a2a3e] transition-all group"
+        {loading ? (
+          <p className="text-slate-500">Memuat menu...</p>
+        ) : (
+          <div className="grid grid-cols-3 gap-4 overflow-auto">
+            {filtered.map((item) => (
+              <div
+                key={item.id_menu}
+                className="bg-[#1E1E2E] rounded-xl border border-white/5 p-4"
               >
-                <div className="w-full aspect-[4/3] bg-[#2a2a3e] rounded-lg mb-3 relative overflow-hidden">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                  {item.tag && (
-                    <span className="absolute top-2 right-2 bg-[#00B954] text-black text-[11px] font-bold px-2.5 py-1 rounded-full">
-                      {item.tag}
-                    </span>
-                  )}
-                </div>
-                <p className="text-white text-sm font-semibold line-clamp-1 group-hover:text-[#22d3ee] transition-colors">
-                  {item.name}
-                </p>
-                <p className="text-[#22d3ee] text-sm font-bold mt-0.5">
-                  IDR {item.price.toLocaleString("id-ID")}
-                </p>
-              </button>
+                <p className="text-white font-semibold text-sm mb-2">{item.nama_menu}</p>
+                <p className="text-[#22d3ee] font-bold text-sm mb-3">{fmt(item.harga)}</p>
+                <button
+                  onClick={() =>
+                    setQty((p) => ({ ...p, [item.id_menu]: (p[item.id_menu] ?? 0) + 1 }))
+                  }
+                  className="w-full py-2 rounded-lg bg-[#06B6D4] text-black text-sm font-bold"
+                >
+                  Tambah
+                </button>
+              </div>
             ))}
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Right — order summary */}
-      <div className="w-[440px] border-l border-white/5 flex flex-col bg-[#1E1E2E] shrink-0">
-        <div className="p-5 border-b border-white/5 flex items-center justify-between">
-          <h3 className="text-white font-bold text-sm">Order Summary</h3>
-          <span className="bg-[#22d3ee]/15 text-[#22d3ee] text-xs font-bold px-2.5 py-1 rounded-full">
-            Take Away
-          </span>
-        </div>
-
-        {/* Customer name */}
-        <div className="px-5 py-4 border-b border-white/5">
-          <div className="flex items-center gap-3 rounded-xl px-4 py-3 border border-white/10 bg-[#1A1A2A]">
-            <User size={16} className="text-slate-400 shrink-0" />
-            <input
-              value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
-              className="flex-1 bg-transparent text-white text-sm font-medium focus:outline-none placeholder-slate-500"
-              placeholder="Nama pelanggan..."
-            />
-          </div>
-        </div>
-
-        {/* Order items */}
-        <div className="flex-1 overflow-auto px-3 py-2 space-y-1.5 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
-          {orderItems.length === 0 ? (
-            <p className="text-slate-600 text-sm text-center mt-10">Belum ada item ditambahkan</p>
+      <div className="w-[360px] border-l border-white/5 bg-[#121221] flex flex-col p-5">
+        <h3 className="text-white font-bold mb-4">Pesanan Takeaway</h3>
+        <div className="flex-1 space-y-2 overflow-auto">
+          {cartItems.length === 0 ? (
+            <p className="text-slate-500 text-sm">Belum ada item</p>
           ) : (
-            orderItems.map((o, i) => (
-              <div
-                key={o.item.id}
-                className="flex items-center gap-5 px-5 py-4 rounded-xl"
-                style={{ backgroundColor: i % 2 === 0 ? "#1A1A2A" : "#292839" }}
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="text-white text-sm font-bold leading-snug">{o.item.name}</p>
-                  <p className="text-slate-500 text-xs mt-1">IDR {o.item.price.toLocaleString("id-ID")}</p>
-                </div>
-                <div className="flex items-center shrink-0 border border-white/10 rounded-xl overflow-hidden">
+            cartItems.map((item) => (
+              <div key={item.id_menu} className="flex items-center justify-between text-sm">
+                <span className="text-white">{item.nama_menu}</span>
+                <div className="flex items-center gap-2">
                   <button
-                    onClick={() => changeQty(o.item.id, -1)}
-                    className="w-8 h-8 flex items-center justify-center text-slate-300 hover:bg-white/10 transition-colors"
+                    onClick={() =>
+                      setQty((p) => {
+                        const n = (p[item.id_menu] ?? 0) - 1;
+                        if (n <= 0) {
+                          const { [item.id_menu]: _, ...rest } = p;
+                          return rest;
+                        }
+                        return { ...p, [item.id_menu]: n };
+                      })
+                    }
                   >
-                    <Minus size={12} />
+                    <Minus size={14} className="text-slate-400" />
                   </button>
-                  <span className="text-white font-bold text-sm w-7 text-center tabular-nums border-x border-white/10">{o.qty}</span>
+                  <span className="text-white w-4 text-center">{qty[item.id_menu]}</span>
                   <button
-                    onClick={() => changeQty(o.item.id, 1)}
-                    className="w-8 h-8 flex items-center justify-center text-slate-300 hover:bg-white/10 transition-colors"
+                    onClick={() =>
+                      setQty((p) => ({ ...p, [item.id_menu]: (p[item.id_menu] ?? 0) + 1 }))
+                    }
                   >
-                    <Plus size={12} />
+                    <Plus size={14} className="text-slate-400" />
                   </button>
                 </div>
-                <p className="text-white text-sm font-semibold font-mono tabular-nums shrink-0 text-right w-28">
-                  IDR {(o.item.price * o.qty).toLocaleString("id-ID")}
-                </p>
               </div>
             ))
           )}
         </div>
-
-        {/* Totals + Actions */}
-        <div className="bg-[#292839] px-5 pt-4 pb-5 space-y-2.5">
-          <div className="flex justify-between text-sm">
-            <span className="text-slate-400">Subtotal</span>
-            <span className="text-slate-300 tabular-nums">IDR {subtotal.toLocaleString("id-ID")}</span>
+        <div className="border-t border-white/10 pt-4 mt-4">
+          <div className="flex justify-between text-white font-bold mb-4">
+            <span>Total</span>
+            <span>{fmt(total)}</span>
           </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-slate-400">Pajak (10%)</span>
-            <span className="text-slate-300 tabular-nums">IDR {tax.toLocaleString("id-ID")}</span>
-          </div>
-          <div className="flex justify-between items-center pt-2 border-t border-white/10">
-            <span className="text-white font-bold text-sm">Total Biaya</span>
-            <span className="text-[#22d3ee] font-bold text-2xl tabular-nums">
-              IDR {total.toLocaleString("id-ID")}
-            </span>
-          </div>
-          <div className="flex gap-3 pt-1">
-            <Link
-              href="/dashboard/kasir/take-away"
-              className="flex-1 py-3 rounded-xl border border-white/15 text-white text-sm font-semibold text-center hover:bg-white/5 transition-colors"
-            >
-              Batal
-            </Link>
-            <button
-              disabled={orderItems.length === 0}
-              onClick={() => setShowConfirm(true)}
-              className="flex-1 py-3 rounded-xl bg-[#22C55E] hover:bg-[#16A34A] disabled:opacity-40 disabled:cursor-not-allowed text-black text-sm font-bold transition-colors"
-            >
-              Simpan Pesanan
-            </button>
-          </div>
+          <button
+            onClick={() => cartItems.length > 0 && setShowConfirm(true)}
+            disabled={cartItems.length === 0}
+            className="w-full py-3 rounded-xl bg-[#06B6D4] text-black font-bold disabled:opacity-40"
+          >
+            Buat Pesanan
+          </button>
+          <Link
+            href="/dashboard/kasir/take-away"
+            className="block text-center text-slate-400 text-sm mt-3 hover:text-white"
+          >
+            Kembali ke daftar
+          </Link>
         </div>
       </div>
 
-      {/* Modal konfirmasi simpan */}
       {showConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="w-[400px] rounded-2xl border border-white/10 bg-[#1E2235] p-7 space-y-5">
-            <div>
-              <h3 className="text-white font-bold text-lg mb-1">Simpan Pesanan?</h3>
-              <p className="text-slate-400 text-sm">Pastikan semua item sudah benar sebelum menyimpan.</p>
-            </div>
-            <div className="bg-[#292839] rounded-xl px-4 py-3 space-y-2 text-sm">
-              {customerName && (
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Nama Pelanggan</span>
-                  <span className="text-white font-semibold">{customerName}</span>
-                </div>
-              )}
-              <div className="flex justify-between">
-                <span className="text-slate-400">Jumlah Item</span>
-                <span className="text-white">{orderItems.reduce((s, o) => s + o.qty, 0)} item</span>
-              </div>
-              <div className="flex justify-between border-t border-white/5 pt-2">
-                <span className="text-slate-400">Total</span>
-                <span className="text-[#22C55E] font-bold tabular-nums">IDR {total.toLocaleString("id-ID")}</span>
-              </div>
-            </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-[#1E2235] rounded-2xl border border-white/10 p-8 w-[380px] text-center space-y-4">
+            <h3 className="text-white font-bold text-lg">Buat Pesanan Takeaway?</h3>
+            <p className="text-slate-400 text-sm">Total: {fmt(total)}</p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowConfirm(false)}
-                className="flex-1 py-2.5 rounded-xl border border-white/10 text-white font-semibold hover:bg-white/5 transition-colors"
+                className="flex-1 py-3 rounded-xl border border-white/10 text-white"
               >
                 Batal
               </button>
               <button
-                onClick={() => { setShowConfirm(false); setShowSuccess(true); }}
-                className="flex-1 py-2.5 rounded-xl font-bold text-black transition-opacity hover:opacity-90"
-                style={{ backgroundColor: "#22C55E" }}
+                onClick={() => void handleSubmit()}
+                disabled={submitting}
+                className="flex-1 py-3 rounded-xl bg-[#06B6D4] text-black font-bold"
               >
-                Ya, Simpan
+                {submitting ? "..." : "Ya"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal berhasil disimpan */}
       {showSuccess && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="w-[360px] rounded-2xl border border-white/10 bg-[#1E2235] p-8 flex flex-col items-center text-center space-y-5">
-            <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(34,197,94,0.15)" }}>
-              <Check size={28} style={{ color: "#22C55E" }} />
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-white font-bold text-lg">Pesanan Berhasil Disimpan!</h3>
-              <p className="text-slate-400 text-sm">Pesanan take away telah ditambahkan ke sistem.</p>
-            </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-[#1E2235] rounded-2xl p-8 w-[360px] text-center space-y-4">
+            <Check className="text-[#22C55E] mx-auto" size={32} />
+            <h3 className="text-white font-bold">Pesanan Dibuat!</h3>
             <Link
               href="/dashboard/kasir/take-away"
-              className="w-full py-2.5 rounded-xl font-bold text-black text-center transition-opacity hover:opacity-90"
-              style={{ backgroundColor: "#22C55E" }}
+              className="block w-full py-3 rounded-xl bg-[#22C55E] text-black font-bold"
             >
-              Kembali ke Daftar
+              Lihat Daftar
             </Link>
           </div>
         </div>

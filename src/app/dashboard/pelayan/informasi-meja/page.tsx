@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { X, Plus, Pencil, Check, QrCode, ExternalLink } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { X, Plus, Pencil, Check, QrCode, ExternalLink, RefreshCw } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
+import { api } from "@/lib/api";
+import type { ApiMeja } from "@/types/api";
 
 type MejaStatus = "TERSEDIA" | "TERISI";
 
@@ -13,20 +15,16 @@ interface Meja {
   status: MejaStatus;
 }
 
-const initialMeja: Meja[] = [
-  { id: 1, nomor: "01", kapasitas: 4, status: "TERSEDIA" },
-  { id: 2, nomor: "02", kapasitas: 2, status: "TERISI" },
-  { id: 3, nomor: "03", kapasitas: 6, status: "TERSEDIA" },
-  { id: 4, nomor: "04", kapasitas: 4, status: "TERISI" },
-  { id: 5, nomor: "05", kapasitas: 2, status: "TERSEDIA" },
-  { id: 6, nomor: "06", kapasitas: 8, status: "TERSEDIA" },
-  { id: 7, nomor: "07", kapasitas: 4, status: "TERSEDIA" },
-  { id: 8, nomor: "08", kapasitas: 4, status: "TERISI" },
-  { id: 9, nomor: "09", kapasitas: 2, status: "TERSEDIA" },
-  { id: 10, nomor: "10", kapasitas: 4, status: "TERSEDIA" },
-  { id: 11, nomor: "11", kapasitas: 6, status: "TERISI" },
-  { id: 12, nomor: "12", kapasitas: 4, status: "TERSEDIA" },
-];
+const initialMeja: Meja[] = [];
+
+function mapMeja(m: ApiMeja): Meja {
+  return {
+    id: m.id_meja,
+    nomor: String(m.nomor_meja).padStart(2, "0"),
+    kapasitas: m.kapasitas,
+    status: m.status === "KOSONG" ? "TERSEDIA" : "TERISI",
+  };
+}
 
 const capacityOptions = [
   { value: 2, icon: "/images/pelayan/meja/1orang.png" },
@@ -46,6 +44,7 @@ type OverlayType = "konfirmasi" | "sukses-tambah" | "sukses-edit" | "konfirmasi-
 
 export default function InformasiMejaPage() {
   const [mejaList, setMejaList] = useState<Meja[]>(initialMeja);
+  const [loading, setLoading] = useState(true);
   const [modalMode, setModalMode] = useState<ModalMode>(null);
   const [editTarget, setEditTarget] = useState<Meja | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
@@ -60,6 +59,23 @@ export default function InformasiMejaPage() {
   const [kapasitasSelected, setKapasitasSelected] = useState<number | null>(4);
   const [kapasitasManual, setKapasitasManual] = useState("");
   const [useManual, setUseManual] = useState(false);
+
+  const loadTables = useCallback(async () => {
+    try {
+      const data = await api.getTables();
+      setMejaList(data.map(mapMeja));
+    } catch {
+      /* keep current list */
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadTables();
+    const interval = setInterval(() => void loadTables(), 15000);
+    return () => clearInterval(interval);
+  }, [loadTables]);
 
   const tersedia = mejaList.filter((m) => m.status === "TERSEDIA").length;
   const terisi = mejaList.filter((m) => m.status === "TERISI").length;
@@ -200,14 +216,25 @@ export default function InformasiMejaPage() {
             <span className="text-slate-400 text-sm">Terisi: <span className="text-white font-semibold">{terisi}</span></span>
           </div>
         </div>
-        <button
-          onClick={openTambah}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition-opacity hover:opacity-90"
-          style={{ backgroundColor: "#10B981", color: "#000" }}
-        >
-          <Plus size={16} strokeWidth={2.5} />
-          Tambah Meja
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => void loadTables()}
+            className="p-2.5 rounded-lg border border-white/10 text-slate-400 hover:text-white"
+            title="Refresh"
+          >
+            <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+          </button>
+          <button
+            onClick={openTambah}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition-opacity hover:opacity-90 opacity-50 cursor-not-allowed"
+            style={{ backgroundColor: "#10B981", color: "#000" }}
+            title="Kelola meja via database / manajer"
+            disabled
+          >
+            <Plus size={16} strokeWidth={2.5} />
+            Tambah Meja
+          </button>
+        </div>
       </div>
 
       {/* Grid meja */}

@@ -1,42 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Search,
-  Filter,
   Printer,
   ArrowLeft,
   Delete,
+  RefreshCw,
 } from "lucide-react";
+import type { ApiPesanan } from "@/types/api";
+import { api, mapPaymentMethodToApi } from "@/lib/api";
+import { formatCurrency, formatDate } from "@/lib/utils";
 
 type PaymentMethod = "tunai" | "debit" | "qris" | "ewallet";
-
-interface TableData {
-  id: number;
-  number: string;
-  status: "pending" | "empty";
-  invoice?: string;
-  items?: number;
-  method?: "tunai" | "transfer";
-  total?: number;
-}
-
-const mockTables: TableData[] = [
-  { id: 1, number: "08", status: "pending", invoice: "INV/2023/1029", items: 12, method: "tunai", total: 458000 },
-  { id: 2, number: "12", status: "pending", invoice: "INV/2023/1031", items: 4, method: "tunai", total: 125500 },
-  { id: 3, number: "03", status: "pending", invoice: "INV/2023/1032", items: 22, method: "tunai", total: 1120000 },
-  { id: 4, number: "15", status: "pending", invoice: "INV/2023/1035", items: 7, method: "tunai", total: 289400 },
-  { id: 5, number: "09", status: "empty" },
-  { id: 6, number: "14", status: "empty" },
-];
-
-const mockOrderItems = [
-  { qty: 2, name: "Nasi Goreng Spesial Unikom", note: "+ Telur Mata Sapi, Extra Pedas", price: 70000 },
-  { qty: 1, name: "Sate Ayam Madura (10 Tusuk)", note: "Bumbu Kacang Terpisah", price: 35000 },
-  { qty: 4, name: "Es Teh Manis Kristal", note: "Less Sugar", price: 40000 },
-];
-
-const numpadKeys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "C", "0", "DEL"];
 
 const paymentMethods: { key: PaymentMethod; label: string; icon: string }[] = [
   { key: "tunai", label: "Tunai", icon: "/images/kasir/pembayaran/tunai.png" },
@@ -45,83 +21,152 @@ const paymentMethods: { key: PaymentMethod; label: string; icon: string }[] = [
   { key: "ewallet", label: "E-Wallet", icon: "/images/kasir/pembayaran/e-wallet.png" },
 ];
 
-function formatRp(amount: number) {
-  return "Rp " + amount.toLocaleString("id-ID");
-}
+const numpadKeys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "C", "0", "DEL"];
 
 export default function KonfirmasiPembayaranPage() {
-  const [selectedTable, setSelectedTable] = useState<TableData | null>(null);
+  const [orders, setOrders] = useState<ApiPesanan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [selectedOrder, setSelectedOrder] = useState<ApiPesanan | null>(null);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
   const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
   const [paymentInput, setPaymentInput] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("tunai");
   const [search, setSearch] = useState("");
-  const [showCetakModal, setShowCetakModal] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const loadOrders = useCallback(async () => {
+    setError("");
+    try {
+      const data = await api.getOrders({
+        tipe_pesanan: "DINE_IN",
+        belum_bayar: true,
+      });
+      setOrders(
+        data.filter((o) =>
+          ["SIAP", "DIANTAR", "SELESAI"].includes(o.status_pesanan)
+        )
+      );
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Gagal memuat pesanan");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadOrders();
+    const interval = setInterval(() => void loadOrders(), 15000);
+    return () => clearInterval(interval);
+  }, [loadOrders]);
+
+  const filtered = orders.filter((o) =>
+    String(o.meja?.nomor_meja ?? "").includes(search) ||
+    String(o.id_pesanan).includes(search)
+  );
+
+  const pendingTotal = orders.reduce((s, o) => s + o.total_harga, 0);
 
   const handleNumpad = (val: string) => {
-    if (val === "C") { setPaymentInput(""); return; }
-    if (val === "DEL") { setPaymentInput((p) => p.slice(0, -1)); return; }
+    if (val === "C") {
+      setPaymentInput("");
+      return;
+    }
+    if (val === "DEL") {
+      setPaymentInput((p) => p.slice(0, -1));
+      return;
+    }
     setPaymentInput((p) => (p.length < 10 ? p + val : p));
   };
 
-  const handleConfirm = () => {
-    setShowVerifyModal(false);
-    setShowPaymentSuccess(true);
-  };
+  async function handleConfirm() {
+    if (!selectedOrder) return;
+    setSubmitting(true);
+    setError("");
+    try {
+      await api.createPayment({
+        id_pesanan: selectedOrder.id_pesanan,
+        metode_pembayaran: mapPaymentMethodToApi(paymentMethod),
+      });
+      setShowVerifyModal(false);
+      setShowPaymentSuccess(true);
+      await loadOrders();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Gagal mencatat pembayaran");
+      setShowVerifyModal(false);
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
-  // ── Detail / payment view ──────────────────────────────────────────────────
-  if (selectedTable) {
-    const total = selectedTable.total ?? 0;
-    const paid = paymentInput ? parseInt(paymentInput) : 0;
+  if (selectedOrder) {
+    const total = selectedOrder.total_harga;
+    const paid = paymentInput ? parseInt(paymentInput, 10) : 0;
     const change = paid - total;
     const methodLabel =
-      paymentMethod === "tunai" ? "Tunai" :
-      paymentMethod === "debit" ? "Debit/Kredit" :
-      paymentMethod === "qris" ? "QRIS" : "E-Wallet";
+      paymentMethod === "tunai"
+        ? "Tunai"
+        : paymentMethod === "debit"
+          ? "Debit/Kredit"
+          : paymentMethod === "qris"
+            ? "QRIS"
+            : "E-Wallet";
 
     return (
       <div className="flex h-full relative">
-
-        {/* ── LEFT: order detail ── */}
         <div className="flex-1 flex flex-col min-w-0">
           <div className="flex-1 overflow-auto p-6">
             <button
-              onClick={() => setSelectedTable(null)}
-              className="flex items-center gap-2 text-slate-400 hover:text-white text-sm mb-5 transition-colors"
+              onClick={() => {
+                setSelectedOrder(null);
+                setPaymentInput("");
+              }}
+              className="flex items-center gap-2 text-slate-400 hover:text-white text-sm mb-5"
             >
               <ArrowLeft size={15} />
               Kembali ke daftar meja
             </button>
 
+            {error && (
+              <p className="text-red-400 bg-red-950/40 border border-red-800 rounded-lg px-4 py-2 text-sm mb-4">
+                {error}
+              </p>
+            )}
+
             <div className="bg-[#1E1E2E] rounded-xl border border-white/5 p-6">
               <div className="flex items-start justify-between mb-6">
                 <div>
                   <h3 className="text-white text-xl font-bold">
-                    Meja {selectedTable.number} • 4 Pelanggan
+                    Meja {selectedOrder.meja?.nomor_meja ?? "-"} • Pesanan #
+                    {selectedOrder.id_pesanan}
                   </h3>
-                  <p className="text-slate-400 text-sm mt-1">Order dibuat pada 19:42 WIB</p>
+                  <p className="text-slate-400 text-sm mt-1">
+                    {formatDate(selectedOrder.waktu_pesanan)}
+                  </p>
                 </div>
-                <span className="bg-amber-500/15 text-amber-400 text-xs font-bold px-3 py-1.5 rounded-full border border-amber-500/30 tracking-wide">
+                <span className="bg-amber-500/15 text-amber-400 text-xs font-bold px-3 py-1.5 rounded-full border border-amber-500/30">
                   MENUNGGU PEMBAYARAN
                 </span>
               </div>
 
               <div className="space-y-1.5">
-                {mockOrderItems.map((item, i) => (
+                {selectedOrder.detail_pesanan.map((item, i) => (
                   <div
-                    key={i}
+                    key={item.id_detail}
                     className="flex items-center gap-4 px-3 py-3 rounded-xl"
                     style={{ backgroundColor: i % 2 === 0 ? "#1A1A2A" : "transparent" }}
                   >
                     <div className="w-10 h-10 bg-[#2a2a3e] rounded-lg flex items-center justify-center text-sm font-bold text-[#22d3ee] shrink-0">
-                      {item.qty}x
+                      {item.jumlah}x
                     </div>
                     <div className="flex-1">
-                      <p className="text-white font-medium text-sm">{item.name}</p>
-                      <p className="text-slate-500 text-xs mt-0.5">{item.note}</p>
+                      <p className="text-white font-medium text-sm">{item.menu.nama_menu}</p>
+                      {item.catatan && (
+                        <p className="text-slate-500 text-xs mt-0.5">{item.catatan}</p>
+                      )}
                     </div>
-                    <p className="text-slate-300 text-sm font-mono tabular-nums">
-                      Rp {item.price.toLocaleString("id-ID")}
+                    <p className="text-slate-300 text-sm font-mono">
+                      {formatCurrency(item.subtotal)}
                     </p>
                   </div>
                 ))}
@@ -129,57 +174,44 @@ export default function KonfirmasiPembayaranPage() {
             </div>
           </div>
 
-          {/* Payment method tabs — pinned to bottom of left panel */}
           <div className="border-t border-white/5 p-4 shrink-0">
             <div className="grid grid-cols-4 gap-3">
-              {paymentMethods.map(({ key, label, icon }) => {
-                const isActive = paymentMethod === key;
-                return (
-                  <button
-                    key={key}
-                    onClick={() => setPaymentMethod(key)}
-                    className={`flex flex-col items-center gap-2 py-3.5 rounded-xl border transition-all ${
-                      isActive
-                        ? "border-[#4CD7F6] bg-[#4CD7F6]/10"
-                        : "border-white/8 bg-[#1E1E2E] hover:border-white/15"
-                    }`}
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={icon}
-                      alt={label}
-                      width={22}
-                      height={22}
-                      style={{ filter: isActive ? "none" : "brightness(0) invert(1)" }}
-                    />
-                    <span className={`text-xs leading-tight ${isActive ? "text-white font-bold" : "text-slate-400"}`}>{label}</span>
-                  </button>
-                );
-              })}
+              {paymentMethods.map(({ key, label, icon }) => (
+                <button
+                  key={key}
+                  onClick={() => setPaymentMethod(key)}
+                  className={`flex flex-col items-center gap-2 py-3.5 rounded-xl border ${
+                    paymentMethod === key
+                      ? "border-[#4CD7F6] bg-[#4CD7F6]/10"
+                      : "border-white/8 bg-[#1E1E2E]"
+                  }`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={icon} alt={label} width={22} height={22} />
+                  <span className="text-xs">{label}</span>
+                </button>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* ── RIGHT: payment panel ── */}
         <div className="w-[300px] border-l border-white/5 flex flex-col bg-[#121221] shrink-0">
           <div className="px-5 pt-5 pb-4 border-b border-white/5">
             <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-widest mb-1.5">
               Jumlah Tagihan
             </p>
-            <p className="text-[#00B954] text-3xl font-bold tabular-nums">
-              {formatRp(total)}
-            </p>
+            <p className="text-[#00B954] text-3xl font-bold">{formatCurrency(total)}</p>
           </div>
 
           <div className="px-5 pt-4 pb-3">
             <div className="bg-[#1E1E2E] rounded-xl border border-white/5 px-4 py-3">
               <p className="text-slate-400 text-xs mb-1">Dibayar ({methodLabel})</p>
-              <p className="text-[#22d3ee] text-2xl font-bold tabular-nums">
+              <p className="text-[#22d3ee] text-2xl font-bold">
                 Rp {paid > 0 ? paid.toLocaleString("id-ID") : "0"}
               </p>
               {paymentMethod === "tunai" && paid >= total && paid > 0 && (
                 <p className="text-[#00B954] text-xs mt-1.5">
-                  Kembalian: Rp {change.toLocaleString("id-ID")}
+                  Kembalian: {formatCurrency(change)}
                 </p>
               )}
             </div>
@@ -191,7 +223,7 @@ export default function KonfirmasiPembayaranPage() {
                 <button
                   key={k}
                   onClick={() => handleNumpad(k)}
-                  className="h-[52px] bg-[#1E1E2E] hover:bg-[#2a2a3e] active:scale-95 text-white font-semibold rounded-xl border border-white/5 transition-all text-sm flex items-center justify-center"
+                  className="h-[52px] bg-[#1E1E2E] text-white font-semibold rounded-xl border border-white/5 text-sm flex items-center justify-center"
                 >
                   {k === "DEL" ? <Delete size={17} /> : k}
                 </button>
@@ -204,158 +236,60 @@ export default function KonfirmasiPembayaranPage() {
           <div className="px-5 pb-5">
             <button
               onClick={() => setShowVerifyModal(true)}
-              className="w-full bg-[#00B954] hover:bg-[#009944] active:scale-[0.98] text-black font-bold py-4 rounded-xl transition-all text-sm uppercase tracking-wider"
+              disabled={paymentMethod === "tunai" && paid < total}
+              className="w-full bg-[#00B954] text-black font-bold py-4 rounded-xl disabled:opacity-40"
             >
               Konfirmasi Pembayaran
             </button>
           </div>
         </div>
 
-        {/* ── Verification modal ── */}
         {showVerifyModal && (
           <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-            <div className="bg-[#1E1E2E] rounded-2xl border border-white/10 w-[400px] overflow-hidden shadow-2xl">
-              <div className="h-1 bg-[#00B954]" />
-
-              <div className="px-8 pt-8 pb-6">
-                <div className="flex flex-col items-center text-center mb-6">
-                  <div className="bg-[#22C55E]/10 rounded-2xl p-5 flex items-center justify-center mb-4">
-                    <div className="w-11 h-11 bg-[#00B954] rounded-full flex items-center justify-center shadow-md shadow-[#00B954]/30">
-                      <span className="text-black text-xl font-bold leading-none">?</span>
-                    </div>
-                  </div>
-                  <h3 className="text-white text-xl font-bold mb-2">Konfirmasi Verifikasi</h3>
-                  <p className="text-slate-400 text-sm leading-relaxed">
-                    Apakah Anda yakin ingin memverifikasi transaksi ini?
-                  </p>
-                </div>
-
-                <div className="bg-[#2a2a3e] rounded-xl p-4 mb-6 space-y-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-widest mb-1">
-                        Total Pembayaran
-                      </p>
-                      <p className="text-[#00B954] text-xl font-bold tabular-nums">
-                        {formatRp(total)}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-widest mb-1">
-                        ID Transaksi
-                      </p>
-                      <p className="text-white font-semibold">TX-9021</p>
-                    </div>
-                  </div>
-                  {paymentMethod === "tunai" && paid > 0 && (
-                    <>
-                      <div className="border-t border-white/5 pt-3 flex justify-between items-center">
-                        <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-widest">Dibayar</p>
-                        <p className="text-[#22d3ee] font-bold tabular-nums">{formatRp(paid)}</p>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-widest">Kembalian</p>
-                        <p className={`font-bold tabular-nums ${change >= 0 ? "text-[#00B954]" : "text-red-400"}`}>
-                          {change >= 0 ? formatRp(change) : "Kurang " + formatRp(Math.abs(change))}
-                        </p>
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setShowVerifyModal(false)}
-                    className="flex-1 py-3 rounded-xl border border-white/10 text-white font-semibold hover:bg-white/5 transition-colors"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    onClick={handleConfirm}
-                    className="flex-1 py-3 rounded-xl bg-[#00B954] hover:bg-[#009944] text-black font-bold transition-colors"
-                  >
-                    Ya, Verifikasi
-                  </button>
-                </div>
-              </div>
-
-              <div className="bg-[#333344] px-8 py-3 text-center">
-                <p className="text-slate-500 text-[10px] tracking-[0.25em] font-medium uppercase">
-                  Pak Resto Unikom Security Protocol
-                </p>
+            <div className="bg-[#1E1E2E] rounded-2xl border border-white/10 w-[400px] p-8">
+              <h3 className="text-white text-xl font-bold mb-4 text-center">
+                Konfirmasi Pembayaran?
+              </h3>
+              <p className="text-[#00B954] text-2xl font-bold text-center mb-6">
+                {formatCurrency(total)}
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowVerifyModal(false)}
+                  className="flex-1 py-3 rounded-xl border border-white/10 text-white"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={() => void handleConfirm()}
+                  disabled={submitting}
+                  className="flex-1 py-3 rounded-xl bg-[#00B954] text-black font-bold"
+                >
+                  {submitting ? "Memproses..." : "Ya, Verifikasi"}
+                </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* ── Payment Success modal ── */}
         {showPaymentSuccess && (
           <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-            <div className="bg-[#1E1E2E] rounded-2xl border border-white/10 w-[380px] overflow-hidden shadow-2xl">
-              <div className="h-1 bg-[#22C55E]" />
-              <div className="px-8 py-8 flex flex-col items-center text-center space-y-5">
-                <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(34,197,94,0.15)" }}>
-                  <Printer size={30} style={{ color: "#22C55E" }} />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-white font-bold text-xl">Pembayaran Berhasil!</h3>
-                  <p className="text-slate-400 text-sm leading-relaxed">
-                    Meja <span className="text-white font-semibold">{selectedTable?.number}</span> telah berhasil dikonfirmasi.
-                  </p>
-                </div>
-                <div className="bg-[#2a2a3e] rounded-xl px-5 py-3 w-full text-sm space-y-1.5">
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Total Dibayar</span>
-                    <span className="text-[#22C55E] font-bold">{formatRp(selectedTable?.total ?? 0)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Metode</span>
-                    <span className="text-white font-semibold capitalize">{paymentMethod}</span>
-                  </div>
-                </div>
-                <div className="flex gap-3 w-full">
-                  <button
-                    onClick={() => setShowCetakModal(true)}
-                    className="flex-1 py-2.5 rounded-xl border border-white/10 text-white font-semibold hover:bg-white/5 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Printer size={14} />
-                    Cetak Struk
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowPaymentSuccess(false);
-                      setSelectedTable(null);
-                      setPaymentInput("");
-                      setPaymentMethod("tunai");
-                    }}
-                    className="flex-1 py-2.5 rounded-xl font-bold text-black transition-opacity hover:opacity-90"
-                    style={{ backgroundColor: "#22C55E" }}
-                  >
-                    Selesai
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ── Cetak Struk modal ── */}
-        {showCetakModal && (
-          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[60]">
-            <div className="bg-[#1E1E2E] rounded-2xl border border-white/10 w-[360px] p-8 flex flex-col items-center text-center space-y-5">
-              <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(34,197,94,0.15)" }}>
-                <Printer size={26} style={{ color: "#22C55E" }} />
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-white font-bold text-lg">Struk Berhasil Dicetak!</h3>
-                <p className="text-slate-400 text-sm">Struk pembayaran telah dikirim ke printer kasir.</p>
-              </div>
+            <div className="bg-[#1E1E2E] rounded-2xl border border-white/10 w-[380px] p-8 text-center space-y-5">
+              <Printer size={30} className="text-[#22C55E] mx-auto" />
+              <h3 className="text-white font-bold text-xl">Pembayaran Berhasil!</h3>
+              <p className="text-slate-400 text-sm">
+                Meja {selectedOrder.meja?.nomor_meja} telah lunas.
+              </p>
               <button
-                onClick={() => setShowCetakModal(false)}
-                className="w-full py-2.5 rounded-xl font-bold text-black transition-opacity hover:opacity-90"
-                style={{ backgroundColor: "#22C55E" }}
+                onClick={() => {
+                  setShowPaymentSuccess(false);
+                  setSelectedOrder(null);
+                  setPaymentInput("");
+                  setPaymentMethod("tunai");
+                }}
+                className="w-full py-3 rounded-xl bg-[#22C55E] text-black font-bold"
               >
-                OK
+                Selesai
               </button>
             </div>
           </div>
@@ -364,150 +298,97 @@ export default function KonfirmasiPembayaranPage() {
     );
   }
 
-  // ── List view ──────────────────────────────────────────────────────────────
   return (
     <div className="p-6 space-y-5">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-white text-2xl font-bold">Konfirmasi Pembayaran</h1>
-          <p className="text-slate-400 text-sm mt-1 flex items-center gap-1.5">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/kasir/konten/icon-jam.png" alt="" width={13} height={13} className="opacity-60" />
-            Data diperbarui otomatis • 12 meja menunggu pembayaran
+          <p className="text-slate-400 text-sm mt-1">
+            {orders.length} pesanan menunggu pembayaran
           </p>
         </div>
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => void loadOrders()}
+            className="p-2.5 rounded-lg border border-white/10 text-slate-400 hover:text-white"
+          >
+            <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+          </button>
           <div className="relative">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Cari nomor meja..."
-              className="bg-[#1E1E2E] border border-white/10 text-white placeholder-slate-500 text-sm rounded-lg pl-9 pr-4 py-2.5 w-52 focus:outline-none focus:border-white/25 transition-colors"
+              className="bg-[#1E1E2E] border border-white/10 text-white text-sm rounded-lg pl-9 pr-4 py-2.5 w-52"
             />
           </div>
-          <button className="flex items-center gap-2 bg-[#1E1E2E] border border-white/10 text-slate-300 text-sm px-4 py-2.5 rounded-lg hover:bg-[#2a2a3e] transition-colors">
-            <Filter size={14} />
-            Filter
-          </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-4">
-        {mockTables.map((table) => {
-          if (table.status === "empty") {
-            return (
-              <div key={table.id} className="bg-[#1E1E2E] rounded-xl border border-white/5 p-6 flex flex-col items-center justify-center min-h-[228px]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/images/kasir/konten/icon-meja.png" alt="" width={32} height={32} className="opacity-30 mb-3" />
-                <p className="text-slate-600 text-sm text-center leading-relaxed">
-                  Meja Kosong /<br />Pesanan Aktif
-                </p>
-              </div>
-            );
-          }
+      {error && (
+        <p className="text-red-400 bg-red-950/40 border border-red-800 rounded-lg px-4 py-2 text-sm">
+          {error}
+        </p>
+      )}
 
-          return (
-            <div key={table.id} className="bg-[#1E1E2E] rounded-xl border border-white/5 p-5 flex flex-col gap-3.5">
+      {loading && orders.length === 0 ? (
+        <p className="text-slate-500 text-center py-12">Memuat pesanan...</p>
+      ) : filtered.length === 0 ? (
+        <p className="text-slate-500 text-center py-12">Tidak ada pesanan menunggu pembayaran</p>
+      ) : (
+        <div className="grid grid-cols-4 gap-4">
+          {filtered.map((order) => (
+            <div
+              key={order.id_pesanan}
+              className="bg-[#1E1E2E] rounded-xl border border-white/5 p-5 flex flex-col gap-3.5"
+            >
               <div className="flex items-start justify-between">
-                <div className="bg-[#06B6D4]/10 border border-[#4CD7F6]/20 rounded-[4px] px-3 py-2">
-                  <p className="text-[#4CD7F6] text-[9px] font-bold uppercase tracking-widest">MEJA</p>
-                  <p className="text-white text-[32px] font-bold leading-none mt-0.5">
-                    {table.number.padStart(2, "0")}
+                <div className="bg-[#06B6D4]/10 border border-[#4CD7F6]/20 rounded px-3 py-2">
+                  <p className="text-[#4CD7F6] text-[9px] font-bold uppercase">MEJA</p>
+                  <p className="text-white text-[32px] font-bold leading-none">
+                    {String(order.meja?.nomor_meja ?? "-").padStart(2, "0")}
                   </p>
                 </div>
-                <div className="text-right">
-                  <span className="inline-flex items-center gap-1 bg-amber-500/15 text-amber-400 text-[9px] font-bold px-2.5 py-1 rounded-full border border-amber-500/25">
-                    <span className="w-1.5 h-1.5 bg-amber-400 rounded-full" />
-                    PENDING
-                  </span>
-                  <p className="text-slate-600 text-[9px] mt-1.5 font-mono">{table.invoice}</p>
-                </div>
+                <span className="bg-amber-500/15 text-amber-400 text-[9px] font-bold px-2.5 py-1 rounded-full">
+                  {order.status_pesanan}
+                </span>
               </div>
 
               <div className="space-y-1.5 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Item Pesanan</span>
-                  <span className="text-white font-semibold">{table.items} Items</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-400">Metode</span>
-                  <span className="text-white font-semibold flex items-center gap-1.5">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={table.method === "tunai" ? "/images/kasir/konten/icon-tunai.png" : "/images/kasir/konten/icon-transfer.png"}
-                      alt=""
-                      width={13}
-                      height={13}
-                      className="opacity-60"
-                    />
-                    {table.method === "tunai" ? "Tunai" : "Transfer"}
+                  <span className="text-slate-400">Item</span>
+                  <span className="text-white font-semibold">
+                    {order.detail_pesanan.length} Items
                   </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Pesanan</span>
+                  <span className="text-white font-semibold">#{order.id_pesanan}</span>
                 </div>
               </div>
 
               <div>
                 <p className="text-slate-400 text-xs mb-0.5">Total Tagihan</p>
-                <p className="text-[#00B954] text-xl font-bold tabular-nums">
-                  {formatRp(table.total!)}
+                <p className="text-[#00B954] text-xl font-bold">
+                  {formatCurrency(order.total_harga)}
                 </p>
               </div>
 
-              <div className="space-y-2 mt-auto">
-                <button
-                  onClick={() => setSelectedTable(table)}
-                  className="w-full bg-[#00B954] hover:bg-[#009944] text-black text-sm font-semibold py-2.5 rounded-lg flex items-center justify-center gap-2 transition-colors"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/images/kasir/konten/icon-konfirmasi.png" alt="" width={14} height={14} style={{ filter: "brightness(0)" }} />
-                  Konfirmasi Bayar
-                </button>
-                <button
-                  onClick={() => setShowCetakModal(true)}
-                  className="w-full border border-white/10 text-slate-300 text-sm py-2.5 rounded-lg flex items-center justify-center gap-2 hover:bg-white/5 transition-colors"
-                >
-                  <Printer size={13} />
-                  Cetak Struk
-                </button>
-              </div>
+              <button
+                onClick={() => setSelectedOrder(order)}
+                className="w-full bg-[#00B954] text-black text-sm font-semibold py-2.5 rounded-lg mt-auto"
+              >
+                Konfirmasi Bayar
+              </button>
             </div>
-          );
-        })}
-      </div>
-
-      <div className="grid grid-cols-3 gap-4">
-        <div className="bg-[#1E1E2E] rounded-xl border border-white/5 p-5 flex items-center gap-4">
-          <div className="w-12 h-12 bg-[#0e7490]/20 rounded-xl flex items-center justify-center shrink-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/kasir/konten/icon-estimasi.png" alt="" width={24} height={24} />
-          </div>
-          <div>
-            <p className="text-slate-400 text-xs mb-1">Estimasi Pendapatan Pending</p>
-            <p className="text-white text-xl font-bold tabular-nums">Rp 1.992.900</p>
-          </div>
+          ))}
         </div>
+      )}
 
-        <div className="bg-[#1E1E2E] rounded-xl border border-white/5 p-5 flex items-center gap-4">
-          <div className="w-12 h-12 bg-[#00B954]/15 rounded-xl flex items-center justify-center shrink-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/kasir/konten/icon-konfirmasi.png" alt="" width={24} height={24} />
-          </div>
-          <div>
-            <p className="text-slate-400 text-xs mb-1">Meja Terkonfirmasi (Hari ini)</p>
-            <p className="text-white text-xl font-bold">42 Meja</p>
-          </div>
-        </div>
-
-        <div className="bg-[#1E1E2E] rounded-xl border border-white/5 p-5 flex items-center gap-4">
-          <div className="w-12 h-12 bg-amber-500/15 rounded-xl flex items-center justify-center shrink-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/kasir/konten/icon-rata-waktu.png" alt="" width={24} height={24} />
-          </div>
-          <div>
-            <p className="text-slate-400 text-xs mb-1">Rata-rata Waktu Pembayaran</p>
-            <p className="text-white text-xl font-bold">8.5 Menit</p>
-          </div>
-        </div>
+      <div className="bg-[#1E1E2E] rounded-xl border border-white/5 p-5">
+        <p className="text-slate-400 text-xs mb-1">Estimasi Pendapatan Pending</p>
+        <p className="text-white text-xl font-bold">{formatCurrency(pendingTotal)}</p>
       </div>
     </div>
   );

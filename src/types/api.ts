@@ -1,0 +1,86 @@
+import type {
+  MetodePembayaran,
+  StatusMeja,
+  StatusPesanan,
+  TipePesanan,
+} from "@prisma/client";
+
+export interface ApiMenu {
+  id_menu: number;
+  id_kategori: number;
+  nama_menu: string;
+  deskripsi: string | null;
+  harga: number;
+  status: string;
+  gambar: string | null;
+}
+
+export interface ApiKategori {
+  id_kategori: number;
+  nama_kategori: string;
+  deskripsi: string | null;
+  warna: string | null;
+  jumlah_menu: number;
+  aktif: boolean;
+  menu: ApiMenu[];
+}
+
+export interface ApiMeja {
+  id_meja: number;
+  nomor_meja: number;
+  kapasitas: number;
+  kode_qr: string;
+  status: StatusMeja;
+}
+
+export interface ApiDetailPesanan {
+  id_detail: number;
+  id_menu: number;
+  id_pesanan: number;
+  jumlah: number;
+  catatan: string | null;
+  subtotal: number;
+  menu: ApiMenu;
+}
+
+export interface ApiPesanan {
+  id_pesanan: number;
+  id_user: number;
+  id_meja: number | null;
+  tipe_pesanan: TipePesanan;
+  waktu_pesanan: string;
+  status_pesanan: StatusPesanan;
+  total_harga: number;
+  detail_pesanan: ApiDetailPesanan[];
+  meja: ApiMeja | null;
+  user: {
+    id_user: number;
+    nama_lengkap: string;
+    username: string;
+    role: string;
+  };
+  pembayaran: ApiPembayaran | null;
+}
+
+export interface ApiPembayaran {
+  id_pembayaran: number;
+  id_user: number;
+  id_pesanan: number;
+  metode_pembayaran: MetodePembayaran;
+  waktu_pembayaran: string;
+  total: number;
+  status_pembayaran: string;
+  pesanan?: ApiPesanan;
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
+export interface CreateOrderItem {
+  id_menu: number;
+  jumlah: number;
+  catatan?: string;
+}
