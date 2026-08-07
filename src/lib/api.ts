@@ -2,6 +2,7 @@ import type {
   ApiBahanBaku,
   ApiKategori,
   ApiLaporanPendapatan,
+  ApiLaporanTren,
   ApiMeja,
   ApiMenu,
   ApiPembayaran,
@@ -121,6 +122,19 @@ export const api = {
     return request<ApiLaporanPendapatan>(
       `/api/reports/pendapatan${qs ? `?${qs}` : ""}`
     );
+  },
+
+  getLaporanTren: (params?: {
+    period?: "mingguan" | "bulanan" | "kuartalan";
+    from?: string;
+    to?: string;
+  }) => {
+    const q = new URLSearchParams();
+    if (params?.period) q.set("period", params.period);
+    if (params?.from) q.set("from", params.from);
+    if (params?.to) q.set("to", params.to);
+    const qs = q.toString();
+    return request<ApiLaporanTren>(`/api/reports/tren${qs ? `?${qs}` : ""}`);
   },
 
   getUsers: (params?: { role?: Role | string }) => {

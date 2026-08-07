@@ -120,11 +120,52 @@ export interface ApiUser {
   role: string;
 }
 
-export interface ApiUser {
-  id_user: number;
-  nama_lengkap: string;
-  username: string;
-  role: string;
+export interface ApiTrenMenu {
+  id_menu: number;
+  nama_menu: string;
+  id_kategori: number;
+  nama_kategori: string;
+  warna: string | null;
+  qty: number;
+  revenue: number;
+}
+
+export interface ApiTrenKategori {
+  id_kategori: number;
+  nama_kategori: string;
+  warna: string | null;
+  qty: number;
+  revenue: number;
+}
+
+export interface ApiTrenPeak {
+  label: string;
+  start: number;
+  end: number;
+  count: number;
+}
+
+export interface ApiLaporanTren {
+  periode: { from: string; to: string; period: string };
+  hari_ini: {
+    total_pendapatan: number;
+    total_transaksi: number;
+    rata_rata: number;
+    perubahan_pendapatan_pct: number | null;
+    perubahan_transaksi_pct: number | null;
+    top_menu: ApiTrenMenu | null;
+  };
+  ringkasan: {
+    total_pendapatan: number;
+    total_transaksi: number;
+    rata_rata: number;
+    perubahan_pendapatan_pct: number | null;
+    perubahan_transaksi_pct: number | null;
+  };
+  by_kategori: ApiTrenKategori[];
+  by_kategori_prev: ApiTrenKategori[];
+  top_menu: ApiTrenMenu[];
+  peaks: ApiTrenPeak[];
 }
 
 export interface ApiResponse<T> {
