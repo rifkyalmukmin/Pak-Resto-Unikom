@@ -288,8 +288,8 @@ export function formatRp(n: number): string {
   return `Rp ${n.toLocaleString("id-ID")}`;
 }
 
-export function orderElapsed(waktu_pesanan: string): string {
-  const diff = Date.now() - new Date(waktu_pesanan).getTime();
+export function orderElapsed(waktu_pesanan: string, now: number = Date.now()): string {
+  const diff = Math.max(0, now - new Date(waktu_pesanan).getTime());
   const mins = Math.floor(diff / 60000);
   const secs = Math.floor((diff % 60000) / 1000);
   return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;

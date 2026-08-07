@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Check, CheckCircle2, Circle, PlusCircle, RefreshCw } from "lucide-react";
 import type { ApiPesanan } from "@/types/api";
 import { api, orderElapsed } from "@/lib/api";
+import { useLiveClock } from "@/hooks/use-live-clock";
 import type { StatusPesanan, TipePesanan } from "@prisma/client";
 
 const ACCENT = "#F59E0B";
@@ -25,6 +26,7 @@ export default function PesananAktifPage() {
   const [successId, setSuccessId] = useState<number | null>(null);
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
   const [updating, setUpdating] = useState<number | null>(null);
+  const now = useLiveClock();
 
   const loadOrders = useCallback(async () => {
     setError("");
@@ -176,7 +178,7 @@ export default function PesananAktifPage() {
                     </div>
                   </div>
                   <span className="font-mono text-lg font-bold" style={{ color: headerText }}>
-                    {orderElapsed(order.waktu_pesanan)}
+                    {orderElapsed(order.waktu_pesanan, now)}
                   </span>
                 </div>
 

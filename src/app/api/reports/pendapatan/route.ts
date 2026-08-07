@@ -17,6 +17,19 @@ function toDateKey(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
+function daysAgo(n: number): Date {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - n);
+  return d;
+}
+
+function endOfToday(): Date {
+  const d = new Date();
+  d.setHours(23, 59, 59, 999);
+  return d;
+}
+
 function formatTanggalId(isoDate: string): string {
   const [y, m, day] = isoDate.split("-").map(Number);
   const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
@@ -30,16 +43,9 @@ export async function GET(request: Request) {
 
   try {
     const { searchParams } = new URL(request.url);
-    const now = new Date();
-    const defaultFrom = new Date(now);
-    defaultFrom.setDate(defaultFrom.getDate() - 29);
 
-    const from =
-      parseDateParam(searchParams.get("from")) ??
-      new Date(defaultFrom.toISOString().slice(0, 10) + "T00:00:00.000");
-    const to =
-      parseDateParam(searchParams.get("to"), true) ??
-      new Date(now.toISOString().slice(0, 10) + "T23:59:59.999");
+    const from = parseDateParam(searchParams.get("from")) ?? daysAgo(29);
+    const to = parseDateParam(searchParams.get("to"), true) ?? endOfToday();
 
     if (from > to) {
       return NextResponse.json(
