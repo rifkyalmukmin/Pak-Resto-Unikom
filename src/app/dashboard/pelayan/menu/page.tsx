@@ -195,7 +195,7 @@ export default function KatalogMenuPage() {
             onClick={() => setViewItem(null)}
           />
           <div
-            className="relative w-[480px] rounded-2xl overflow-hidden border shadow-2xl z-10"
+            className="relative w-full max-w-[480px] mx-4 rounded-2xl overflow-hidden border shadow-2xl z-10"
             style={{ borderColor: "#3C4A42" }}
           >
             <div className="relative w-full aspect-[16/9] overflow-hidden">

@@ -108,7 +108,7 @@ export function DateRangePicker({ iconSrc, onChange }: Props) {
       {/* Dropdown */}
       {open && (
         <div
-          className="absolute right-0 top-11 z-50 rounded-2xl border p-5 w-[280px] shadow-2xl"
+          className="absolute right-0 top-11 z-50 rounded-2xl border p-5 w-[280px] max-w-[85vw] shadow-2xl"
           style={{ backgroundColor: "#151C25", borderColor: "rgba(255,255,255,0.1)" }}
         >
           {/* Month nav */}

@@ -41,12 +41,12 @@ export default function KeranjangPage() {
     return (
       <div className="min-h-screen font-sans" style={{ backgroundColor: "#F8F9FF" }}>
         <nav className="sticky top-0 z-40 border-b border-stone-100 shadow-sm" style={{ backgroundColor: "#F8F9FF" }}>
-          <div className="max-w-6xl mx-auto px-6 h-[60px] flex items-center justify-between gap-6">
-            <div className="flex items-center gap-3">
-              <button onClick={() => router.back()} className="p-1.5 hover:bg-stone-100 rounded-full transition-colors">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 h-[60px] flex items-center justify-between gap-3 sm:gap-6">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <button onClick={() => router.back()} className="p-1.5 hover:bg-stone-100 rounded-full transition-colors shrink-0">
                 <ArrowLeft size={18} className="text-stone-700" />
               </button>
-              <Link href="/pesan" className="font-playfair text-lg font-bold text-amber-900">
+              <Link href="/pesan" className="font-playfair text-[15px] sm:text-lg font-bold text-amber-900 truncate">
                 Pak Resto UNIKOM
               </Link>
             </div>
@@ -81,12 +81,12 @@ export default function KeranjangPage() {
     <div className="min-h-screen font-sans" style={{ backgroundColor: "#F8F9FF" }}>
       {/* Navbar */}
       <nav className="sticky top-0 z-40 border-b border-stone-100 shadow-sm" style={{ backgroundColor: "#F8F9FF" }}>
-        <div className="max-w-6xl mx-auto px-6 h-[60px] flex items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <button onClick={() => router.back()} className="p-1.5 hover:bg-stone-100 rounded-full transition-colors">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-[60px] flex items-center justify-between gap-3 sm:gap-6">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <button onClick={() => router.back()} className="p-1.5 hover:bg-stone-100 rounded-full transition-colors shrink-0">
               <ArrowLeft size={18} className="text-stone-700" />
             </button>
-            <Link href="/pesan" className="font-playfair text-lg font-bold text-amber-900">
+            <Link href="/pesan" className="font-playfair text-[15px] sm:text-lg font-bold text-amber-900 truncate">
               Pak Resto UNIKOM
             </Link>
           </div>

@@ -204,7 +204,7 @@ export default function WaiterBerandaPage() {
 
       {(overlay === "konfirmasi-ambil" || overlay === "konfirmasi-selesai") && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60">
-          <div className="w-[420px] rounded-2xl border border-white/10 px-8 py-8 bg-[#1E2235]">
+          <div className="w-full max-w-[420px] mx-4 rounded-2xl border border-white/10 px-8 py-8 bg-[#1E2235]">
             <InfoIcon />
             <h3 className="text-white font-bold text-lg mb-2">
               {action === "ambil" ? "Konfirmasi Ambil Pesanan" : "Konfirmasi Selesai"}
@@ -237,7 +237,7 @@ export default function WaiterBerandaPage() {
 
       {(overlay === "sukses-ambil" || overlay === "sukses-selesai") && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60">
-          <div className="w-[420px] rounded-2xl border border-white/10 px-8 py-8 bg-[#1E2235]">
+          <div className="w-full max-w-[420px] mx-4 rounded-2xl border border-white/10 px-8 py-8 bg-[#1E2235]">
             <SuccessIcon />
             <h3 className="text-white font-bold text-lg mb-2">
               {overlay === "sukses-ambil" ? "Pesanan Diambil!" : "Pesanan Selesai!"}

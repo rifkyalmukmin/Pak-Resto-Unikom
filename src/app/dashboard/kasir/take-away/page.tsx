@@ -87,7 +87,7 @@ export default function TakeAwayPage() {
 
   return (
     <div className="p-6 space-y-5">
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: "Total Pesanan", value: counts.total, color: "text-white" },
           { label: "Menunggu Pembayaran", value: counts.menunggu, color: "text-[#4CD7F6]" },
@@ -203,7 +203,7 @@ export default function TakeAwayPage() {
 
       {cancelTarget !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="w-[380px] rounded-2xl border border-white/10 bg-[#1E2235] p-8 text-center space-y-5">
+          <div className="w-full max-w-[380px] mx-4 rounded-2xl border border-white/10 bg-[#1E2235] p-8 text-center space-y-5">
             <XCircle size={28} className="text-red-400 mx-auto" />
             <h3 className="text-white font-bold text-lg">Batalkan Pesanan?</h3>
             <p className="text-slate-400 text-sm">Pesanan #{cancelTarget} akan dibatalkan.</p>
@@ -227,7 +227,7 @@ export default function TakeAwayPage() {
 
       {showCancelSuccess && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="w-[360px] rounded-2xl border border-white/10 bg-[#1E2235] p-8 text-center space-y-5">
+          <div className="w-full max-w-[360px] mx-4 rounded-2xl border border-white/10 bg-[#1E2235] p-8 text-center space-y-5">
             <Check size={28} className="text-[#22C55E] mx-auto" />
             <h3 className="text-white font-bold text-lg">Pesanan Dibatalkan</h3>
             <button

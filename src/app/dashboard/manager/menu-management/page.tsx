@@ -130,7 +130,7 @@ export default function MenuManagementPage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             { label: "TOTAL MENU", value: loading ? "—" : String(items.length), color: "#fff" },
             { label: "AKTIF", value: loading ? "—" : String(totalAktif), color: "#4EDEA3" },
@@ -150,7 +150,7 @@ export default function MenuManagementPage() {
           </div>
         )}
 
-        <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: BG, borderColor: BORD }}>
+        <div className="rounded-xl border overflow-x-auto" style={{ backgroundColor: BG, borderColor: BORD }}>
           {loading ? (
             <div className="px-5 py-12 text-center text-sm" style={{ color: "#64748b" }}>Memuat menu...</div>
           ) : (
@@ -296,7 +296,7 @@ export default function MenuManagementPage() {
             onClick={() => setDetailTarget(null)}
           >
             <div
-              className="w-[420px] rounded-2xl border overflow-hidden"
+              className="w-full max-w-[420px] mx-4 rounded-2xl border overflow-hidden"
               style={{ backgroundColor: "#151C25", borderColor: "rgba(255,255,255,0.08)" }}
               onClick={(e) => e.stopPropagation()}
             >
@@ -373,7 +373,7 @@ export default function MenuManagementPage() {
           onClick={() => !submitting && setDeleteTarget(null)}
         >
           <div
-            className="w-[360px] rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
+            className="w-full max-w-[360px] mx-4 rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
             style={{ backgroundColor: "#1E2530", borderColor: "rgba(255,255,255,0.08)" }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -415,7 +415,7 @@ export default function MenuManagementPage() {
           onClick={() => !submitting && setToggleTarget(null)}
         >
           <div
-            className="w-[380px] rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
+            className="w-full max-w-[380px] mx-4 rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
             style={{ backgroundColor: "#1E2530", borderColor: "rgba(255,255,255,0.08)" }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -456,7 +456,7 @@ export default function MenuManagementPage() {
       {showToggleSuccess && (
         <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.6)" }}>
           <div
-            className="w-[360px] rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
+            className="w-full max-w-[360px] mx-4 rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
             style={{ backgroundColor: "#1E2530", borderColor: "rgba(255,255,255,0.08)" }}
           >
             <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(208,188,255,0.15)" }}>
@@ -495,7 +495,7 @@ export default function MenuManagementPage() {
       {showSuccess && (
         <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.6)" }}>
           <div
-            className="w-[360px] rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
+            className="w-full max-w-[360px] mx-4 rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
             style={{ backgroundColor: "#1E2530", borderColor: "rgba(255,255,255,0.08)" }}
           >
             <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(208,188,255,0.15)" }}>

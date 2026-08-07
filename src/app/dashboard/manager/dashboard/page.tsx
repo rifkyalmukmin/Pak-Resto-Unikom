@@ -153,7 +153,7 @@ export default function ManagerDashboardPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div
           className="rounded-xl p-5 border"
           style={{ backgroundColor: "#151C25", borderColor: "rgba(255,255,255,0.07)" }}
@@ -315,7 +315,7 @@ export default function ManagerDashboardPage() {
       </div>
 
       <div
-        className="rounded-xl border overflow-hidden"
+        className="rounded-xl border overflow-x-auto"
         style={{ backgroundColor: "#151C25", borderColor: "rgba(255,255,255,0.07)" }}
       >
         <div
@@ -425,7 +425,7 @@ export default function ManagerDashboardPage() {
             onClick={() => setSelected(null)}
           >
             <div
-              className="w-[420px] rounded-2xl border p-6 space-y-5"
+              className="w-full max-w-[420px] mx-4 rounded-2xl border p-6 space-y-5"
               style={{ backgroundColor: "#151C25", borderColor: "rgba(255,255,255,0.08)" }}
               onClick={(e) => e.stopPropagation()}
             >

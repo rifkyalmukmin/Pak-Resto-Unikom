@@ -465,7 +465,7 @@ function EditMenuContent() {
           onClick={() => !submitting && setShowConfirm(false)}
         >
           <div
-            className="w-[360px] rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
+            className="w-full max-w-[360px] mx-4 rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
             style={{ backgroundColor: "#1E2530", borderColor: "#494454" }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -505,7 +505,7 @@ function EditMenuContent() {
       {showSuccess && (
         <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.6)" }}>
           <div
-            className="w-[360px] rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
+            className="w-full max-w-[360px] mx-4 rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
             style={{ backgroundColor: "#1E2530", borderColor: "#494454" }}
           >
             <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(208,188,255,0.15)" }}>

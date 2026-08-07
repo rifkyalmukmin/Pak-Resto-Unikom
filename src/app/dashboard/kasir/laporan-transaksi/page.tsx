@@ -349,7 +349,7 @@ export default function LaporanTransaksiPage() {
           onClick={() => setDetail(null)}
         >
           <div
-            className="w-[440px] rounded-2xl border border-white/10 bg-[#1E1E2E] overflow-hidden shadow-2xl"
+            className="w-full max-w-[440px] mx-4 rounded-2xl border border-white/10 bg-[#1E1E2E] overflow-hidden shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="h-1 bg-[#22C55E]" />
@@ -418,7 +418,7 @@ export default function LaporanTransaksiPage() {
 
       {showExportSuccess && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="w-[360px] rounded-2xl border border-white/10 bg-[#1E1E2E] p-8 flex flex-col items-center text-center space-y-5">
+          <div className="w-full max-w-[360px] mx-4 rounded-2xl border border-white/10 bg-[#1E1E2E] p-8 flex flex-col items-center text-center space-y-5">
             <div
               className="w-14 h-14 rounded-full flex items-center justify-center"
               style={{ backgroundColor: "rgba(34,197,94,0.15)" }}

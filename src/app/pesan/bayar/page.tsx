@@ -47,8 +47,8 @@ export default function BayarPage() {
     <div className="min-h-screen font-sans" style={{ backgroundColor: "#F8F9FF" }}>
       {/* Navbar */}
       <nav className="sticky top-0 z-40 border-b border-stone-100 shadow-sm" style={{ backgroundColor: "#F8F9FF" }}>
-        <div className="max-w-6xl mx-auto px-6 h-[60px] flex items-center justify-between gap-6">
-          <Link href="/pesan" className="font-playfair text-lg font-bold text-amber-900">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-[60px] flex items-center justify-between gap-3 sm:gap-6">
+          <Link href="/pesan" className="font-playfair text-[15px] sm:text-lg font-bold text-amber-900 min-w-0 truncate">
             Pak Resto UNIKOM
           </Link>
           <div className="flex items-center gap-1.5 border border-stone-200 rounded-full px-3 py-1.5 text-sm text-stone-700">

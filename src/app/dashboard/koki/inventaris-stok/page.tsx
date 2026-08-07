@@ -152,7 +152,7 @@ export default function InventarisStokPage() {
           </p>
         )}
 
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div
             className="rounded-xl border border-white/5 p-5 flex items-center justify-between"
             style={{ backgroundColor: "#1E293B" }}
@@ -442,7 +442,7 @@ export default function InventarisStokPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={closeEdit} />
           <div
-            className="relative w-[480px] rounded-2xl overflow-hidden border shadow-2xl z-10"
+            className="relative w-full max-w-[480px] mx-4 rounded-2xl overflow-hidden border shadow-2xl z-10"
             style={{ borderColor: "#45464C" }}
           >
             <div
@@ -508,7 +508,7 @@ export default function InventarisStokPage() {
         <div className="fixed inset-0 z-[60] flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
           <div
-            className="relative w-[420px] rounded-2xl border border-white/10 shadow-2xl px-8 py-8 z-10"
+            className="relative w-full max-w-[420px] mx-4 rounded-2xl border border-white/10 shadow-2xl px-8 py-8 z-10"
             style={{ backgroundColor: "#1E2235" }}
           >
             <InfoIcon />
@@ -541,7 +541,7 @@ export default function InventarisStokPage() {
         <div className="fixed inset-0 z-[60] flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setOverlay(null)} />
           <div
-            className="relative w-[380px] rounded-2xl border border-white/10 shadow-2xl px-8 py-8 z-10 flex flex-col items-center text-center space-y-5"
+            className="relative w-full max-w-[380px] mx-4 rounded-2xl border border-white/10 shadow-2xl px-8 py-8 z-10 flex flex-col items-center text-center space-y-5"
             style={{ backgroundColor: "#1E2235" }}
           >
             <div
@@ -571,7 +571,7 @@ export default function InventarisStokPage() {
         <div className="fixed inset-0 z-[60] flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setOverlay(null)} />
           <div
-            className="relative w-[420px] rounded-2xl border border-white/10 shadow-2xl px-8 py-8 z-10"
+            className="relative w-full max-w-[420px] mx-4 rounded-2xl border border-white/10 shadow-2xl px-8 py-8 z-10"
             style={{ backgroundColor: "#1E2235" }}
           >
             <SuccessIcon />

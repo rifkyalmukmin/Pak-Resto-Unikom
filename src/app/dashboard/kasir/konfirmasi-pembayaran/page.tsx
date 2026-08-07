@@ -113,9 +113,9 @@ export default function KonfirmasiPembayaranPage() {
             : "E-Wallet";
 
     return (
-      <div className="flex h-full relative">
+      <div className="flex flex-col lg:flex-row h-full relative">
         <div className="flex-1 flex flex-col min-w-0">
-          <div className="flex-1 overflow-auto p-6">
+          <div className="flex-1 overflow-auto p-4 sm:p-6">
             <button
               onClick={() => {
                 setSelectedOrder(null);
@@ -175,7 +175,7 @@ export default function KonfirmasiPembayaranPage() {
           </div>
 
           <div className="border-t border-white/5 p-4 shrink-0">
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {paymentMethods.map(({ key, label, icon }) => {
                 const active = paymentMethod === key;
                 return (
@@ -210,7 +210,7 @@ export default function KonfirmasiPembayaranPage() {
           </div>
         </div>
 
-        <div className="w-[300px] border-l border-white/5 flex flex-col bg-[#121221] shrink-0">
+        <div className="w-full lg:w-[300px] border-t lg:border-t-0 lg:border-l border-white/5 flex flex-col bg-[#121221] shrink-0 max-h-[55vh] lg:max-h-none">
           <div className="px-5 pt-5 pb-4 border-b border-white/5">
             <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-widest mb-1.5">
               Jumlah Tagihan
@@ -261,7 +261,7 @@ export default function KonfirmasiPembayaranPage() {
 
         {showVerifyModal && (
           <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-            <div className="bg-[#1E1E2E] rounded-2xl border border-white/10 w-[400px] p-8">
+            <div className="bg-[#1E1E2E] rounded-2xl border border-white/10 w-full max-w-[400px] mx-4 p-8">
               <h3 className="text-white text-xl font-bold mb-4 text-center">
                 Konfirmasi Pembayaran?
               </h3>
@@ -289,7 +289,7 @@ export default function KonfirmasiPembayaranPage() {
 
         {showPaymentSuccess && (
           <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-            <div className="bg-[#1E1E2E] rounded-2xl border border-white/10 w-[380px] p-8 text-center space-y-5">
+            <div className="bg-[#1E1E2E] rounded-2xl border border-white/10 w-full max-w-[380px] mx-4 p-8 text-center space-y-5">
               <Printer size={30} className="text-[#22C55E] mx-auto" />
               <h3 className="text-white font-bold text-xl">Pembayaran Berhasil!</h3>
               <p className="text-slate-400 text-sm">
@@ -315,7 +315,7 @@ export default function KonfirmasiPembayaranPage() {
 
   return (
     <div className="p-6 space-y-5">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
           <h1 className="text-white text-2xl font-bold">Konfirmasi Pembayaran</h1>
           <p className="text-slate-400 text-sm mt-1">
@@ -335,7 +335,7 @@ export default function KonfirmasiPembayaranPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Cari nomor meja..."
-              className="bg-[#1E1E2E] border border-white/10 text-white text-sm rounded-lg pl-9 pr-4 py-2.5 w-52"
+              className="bg-[#1E1E2E] border border-white/10 text-white text-sm rounded-lg pl-9 pr-4 py-2.5 w-full sm:w-52"
             />
           </div>
         </div>
@@ -352,7 +352,7 @@ export default function KonfirmasiPembayaranPage() {
       ) : filtered.length === 0 ? (
         <p className="text-slate-500 text-center py-12">Tidak ada pesanan menunggu pembayaran</p>
       ) : (
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           {filtered.map((order) => (
             <div
               key={order.id_pesanan}

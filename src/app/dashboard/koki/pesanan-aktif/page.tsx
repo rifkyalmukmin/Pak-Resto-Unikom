@@ -139,7 +139,7 @@ export default function PesananAktifPage() {
       {loading && orders.length === 0 ? (
         <p className="text-slate-500 text-center py-12">Memuat antrean...</p>
       ) : (
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           {filtered.map((order) => {
             const headerBg = cardHeaderBg(order);
             const headerText = headerBg === "#F59E0B" ? "#000" : "#fff";
@@ -266,7 +266,7 @@ export default function PesananAktifPage() {
 
       {confirmId !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="w-[420px] rounded-2xl border border-white/10 bg-[#1E2235] px-8 py-8">
+          <div className="w-full max-w-[420px] mx-4 rounded-2xl border border-white/10 bg-[#1E2235] px-8 py-8">
             <div className="flex flex-col items-center text-center mb-6">
               <div
                 className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
@@ -301,7 +301,7 @@ export default function PesananAktifPage() {
 
       {successId !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="w-[380px] rounded-2xl border border-white/10 bg-[#1E2235] px-8 py-8 flex flex-col items-center text-center">
+          <div className="w-full max-w-[380px] mx-4 rounded-2xl border border-white/10 bg-[#1E2235] px-8 py-8 flex flex-col items-center text-center">
             <CheckCircle2 size={32} className="text-[#10B981] mb-4" />
             <h3 className="text-white text-xl font-bold mb-2">Pesanan Siap!</h3>
             <p className="text-slate-400 text-sm mb-6">

@@ -177,7 +177,7 @@ export default function KategoriManagementPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {[
           { label: "TOTAL KATEGORI", value: loading ? "—" : list.length, color: "#fff" },
           { label: "AKTIF", value: loading ? "—" : totalAktif, color: "#10B981" },
@@ -199,7 +199,7 @@ export default function KategoriManagementPage() {
         </div>
       )}
 
-      <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: BG, borderColor: BORD }}>
+      <div className="rounded-xl border overflow-x-auto" style={{ backgroundColor: BG, borderColor: BORD }}>
         {loading ? (
           <div className="px-5 py-12 text-center text-sm" style={{ color: "#64748b" }}>Memuat kategori...</div>
         ) : (
@@ -298,7 +298,7 @@ export default function KategoriManagementPage() {
           onClick={closeModal}
         >
           <div
-            className="w-[420px] rounded-2xl border p-6 space-y-5"
+            className="w-full max-w-[420px] mx-4 rounded-2xl border p-6 space-y-5"
             style={{ backgroundColor: "#161d2e", borderColor: "rgba(255,255,255,0.1)" }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -393,7 +393,7 @@ export default function KategoriManagementPage() {
           onClick={closeModal}
         >
           <div
-            className="w-[380px] rounded-2xl border p-6 space-y-4"
+            className="w-full max-w-[380px] mx-4 rounded-2xl border p-6 space-y-4"
             style={{ backgroundColor: "#161d2e", borderColor: "rgba(255,255,255,0.1)" }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -430,7 +430,7 @@ export default function KategoriManagementPage() {
           onClick={() => !submitting && setShowConfirm(null)}
         >
           <div
-            className="w-[360px] rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
+            className="w-full max-w-[360px] mx-4 rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
             style={{ backgroundColor: "#1E2530", borderColor: "rgba(255,255,255,0.08)" }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -474,7 +474,7 @@ export default function KategoriManagementPage() {
           onClick={() => !submitting && setShowConfirm(null)}
         >
           <div
-            className="w-[360px] rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
+            className="w-full max-w-[360px] mx-4 rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
             style={{ backgroundColor: "#1E2530", borderColor: "rgba(255,255,255,0.08)" }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -517,7 +517,7 @@ export default function KategoriManagementPage() {
           onClick={() => !submitting && setToggleTarget(null)}
         >
           <div
-            className="w-[380px] rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
+            className="w-full max-w-[380px] mx-4 rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
             style={{ backgroundColor: "#1E2530", borderColor: "rgba(255,255,255,0.08)" }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -563,7 +563,7 @@ export default function KategoriManagementPage() {
       {showToggleSuccess && (
         <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.6)" }}>
           <div
-            className="w-[360px] rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
+            className="w-full max-w-[360px] mx-4 rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
             style={{ backgroundColor: "#1E2530", borderColor: "rgba(255,255,255,0.08)" }}
           >
             <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(208,188,255,0.15)" }}>
@@ -595,7 +595,7 @@ export default function KategoriManagementPage() {
       {showSuccess && (
         <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.6)" }}>
           <div
-            className="w-[360px] rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
+            className="w-full max-w-[360px] mx-4 rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
             style={{ backgroundColor: "#1E2530", borderColor: "rgba(255,255,255,0.08)" }}
           >
             <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(208,188,255,0.15)" }}>

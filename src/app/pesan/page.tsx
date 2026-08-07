@@ -33,9 +33,9 @@ export default function PesanPage() {
     <div className="min-h-screen font-sans" style={{ backgroundColor: "#F8F9FF" }}>
       {/* Navbar */}
       <nav className="sticky top-0 z-40 border-b border-stone-100 shadow-sm" style={{ backgroundColor: "#F8F9FF" }}>
-        <div className="max-w-6xl mx-auto px-6 h-[60px] flex items-center justify-between gap-6">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-[60px] flex items-center justify-between gap-3 sm:gap-6">
           {/* Logo */}
-          <Link href="/pesan" className="font-playfair text-lg font-bold text-amber-900 shrink-0">
+          <Link href="/pesan" className="font-playfair text-[15px] sm:text-lg font-bold text-amber-900 min-w-0 truncate">
             Pak Resto UNIKOM
           </Link>
 
@@ -83,7 +83,7 @@ export default function PesanPage() {
       </nav>
 
       {/* Hero */}
-      <section className="relative h-[480px] flex items-center overflow-hidden">
+      <section className="relative h-[400px] md:h-[480px] flex items-center overflow-hidden">
         <div className="absolute inset-0">
           <Image
             src="/images/menu/rendang-sapi.png"
@@ -181,7 +181,7 @@ export default function PesanPage() {
               </div>
               {/* Kanan */}
               <div className="flex items-center gap-2">
-                <span className="text-sm font-bold tracking-widest uppercase">LIHAT PESANAN</span>
+                <span className="hidden sm:inline text-sm font-bold tracking-widest uppercase">LIHAT PESANAN</span>
                 <ArrowRight size={22} strokeWidth={2.5} className="text-white" />
               </div>
             </button>

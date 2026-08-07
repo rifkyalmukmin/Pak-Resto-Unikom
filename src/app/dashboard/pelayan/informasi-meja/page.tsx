@@ -349,7 +349,7 @@ export default function InformasiMejaPage() {
       {isFormOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={closeModal} />
-          <div className="relative w-[540px] rounded-2xl overflow-hidden border shadow-2xl z-10" style={{ borderColor: "#3C4A42" }}>
+          <div className="relative w-full max-w-[540px] mx-4 rounded-2xl overflow-hidden border shadow-2xl z-10" style={{ borderColor: "#3C4A42" }}>
             {/* Header */}
             <div className="px-7 pt-7 pb-5 border-b" style={{ backgroundColor: "#2D3449", borderBottomColor: "#3C4A42" }}>
               <div className="flex items-start justify-between">
@@ -474,7 +474,7 @@ export default function InformasiMejaPage() {
       {overlay === "konfirmasi" && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          <div className="relative w-[420px] rounded-2xl border border-white/10 shadow-2xl px-8 py-8 z-10" style={{ backgroundColor: "#1E2235" }}>
+          <div className="relative w-full max-w-[420px] mx-4 rounded-2xl border border-white/10 shadow-2xl px-8 py-8 z-10" style={{ backgroundColor: "#1E2235" }}>
             <InfoIcon />
             <h3 className="text-white font-bold text-lg mb-2">Konfirmasi Perubahan</h3>
             <p className="text-slate-400 text-sm leading-relaxed mb-7">
@@ -505,7 +505,7 @@ export default function InformasiMejaPage() {
       {overlay === "konfirmasi-hapus" && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          <div className="relative w-[420px] rounded-2xl border border-white/10 shadow-2xl px-8 py-8 z-10" style={{ backgroundColor: "#1E2235" }}>
+          <div className="relative w-full max-w-[420px] mx-4 rounded-2xl border border-white/10 shadow-2xl px-8 py-8 z-10" style={{ backgroundColor: "#1E2235" }}>
             <InfoIcon />
             <h3 className="text-white font-bold text-lg mb-2">Konfirmasi Hapus Meja</h3>
             <p className="text-slate-400 text-sm leading-relaxed mb-7">
@@ -536,7 +536,7 @@ export default function InformasiMejaPage() {
       {overlay === "sukses-tambah" && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setOverlay(null)} />
-          <div className="relative w-[420px] rounded-2xl border border-white/10 shadow-2xl px-8 py-8 z-10" style={{ backgroundColor: "#1E2235" }}>
+          <div className="relative w-full max-w-[420px] mx-4 rounded-2xl border border-white/10 shadow-2xl px-8 py-8 z-10" style={{ backgroundColor: "#1E2235" }}>
             <SuccessIcon />
             <h3 className="text-white font-bold text-lg mb-2">Meja Berhasil Ditambahkan</h3>
             <p className="text-slate-400 text-sm leading-relaxed mb-7">
@@ -557,7 +557,7 @@ export default function InformasiMejaPage() {
       {qrTarget && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setQrTarget(null)} />
-          <div className="relative w-[360px] rounded-2xl border border-white/10 shadow-2xl overflow-hidden z-10" style={{ backgroundColor: "#1E2235" }}>
+          <div className="relative w-full max-w-[360px] mx-4 rounded-2xl border border-white/10 shadow-2xl overflow-hidden z-10" style={{ backgroundColor: "#1E2235" }}>
             {/* Header */}
             <div className="flex items-center justify-between px-6 pt-6 pb-4">
               <div>
@@ -603,7 +603,7 @@ export default function InformasiMejaPage() {
       {overlay === "sukses-hapus" && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setOverlay(null)} />
-          <div className="relative w-[420px] rounded-2xl border border-white/10 shadow-2xl px-8 py-8 z-10" style={{ backgroundColor: "#1E2235" }}>
+          <div className="relative w-full max-w-[420px] mx-4 rounded-2xl border border-white/10 shadow-2xl px-8 py-8 z-10" style={{ backgroundColor: "#1E2235" }}>
             <SuccessIcon />
             <h3 className="text-white font-bold text-lg mb-2">Meja Berhasil Dihapus</h3>
             <p className="text-slate-400 text-sm leading-relaxed mb-7">
@@ -624,7 +624,7 @@ export default function InformasiMejaPage() {
       {overlay === "konfirmasi-toggle" && toggleStatusTarget && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          <div className="relative w-[420px] rounded-2xl border border-white/10 shadow-2xl px-8 py-8 z-10" style={{ backgroundColor: "#1E2235" }}>
+          <div className="relative w-full max-w-[420px] mx-4 rounded-2xl border border-white/10 shadow-2xl px-8 py-8 z-10" style={{ backgroundColor: "#1E2235" }}>
             <InfoIcon />
             <h3 className="text-white font-bold text-lg mb-2">Ubah Status Meja?</h3>
             <p className="text-slate-400 text-sm leading-relaxed mb-7">
@@ -658,7 +658,7 @@ export default function InformasiMejaPage() {
       {overlay === "sukses-edit" && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setOverlay(null)} />
-          <div className="relative w-[420px] rounded-2xl border border-white/10 shadow-2xl px-8 py-8 z-10" style={{ backgroundColor: "#1E2235" }}>
+          <div className="relative w-full max-w-[420px] mx-4 rounded-2xl border border-white/10 shadow-2xl px-8 py-8 z-10" style={{ backgroundColor: "#1E2235" }}>
             <SuccessIcon />
             <h3 className="text-white font-bold text-lg mb-2">Perubahan Berhasil Disimpan</h3>
             <p className="text-slate-400 text-sm leading-relaxed mb-7">

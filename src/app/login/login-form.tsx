@@ -132,7 +132,7 @@ export default function LoginForm() {
       </div>
 
       <div className="mx-auto w-full max-w-lg px-4">
-        <div className="bg-white rounded-2xl shadow-sm border border-stone-100 px-8 py-8">
+        <div className="bg-white rounded-2xl shadow-sm border border-stone-100 px-5 sm:px-8 py-8">
           <h2 className="text-xl font-bold text-stone-900 mb-1">Masuk</h2>
           <p className="text-stone-400 text-sm mb-7">
             Masukkan kredensial akun Anda untuk melanjutkan.
@@ -207,7 +207,7 @@ export default function LoginForm() {
           <p className="text-center text-xs font-bold tracking-[0.15em] uppercase text-stone-400 mb-4">
             Login Cepat
           </p>
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {ROLES.map((role) => (
               <button
                 key={role.title}

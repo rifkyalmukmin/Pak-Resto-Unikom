@@ -93,16 +93,16 @@ export default function RiwayatPesananPage() {
   }
 
   return (
-    <div className="p-6 flex flex-col gap-5 h-full">
-      <div className="flex items-center justify-between">
+    <div className="p-4 sm:p-6 flex flex-col gap-5 h-full">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h1 className="text-white text-2xl font-bold">Riwayat Pesanan</h1>
-        <div className="relative">
+        <div className="relative w-full sm:w-auto">
           <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Cari Order ID..."
-            className="bg-[#1E1E2E] border border-white/10 text-white placeholder-slate-500 text-sm rounded-lg pl-9 pr-4 py-2 w-52 focus:outline-none focus:border-white/25 transition-colors"
+            className="bg-[#1E1E2E] border border-white/10 text-white placeholder-slate-500 text-sm rounded-lg pl-9 pr-4 py-2 w-full sm:w-52 focus:outline-none focus:border-white/25 transition-colors"
           />
         </div>
       </div>
@@ -273,7 +273,7 @@ export default function RiwayatPesananPage() {
 
       {showExportSuccess && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="w-[360px] rounded-2xl border border-white/10 bg-[#1E1E2E] p-8 flex flex-col items-center text-center space-y-5">
+          <div className="w-full max-w-[360px] mx-4 rounded-2xl border border-white/10 bg-[#1E1E2E] p-8 flex flex-col items-center text-center space-y-5">
             <div
               className="w-14 h-14 rounded-full flex items-center justify-center"
               style={{ backgroundColor: `${ACCENT}20` }}
@@ -303,7 +303,7 @@ export default function RiwayatPesananPage() {
           onClick={() => setDetail(null)}
         >
           <div
-            className="w-[480px] rounded-2xl border border-[#45464C] bg-[#1E1E2E] overflow-hidden shadow-2xl"
+            className="w-full max-w-[480px] mx-4 rounded-2xl border border-[#45464C] bg-[#1E1E2E] overflow-hidden shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-6 py-5 border-b border-[#45464C]">

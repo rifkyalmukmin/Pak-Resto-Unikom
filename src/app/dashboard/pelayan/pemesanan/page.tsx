@@ -136,15 +136,15 @@ export default function PemesananMakananPage() {
   const categoryTabs = ["Semua", ...categories.map((c) => c.nama_kategori)];
 
   return (
-    <div className="flex h-full">
+    <div className="flex flex-col lg:flex-row h-full">
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {error && (
-          <div className="mx-6 mt-4 text-red-400 bg-red-950/40 border border-red-800 rounded-lg px-4 py-2 text-sm">
+          <div className="mx-4 sm:mx-6 mt-4 text-red-400 bg-red-950/40 border border-red-800 rounded-lg px-4 py-2 text-sm">
             {error}
           </div>
         )}
 
-        <div className="px-6 pt-5 pb-3 shrink-0">
+        <div className="px-4 sm:px-6 pt-4 sm:pt-5 pb-3 shrink-0">
           <div
             className="flex gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden"
             style={{ scrollbarWidth: "none" }}
@@ -171,13 +171,13 @@ export default function PemesananMakananPage() {
         </div>
 
         <div
-          className="flex-1 overflow-auto px-6 pb-6"
+          className="flex-1 overflow-auto px-4 sm:px-6 pb-6"
           style={{ scrollbarWidth: "none" }}
         >
           {loading ? (
             <p className="text-slate-500 text-center py-12">Memuat menu...</p>
           ) : (
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {filtered.map((item) => {
                 const q = qty[item.id_menu] ?? 0;
                 return (
@@ -232,7 +232,7 @@ export default function PemesananMakananPage() {
       </div>
 
       <div
-        className="w-[400px] border-l border-white/5 flex flex-col shrink-0"
+        className="w-full lg:w-[400px] border-t lg:border-t-0 lg:border-l border-white/5 flex flex-col shrink-0 max-h-[55vh] lg:max-h-none"
         style={{ backgroundColor: "#1E293B" }}
       >
         <div className="p-5 border-b border-white/5 flex items-center justify-between">
@@ -368,7 +368,7 @@ export default function PemesananMakananPage() {
             onClick={() => setOverlay(null)}
           />
           <div
-            className="relative w-[500px] rounded-2xl border border-white/10 p-6 z-10"
+            className="relative w-full max-w-[500px] mx-4 rounded-2xl border border-white/10 p-6 z-10"
             style={{ backgroundColor: "#222A3D" }}
           >
             <h2 className="font-bold text-xl text-white mb-4">Catatan Pesanan</h2>
@@ -392,7 +392,7 @@ export default function PemesananMakananPage() {
 
       {overlay === "konfirmasi-dapur" && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center">
-          <div className="relative w-[420px] rounded-2xl border border-white/10 px-8 py-8 z-10 bg-[#1E2235]">
+          <div className="relative w-full max-w-[420px] mx-4 rounded-2xl border border-white/10 px-8 py-8 z-10 bg-[#1E2235]">
             <InfoIcon />
             <h3 className="text-white font-bold text-lg mb-2">Kirim ke Dapur?</h3>
             <p className="text-slate-400 text-sm mb-7">
@@ -421,7 +421,7 @@ export default function PemesananMakananPage() {
 
       {overlay === "sukses-dapur" && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center">
-          <div className="relative w-[420px] rounded-2xl border border-white/10 px-8 py-8 z-10 bg-[#1E2235]">
+          <div className="relative w-full max-w-[420px] mx-4 rounded-2xl border border-white/10 px-8 py-8 z-10 bg-[#1E2235]">
             <SuccessIcon />
             <h3 className="text-white font-bold text-lg mb-2">Pesanan Terkirim!</h3>
             <p className="text-slate-400 text-sm mb-7">

@@ -432,7 +432,7 @@ export default function TrendAnalysisPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="rounded-xl px-5 py-4 border" style={{ backgroundColor: BG, borderColor: BORD }}>
           <div className="flex items-center justify-between mb-2">
             <p className="text-xs font-semibold" style={{ color: "#CBC3D7" }}>
@@ -596,7 +596,7 @@ export default function TrendAnalysisPage() {
         </div>
       </div>
 
-      <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: BG, borderColor: BORD }}>
+      <div className="rounded-xl border overflow-x-auto" style={{ backgroundColor: BG, borderColor: BORD }}>
         <div
           className="px-5 py-3.5 border-b flex items-center justify-between"
           style={{ borderColor: "rgba(255,255,255,0.06)" }}

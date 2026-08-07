@@ -70,8 +70,8 @@ export default function TambahPesananPage() {
   const categoryTabs = ["Semua Menu", ...categories.map((c) => c.nama_kategori)];
 
   return (
-    <div className="flex h-full">
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden p-6">
+    <div className="flex flex-col lg:flex-row h-full">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden p-4 sm:p-6">
         {error && (
           <p className="text-red-400 bg-red-950/40 border border-red-800 rounded-lg px-4 py-2 text-sm mb-4">
             {error}
@@ -97,7 +97,7 @@ export default function TambahPesananPage() {
         {loading ? (
           <p className="text-slate-500">Memuat menu...</p>
         ) : (
-          <div className="grid grid-cols-3 gap-4 overflow-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 overflow-auto">
             {filtered.map((item) => (
               <div
                 key={item.id_menu}
@@ -119,7 +119,7 @@ export default function TambahPesananPage() {
         )}
       </div>
 
-      <div className="w-[360px] border-l border-white/5 bg-[#121221] flex flex-col p-5">
+      <div className="w-full lg:w-[360px] border-t lg:border-t-0 lg:border-l border-white/5 bg-[#121221] flex flex-col p-4 sm:p-5 max-h-[55vh] lg:max-h-none">
         <h3 className="text-white font-bold mb-4">Pesanan Takeaway</h3>
         <div className="flex-1 space-y-2 overflow-auto">
           {cartItems.length === 0 ? (
@@ -180,7 +180,7 @@ export default function TambahPesananPage() {
 
       {showConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="bg-[#1E2235] rounded-2xl border border-white/10 p-8 w-[380px] text-center space-y-4">
+          <div className="bg-[#1E2235] rounded-2xl border border-white/10 p-8 w-full max-w-[380px] mx-4 text-center space-y-4">
             <h3 className="text-white font-bold text-lg">Buat Pesanan Takeaway?</h3>
             <p className="text-slate-400 text-sm">Total: {fmt(total)}</p>
             <div className="flex gap-3">
@@ -204,7 +204,7 @@ export default function TambahPesananPage() {
 
       {showSuccess && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="bg-[#1E2235] rounded-2xl p-8 w-[360px] text-center space-y-4">
+          <div className="bg-[#1E2235] rounded-2xl p-8 w-full max-w-[360px] mx-4 text-center space-y-4">
             <Check className="text-[#22C55E] mx-auto" size={32} />
             <h3 className="text-white font-bold">Pesanan Dibuat!</h3>
             <Link

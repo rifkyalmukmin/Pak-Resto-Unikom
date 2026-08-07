@@ -251,7 +251,7 @@ export default function UserManagementPage() {
       {loading ? (
         <div className="text-center py-12 text-sm" style={{ color: "#64748b" }}>Memuat data user...</div>
       ) : (
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           {filtered.map((u) => (
             <UserCard key={u.id_user} user={u} onDelete={(target) => { setDeleteError(null); setDeleteTarget(target); }} />
           ))}
@@ -271,7 +271,7 @@ export default function UserManagementPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center"
           style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
           onClick={() => !deleting && setDeleteTarget(null)}>
-          <div className="w-[360px] rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
+          <div className="w-full max-w-[360px] mx-4 rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
             style={{ backgroundColor: "#1E2530", borderColor: "#494454" }}
             onClick={(e) => e.stopPropagation()}>
             <div className="w-14 h-14 rounded-full flex items-center justify-center"
@@ -306,7 +306,7 @@ export default function UserManagementPage() {
       {showDeleteSuccess && (
         <div className="fixed inset-0 z-50 flex items-center justify-center"
           style={{ backgroundColor: "rgba(0,0,0,0.6)" }}>
-          <div className="w-[360px] rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
+          <div className="w-full max-w-[360px] mx-4 rounded-2xl border p-8 flex flex-col items-center text-center space-y-5"
             style={{ backgroundColor: "#1E2530", borderColor: "#494454" }}>
             <div className="w-14 h-14 rounded-full flex items-center justify-center"
               style={{ backgroundColor: "rgba(208,188,255,0.15)" }}>
