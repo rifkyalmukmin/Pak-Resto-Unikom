@@ -45,6 +45,8 @@ type OverlayType = "konfirmasi" | "sukses-tambah" | "sukses-edit" | "konfirmasi-
 export default function InformasiMejaPage() {
   const [mejaList, setMejaList] = useState<Meja[]>(initialMeja);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [modalMode, setModalMode] = useState<ModalMode>(null);
   const [editTarget, setEditTarget] = useState<Meja | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
@@ -64,8 +66,9 @@ export default function InformasiMejaPage() {
     try {
       const data = await api.getTables();
       setMejaList(data.map(mapMeja));
-    } catch {
-      /* keep current list */
+      setError("");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Gagal memuat meja");
     } finally {
       setLoading(false);
     }
@@ -122,62 +125,83 @@ export default function InformasiMejaPage() {
     return kapasitasSelected ?? 0;
   }
 
-  // Klik Simpan → tampilkan konfirmasi dulu
   function handleSimpanClick() {
     const kap = getKapasitas();
     if (!nomorInput.trim() || kap < 1) return;
     setOverlay("konfirmasi");
   }
 
-  // Konfirmasi "Yes" → simpan data → tampilkan sukses
-  function handleKonfirmasiYes() {
+  async function handleKonfirmasiYes() {
     const kap = getKapasitas();
-    if (modalMode === "tambah") {
-      const newId = Math.max(...mejaList.map((m) => m.id)) + 1;
-      setMejaList((prev) => [
-        ...prev,
-        { id: newId, nomor: nomorInput.trim().padStart(2, "0"), kapasitas: kap, status: "TERSEDIA" },
-      ]);
-      setOverlay("sukses-tambah");
-    } else if (modalMode === "edit" && editTarget) {
-      setMejaList((prev) =>
-        prev.map((m) =>
-          m.id === editTarget.id
-            ? { ...m, nomor: nomorInput.trim().padStart(2, "0"), kapasitas: kap }
-            : m
-        )
-      );
-      setOverlay("sukses-edit");
+    const nomor_meja = parseInt(nomorInput.trim(), 10);
+    if (!Number.isInteger(nomor_meja) || nomor_meja < 1 || kap < 1) {
+      setError("Nomor meja dan kapasitas tidak valid");
+      setOverlay(null);
+      return;
     }
-    setModalMode(null);
+
+    setSubmitting(true);
+    try {
+      if (modalMode === "tambah") {
+        await api.createTable({ nomor_meja, kapasitas: kap, status: "KOSONG" });
+        setOverlay("sukses-tambah");
+      } else if (modalMode === "edit" && editTarget) {
+        await api.updateTable(editTarget.id, {
+          nomor_meja,
+          kapasitas: kap,
+        });
+        setOverlay("sukses-edit");
+      }
+      setModalMode(null);
+      setEditTarget(null);
+      await loadTables();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Gagal menyimpan meja");
+      setOverlay(null);
+    } finally {
+      setSubmitting(false);
+    }
   }
 
-  // Klik hapus kartu → konfirmasi hapus
   function handleDeleteClick(id: number) {
     setDeleteTarget(id);
     setOverlay("konfirmasi-hapus");
   }
 
-  function handleKonfirmasiHapusYes() {
-    if (deleteTarget !== null) {
-      setMejaList((prev) => prev.filter((m) => m.id !== deleteTarget));
+  async function handleKonfirmasiHapusYes() {
+    if (deleteTarget === null) return;
+    setSubmitting(true);
+    try {
+      await api.deleteTable(deleteTarget);
       setDeleteTarget(null);
+      setOverlay("sukses-hapus");
+      await loadTables();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Gagal menghapus meja");
+      setOverlay(null);
+      setDeleteTarget(null);
+    } finally {
+      setSubmitting(false);
     }
-    setOverlay("sukses-hapus");
   }
 
-  function handleKonfirmasiToggleYes() {
-    if (toggleStatusTarget) {
-      setMejaList((prev) =>
-        prev.map((m) =>
-          m.id === toggleStatusTarget.id
-            ? { ...m, status: m.status === "TERSEDIA" ? "TERISI" : "TERSEDIA" }
-            : m
-        )
-      );
+  async function handleKonfirmasiToggleYes() {
+    if (!toggleStatusTarget) return;
+    const nextStatus =
+      toggleStatusTarget.status === "TERSEDIA" ? "TERISI" : "KOSONG";
+    setSubmitting(true);
+    try {
+      await api.updateTable(toggleStatusTarget.id, { status: nextStatus });
       setToggleStatusTarget(null);
+      setOverlay(null);
+      await loadTables();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Gagal mengubah status meja");
+      setOverlay(null);
+      setToggleStatusTarget(null);
+    } finally {
+      setSubmitting(false);
     }
-    setOverlay(null);
   }
 
   const isFormOpen = modalMode !== null;
@@ -204,6 +228,19 @@ export default function InformasiMejaPage() {
 
   return (
     <div className="p-6">
+      {error && (
+        <p className="mb-4 text-red-400 bg-red-950/40 border border-red-800 rounded-lg px-4 py-2 text-sm">
+          {error}
+          <button
+            type="button"
+            className="ml-3 underline text-red-300"
+            onClick={() => setError("")}
+          >
+            Tutup
+          </button>
+        </p>
+      )}
+
       {/* Toolbar */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
@@ -226,10 +263,8 @@ export default function InformasiMejaPage() {
           </button>
           <button
             onClick={openTambah}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition-opacity hover:opacity-90 opacity-50 cursor-not-allowed"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition-opacity hover:opacity-90"
             style={{ backgroundColor: "#10B981", color: "#000" }}
-            title="Kelola meja via database / manajer"
-            disabled
           >
             <Plus size={16} strokeWidth={2.5} />
             Tambah Meja
@@ -238,8 +273,12 @@ export default function InformasiMejaPage() {
       </div>
 
       {/* Grid meja */}
-      <div className="grid grid-cols-4 gap-4">
-        {mejaList.map((meja) => (
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+        {loading && mejaList.length === 0 ? (
+          <p className="text-slate-500 col-span-full py-10 text-center text-sm">Memuat meja...</p>
+        ) : mejaList.length === 0 ? (
+          <p className="text-slate-500 col-span-full py-10 text-center text-sm">Belum ada meja. Tambah meja baru.</p>
+        ) : mejaList.map((meja) => (
           <div
             key={meja.id}
             className="rounded-2xl border border-white/5 p-4 flex flex-col items-center relative"
@@ -341,13 +380,11 @@ export default function InformasiMejaPage() {
                   </div>
                   <input
                     type="text"
+                    inputMode="numeric"
                     value={nomorInput}
-                    onChange={(e) => modalMode === "tambah" && setNomorInput(e.target.value)}
-                    placeholder="Contoh: 012"
-                    readOnly={modalMode === "edit"}
-                    className={`flex-1 bg-transparent text-sm px-4 py-3 focus:outline-none ${
-                      modalMode === "edit" ? "text-slate-400 cursor-not-allowed select-none" : "text-white placeholder-slate-600"
-                    }`}
+                    onChange={(e) => setNomorInput(e.target.value.replace(/\D/g, ""))}
+                    placeholder="Contoh: 12"
+                    className="flex-1 bg-transparent text-sm px-4 py-3 focus:outline-none text-white placeholder-slate-600"
                   />
                 </div>
               </div>
@@ -452,11 +489,12 @@ export default function InformasiMejaPage() {
                 No
               </button>
               <button
-                onClick={handleKonfirmasiYes}
-                className="flex-1 py-3 rounded-xl font-bold text-sm transition-opacity hover:opacity-90"
+                onClick={() => void handleKonfirmasiYes()}
+                disabled={submitting}
+                className="flex-1 py-3 rounded-xl font-bold text-sm transition-opacity hover:opacity-90 disabled:opacity-50"
                 style={{ backgroundColor: "#10B981", color: "#000" }}
               >
-                Yes
+                {submitting ? "..." : "Yes"}
               </button>
             </div>
           </div>
@@ -482,11 +520,12 @@ export default function InformasiMejaPage() {
                 No
               </button>
               <button
-                onClick={handleKonfirmasiHapusYes}
-                className="flex-1 py-3 rounded-xl font-bold text-sm transition-opacity hover:opacity-90"
+                onClick={() => void handleKonfirmasiHapusYes()}
+                disabled={submitting}
+                className="flex-1 py-3 rounded-xl font-bold text-sm transition-opacity hover:opacity-90 disabled:opacity-50"
                 style={{ backgroundColor: "#10B981", color: "#000" }}
               >
-                Yes
+                {submitting ? "..." : "Yes"}
               </button>
             </div>
           </div>
@@ -603,11 +642,12 @@ export default function InformasiMejaPage() {
                 Batal
               </button>
               <button
-                onClick={handleKonfirmasiToggleYes}
-                className="flex-1 py-3 rounded-xl font-bold text-sm transition-opacity hover:opacity-90"
+                onClick={() => void handleKonfirmasiToggleYes()}
+                disabled={submitting}
+                className="flex-1 py-3 rounded-xl font-bold text-sm transition-opacity hover:opacity-90 disabled:opacity-50"
                 style={{ backgroundColor: "#10B981", color: "#000" }}
               >
-                Ya, Ubah
+                {submitting ? "..." : "Ya, Ubah"}
               </button>
             </div>
           </div>

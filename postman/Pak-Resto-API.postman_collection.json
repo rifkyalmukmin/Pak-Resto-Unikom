@@ -393,6 +393,49 @@
       ]
     },
     {
+      "name": "Tables",
+      "item": [
+        {
+          "name": "List Tables",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/tables"
+          }
+        },
+        {
+          "name": "Create Table",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nomor_meja\": 11,\n  \"kapasitas\": 4,\n  \"status\": \"KOSONG\"\n}"
+            },
+            "url": "{{baseUrl}}/api/tables"
+          }
+        },
+        {
+          "name": "Update Table",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kapasitas\": 6,\n  \"status\": \"TERISI\"\n}"
+            },
+            "url": "{{baseUrl}}/api/tables/1"
+          }
+        },
+        {
+          "name": "Delete Table",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/tables/11"
+          }
+        }
+      ]
+    },
+    {
       "name": "Users (Manajer)",
       "item": [
         {

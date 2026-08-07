@@ -162,6 +162,36 @@ export const api = {
 
   getTables: () => request<ApiMeja[]>("/api/tables"),
 
+  getTable: (id: number) => request<ApiMeja>(`/api/tables/${id}`),
+
+  createTable: (body: {
+    nomor_meja: number;
+    kapasitas: number;
+    status?: "KOSONG" | "TERISI" | "RESERVED";
+    kode_qr?: string;
+  }) =>
+    request<ApiMeja>("/api/tables", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  updateTable: (
+    id: number,
+    body: {
+      nomor_meja?: number;
+      kapasitas?: number;
+      status?: "KOSONG" | "TERISI" | "RESERVED";
+      kode_qr?: string;
+    }
+  ) =>
+    request<ApiMeja>(`/api/tables/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
+
+  deleteTable: (id: number) =>
+    request<{ id_meja: number }>(`/api/tables/${id}`, { method: "DELETE" }),
+
   getOrders: (params?: {
     status?: StatusPesanan;
     tipe_pesanan?: TipePesanan;

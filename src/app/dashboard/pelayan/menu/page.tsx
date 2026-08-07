@@ -1,109 +1,102 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { XCircle, Check, X, Info } from "lucide-react";
+import type { ApiMenu } from "@/types/api";
+import { api, formatRp } from "@/lib/api";
 
-type Category = "Semua" | "Makanan" | "Minuman" | "Dessert";
-type MenuStatus = "Tersedia" | "Habis";
+type FlatMenu = ApiMenu & { kategoriNama: string };
 
-interface MenuItem {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  category: Exclude<Category, "Semua">;
-  status: MenuStatus;
-  image: string;
-}
-
-const categories: Category[] = ["Semua", "Makanan", "Minuman", "Dessert"];
-
-const initialMenu: MenuItem[] = [
-  { id: 1, name: "Nasi Goreng Kambing",   description: "Spesial bumbu rempah UNIKOM",    price: 45000,  category: "Makanan",  status: "Tersedia", image: "/images/menu/nasi-goreng.png" },
-  { id: 2, name: "Matcha Creamy Latte",   description: "Premium Uji Matcha Grade",         price: 29000,  category: "Minuman",  status: "Tersedia", image: "/images/menu/iced-cappucino.png" },
-  { id: 3, name: "Wagyu MB7 Steak",       description: "Truffle Mashed Potato Side",       price: 185000, category: "Makanan",  status: "Habis",    image: "/images/menu/rendang-sapi.png" },
-  { id: 4, name: "Classic Tiramisu",      description: "Authentic Italian Recipe",          price: 35000,  category: "Dessert",  status: "Tersedia", image: "/images/menu/chocolate-lava.png" },
-  { id: 5, name: "Salmon Poke Bowl",      description: "Fresh Norwegian Salmon",            price: 65000,  category: "Makanan",  status: "Tersedia", image: "/images/menu/caesar-salad.png" },
-  { id: 6, name: "Lychee Mojito",         description: "Cold Pressed Fresh Lime",           price: 32000,  category: "Minuman",  status: "Tersedia", image: "/images/menu/lychee-tea.png" },
-  { id: 7, name: "Sate Maranggi",         description: "Authentic Purwakarta Beef",         price: 52000,  category: "Makanan",  status: "Habis",    image: "/images/menu/mix-dim-sum.png" },
-  { id: 8, name: "Jus Alpukat Spesial",   description: "Drip Chocolate Garnish",           price: 22000,  category: "Minuman",  status: "Tersedia", image: "/images/menu/ayam-goreng.png" },
-];
-
-const fmt = (n: number) => "Rp " + n.toLocaleString("id-ID").replace(/,/g, ".");
-
-const Toggle = ({ checked, onChange }: { checked: boolean; onChange: () => void }) => (
-  <button
-    onClick={onChange}
-    className="relative w-10 h-[22px] rounded-full transition-colors shrink-0 overflow-hidden"
-    style={{ backgroundColor: checked ? "#10B981" : "#374151" }}
-  >
-    <span
-      className="absolute top-[3px] w-4 h-4 bg-white rounded-full shadow"
-      style={{ left: checked ? "21px" : "3px", transition: "left 0.2s ease" }}
-    />
-  </button>
-);
+const PLACEHOLDER = "/images/menu/nasi-goreng.png";
 
 export default function KatalogMenuPage() {
-  const [menuList, setMenuList]             = useState<MenuItem[]>(initialMenu);
-  const [activeCategory, setActiveCategory] = useState<Category>("Semua");
-  const [viewItem, setViewItem]             = useState<MenuItem | null>(null);
-  const [toggleTarget, setToggleTarget]     = useState<MenuItem | null>(null);
-  const [showToggleSuccess, setShowToggleSuccess] = useState(false);
-  const [toggledItem, setToggledItem]       = useState<MenuItem | null>(null);
+  const [menuList, setMenuList] = useState<FlatMenu[]>([]);
+  const [categories, setCategories] = useState<string[]>(["Semua"]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [activeCategory, setActiveCategory] = useState("Semua");
+  const [viewItem, setViewItem] = useState<FlatMenu | null>(null);
 
-  const filtered = menuList.filter((m) =>
-    activeCategory === "Semua" || m.category === activeCategory
+  const loadMenu = useCallback(async () => {
+    try {
+      const data = await api.getMenu();
+      const flat: FlatMenu[] = data.flatMap((c) =>
+        (c.menu ?? []).map((m) => ({
+          ...m,
+          kategoriNama: c.nama_kategori,
+        }))
+      );
+      setMenuList(flat);
+      setCategories(["Semua", ...data.map((c) => c.nama_kategori)]);
+      setError("");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Gagal memuat menu");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadMenu();
+  }, [loadMenu]);
+
+  const filtered = useMemo(
+    () =>
+      menuList.filter(
+        (m) => activeCategory === "Semua" || m.kategoriNama === activeCategory
+      ),
+    [menuList, activeCategory]
   );
 
-  const tersediaCount = menuList.filter((m) => m.status === "Tersedia").length;
-  const habisCount    = menuList.filter((m) => m.status === "Habis").length;
-
-  function toggleStatus(id: number) {
-    setMenuList((p) => p.map((m) =>
-      m.id === id ? { ...m, status: m.status === "Tersedia" ? "Habis" : "Tersedia" } : m
-    ));
-  }
-
-  // Keep viewItem in sync if status changes while modal is open
-  const viewItemLive = viewItem ? (menuList.find((m) => m.id === viewItem.id) ?? null) : null;
+  const viewLive = viewItem
+    ? (menuList.find((m) => m.id_menu === viewItem.id_menu) ?? null)
+    : null;
 
   return (
     <div className="flex flex-col min-h-full">
       <div className="flex-1 p-6 space-y-5">
-
-        {/* Page header */}
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-3xl font-bold text-white">Katalog Menu</h1>
             <p className="text-slate-400 text-sm mt-1.5 max-w-lg leading-relaxed">
-              Perbarui ketersediaan hidangan secara real-time.
+              Lihat ketersediaan hidangan. Ubah status dilakukan oleh manajer di Menu Management.
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0 ml-6">
-            <span className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full"
-              style={{ backgroundColor: "#10B98118", color: "#4EDEA3", border: "1px solid #10B98130" }}>
+            <span
+              className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full"
+              style={{
+                backgroundColor: "#10B98118",
+                color: "#4EDEA3",
+                border: "1px solid #10B98130",
+              }}
+            >
               <Check size={11} strokeWidth={3} />
-              {tersediaCount} Tersedia
-            </span>
-            <span className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full"
-              style={{ backgroundColor: "#ef444418", color: "#FFB4AB", border: "1px solid #ef444430" }}>
-              <XCircle size={11} strokeWidth={2} />
-              {habisCount} Habis
+              {menuList.length} Menu aktif
             </span>
           </div>
         </div>
 
-        {/* Category tabs */}
-        <div className="flex gap-2">
+        {error && (
+          <p className="text-red-400 bg-red-950/40 border border-red-800 rounded-lg px-4 py-2 text-sm">
+            {error}
+          </p>
+        )}
+
+        <div className="flex gap-2 flex-wrap">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
               className="px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-colors"
-              style={activeCategory === cat
-                ? { backgroundColor: "#10B981", color: "#000" }
-                : { backgroundColor: "#1E293B", color: "#94a3b8", border: "1px solid rgba(255,255,255,0.07)" }
+              style={
+                activeCategory === cat
+                  ? { backgroundColor: "#10B981", color: "#000" }
+                  : {
+                      backgroundColor: "#1E293B",
+                      color: "#94a3b8",
+                      border: "1px solid rgba(255,255,255,0.07)",
+                    }
               }
             >
               {cat}
@@ -111,190 +104,176 @@ export default function KatalogMenuPage() {
           ))}
         </div>
 
-        {/* Menu grid */}
-        <div className="grid grid-cols-4 gap-4">
-          {filtered.map((item) => (
-            <div key={item.id} className="rounded-xl overflow-hidden flex flex-col border" style={{ backgroundColor: "#1E293B", borderColor: "#3C4A42" }}>
-              {/* Image */}
-              <div className="relative w-full aspect-[4/3] overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                <span className="absolute top-2 left-2 text-[11px] font-bold px-3 py-1 rounded-full" style={{ backgroundColor: "#0B1326", color: "#4EDEA3" }}>
-                  {fmt(item.price)}
-                </span>
-                {/* View detail button */}
-                <button
-                  onClick={() => setViewItem(item)}
-                  className="absolute top-2 right-2 z-10 w-7 h-7 rounded-xl flex items-center justify-center hover:opacity-80 transition-opacity"
-                  style={{ backgroundColor: "#0B132680", backdropFilter: "blur(4px)" }}
+        {loading ? (
+          <p className="text-slate-500 text-sm">Memuat menu...</p>
+        ) : filtered.length === 0 ? (
+          <p className="text-slate-500 text-sm py-10 text-center">Tidak ada menu di kategori ini</p>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filtered.map((item) => {
+              const tersedia = item.status === "AKTIF";
+              return (
+                <div
+                  key={item.id_menu}
+                  className="rounded-xl overflow-hidden flex flex-col border"
+                  style={{ backgroundColor: "#1E293B", borderColor: "#3C4A42" }}
                 >
-                  <Info size={12} style={{ color: "#94a3b8" }} />
-                </button>
-                {item.status === "Habis" && (
-                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                    <span className="text-white text-xs font-bold px-3 py-1 rounded-full border border-red-400/60" style={{ backgroundColor: "#ef444480" }}>
-                      HABIS
+                  <div className="relative w-full aspect-[4/3] overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={item.gambar || PLACEHOLDER}
+                      alt={item.nama_menu}
+                      className="w-full h-full object-cover"
+                    />
+                    <span
+                      className="absolute top-2 left-2 text-[11px] font-bold px-3 py-1 rounded-full"
+                      style={{ backgroundColor: "#0B1326", color: "#4EDEA3" }}
+                    >
+                      {formatRp(item.harga)}
                     </span>
-                  </div>
-                )}
-              </div>
-
-              {/* Info */}
-              <div className="p-3 flex flex-col gap-2 flex-1">
-                <div>
-                  <p className="text-white text-sm font-bold leading-tight line-clamp-1">{item.name}</p>
-                  <p className="text-slate-500 text-[11px] mt-0.5 line-clamp-1">{item.description}</p>
-                </div>
-                <div className="flex items-center justify-between mt-auto py-2 border-t" style={{ borderColor: "#3C4A42" }}>
-                  <div className="flex items-center gap-1.5">
-                    {item.status === "Tersedia" ? (
-                      <Check size={13} strokeWidth={3} style={{ color: "#4EDEA3" }} />
-                    ) : (
-                      <XCircle size={13} style={{ color: "#FFB4AB" }} strokeWidth={2} />
+                    <button
+                      onClick={() => setViewItem(item)}
+                      className="absolute top-2 right-2 z-10 w-7 h-7 rounded-xl flex items-center justify-center hover:opacity-80"
+                      style={{ backgroundColor: "#0B132680", backdropFilter: "blur(4px)" }}
+                    >
+                      <Info size={12} style={{ color: "#94a3b8" }} />
+                    </button>
+                    {!tersedia && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <span
+                          className="text-white text-xs font-bold px-3 py-1 rounded-full border border-red-400/60"
+                          style={{ backgroundColor: "#ef444480" }}
+                        >
+                          NONAKTIF
+                        </span>
+                      </div>
                     )}
-                    <span className="text-xs font-semibold" style={{ color: item.status === "Tersedia" ? "#4EDEA3" : "#FFB4AB" }}>
-                      {item.status === "Tersedia" ? "Tersedia" : "Habis"}
-                    </span>
                   </div>
-                  <Toggle checked={item.status === "Tersedia"} onChange={() => setToggleTarget(item)} />
+
+                  <div className="p-3 flex flex-col gap-2 flex-1">
+                    <div>
+                      <p className="text-white text-sm font-bold leading-tight line-clamp-1">
+                        {item.nama_menu}
+                      </p>
+                      <p className="text-slate-500 text-[11px] mt-0.5 line-clamp-1">
+                        {item.deskripsi || item.kategoriNama}
+                      </p>
+                    </div>
+                    <div
+                      className="flex items-center justify-between mt-auto py-2 border-t"
+                      style={{ borderColor: "#3C4A42" }}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        {tersedia ? (
+                          <Check size={13} strokeWidth={3} style={{ color: "#4EDEA3" }} />
+                        ) : (
+                          <XCircle size={13} style={{ color: "#FFB4AB" }} strokeWidth={2} />
+                        )}
+                        <span
+                          className="text-xs font-semibold"
+                          style={{ color: tersedia ? "#4EDEA3" : "#FFB4AB" }}
+                        >
+                          {tersedia ? "Tersedia" : "Nonaktif"}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-slate-500 font-medium">
+                        {item.kategoriNama}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ))}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {/* Modal konfirmasi toggle ketersediaan */}
-      {toggleTarget && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="w-[380px] rounded-2xl border border-white/10 bg-[#1E293B] p-8 flex flex-col items-center text-center space-y-5">
-            <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(16,185,129,0.15)" }}>
-              <Check size={28} style={{ color: "#10B981" }} strokeWidth={2.5} />
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-white font-bold text-lg">Ubah Ketersediaan?</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">
-                <span className="text-white font-semibold">{toggleTarget.name}</span> akan diubah menjadi{" "}
-                <span className="font-semibold" style={{ color: "#10B981" }}>
-                  {toggleTarget.status === "Tersedia" ? "Habis" : "Tersedia"}
-                </span>.
-              </p>
-            </div>
-            <div className="flex gap-3 w-full">
-              <button
-                onClick={() => setToggleTarget(null)}
-                className="flex-1 py-2.5 rounded-xl border border-white/10 text-white font-semibold hover:bg-white/5 transition-colors"
-              >
-                Batal
-              </button>
-              <button
-                onClick={() => {
-                  toggleStatus(toggleTarget.id);
-                  setToggledItem(toggleTarget);
-                  setToggleTarget(null);
-                  setShowToggleSuccess(true);
-                }}
-                className="flex-1 py-2.5 rounded-xl font-bold text-black transition-opacity hover:opacity-90"
-                style={{ backgroundColor: "#10B981" }}
-              >
-                Ya, Ubah
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal berhasil ubah ketersediaan */}
-      {showToggleSuccess && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="w-[360px] rounded-2xl border border-white/10 bg-[#1E293B] p-8 flex flex-col items-center text-center space-y-5">
-            <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: "rgba(16,185,129,0.15)" }}>
-              <Check size={28} style={{ color: "#10B981" }} strokeWidth={2.5} />
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-white font-bold text-lg">Status Berhasil Diubah!</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">
-                {toggledItem && (
-                  <><span className="text-white font-semibold">{toggledItem.name}</span> kini berstatus{" "}
-                  <span className="font-semibold" style={{ color: "#10B981" }}>
-                    {toggledItem.status === "Tersedia" ? "Habis" : "Tersedia"}
-                  </span>.</>
-                )}
-              </p>
-            </div>
-            <button
-              onClick={() => { setShowToggleSuccess(false); setToggledItem(null); }}
-              className="w-full py-2.5 rounded-xl font-bold text-black transition-opacity hover:opacity-90"
-              style={{ backgroundColor: "#10B981" }}
-            >
-              OK
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* View detail popup */}
-      {viewItemLive && (
+      {viewLive && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setViewItem(null)} />
-          <div className="relative w-[480px] rounded-2xl overflow-hidden border shadow-2xl z-10" style={{ borderColor: "#3C4A42" }}>
-            {/* Image */}
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setViewItem(null)}
+          />
+          <div
+            className="relative w-[480px] rounded-2xl overflow-hidden border shadow-2xl z-10"
+            style={{ borderColor: "#3C4A42" }}
+          >
             <div className="relative w-full aspect-[16/9] overflow-hidden">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={viewItemLive.image} alt={viewItemLive.name} className="w-full h-full object-cover" />
-              {viewItemLive.status === "Habis" && (
+              <img
+                src={viewLive.gambar || PLACEHOLDER}
+                alt={viewLive.nama_menu}
+                className="w-full h-full object-cover"
+              />
+              {viewLive.status !== "AKTIF" && (
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                  <span className="text-white text-xs font-bold px-3 py-1 rounded-full border border-red-400/60" style={{ backgroundColor: "#ef444480" }}>
-                    HABIS
+                  <span
+                    className="text-white text-xs font-bold px-3 py-1 rounded-full border border-red-400/60"
+                    style={{ backgroundColor: "#ef444480" }}
+                  >
+                    NONAKTIF
                   </span>
                 </div>
               )}
               <button
                 onClick={() => setViewItem(null)}
-                className="absolute top-3 right-3 w-8 h-8 rounded-xl flex items-center justify-center hover:opacity-80 transition-opacity"
+                className="absolute top-3 right-3 w-8 h-8 rounded-xl flex items-center justify-center"
                 style={{ backgroundColor: "#0B132690", backdropFilter: "blur(4px)" }}
               >
                 <X size={15} color="#fff" />
               </button>
             </div>
 
-            {/* Detail */}
             <div className="px-6 py-5 space-y-4" style={{ backgroundColor: "#1E293B" }}>
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="text-white text-lg font-bold">{viewItemLive.name}</h2>
-                  <p className="text-slate-400 text-sm mt-0.5">{viewItemLive.description}</p>
+                  <h2 className="text-white text-lg font-bold">{viewLive.nama_menu}</h2>
+                  <p className="text-slate-400 text-sm mt-0.5">
+                    {viewLive.deskripsi || "Tidak ada deskripsi"}
+                  </p>
                 </div>
-                <span className="text-sm font-bold px-3 py-1.5 rounded-full shrink-0" style={{ backgroundColor: "#0B1326", color: "#4EDEA3" }}>
-                  {fmt(viewItemLive.price)}
+                <span
+                  className="text-sm font-bold px-3 py-1.5 rounded-full shrink-0"
+                  style={{ backgroundColor: "#0B1326", color: "#4EDEA3" }}
+                >
+                  {formatRp(viewLive.harga)}
                 </span>
               </div>
 
               <div className="flex items-center gap-3">
-                <span className="text-xs font-bold px-2.5 py-1 rounded-md"
-                  style={{ backgroundColor: "#10B98115", color: "#4EDEA3", border: "1px solid #10B98130" }}>
-                  {viewItemLive.category}
+                <span
+                  className="text-xs font-bold px-2.5 py-1 rounded-md"
+                  style={{
+                    backgroundColor: "#10B98115",
+                    color: "#4EDEA3",
+                    border: "1px solid #10B98130",
+                  }}
+                >
+                  {viewLive.kategoriNama}
                 </span>
-                <span className="flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-md"
-                  style={viewItemLive.status === "Tersedia"
-                    ? { backgroundColor: "#10B98115", color: "#4EDEA3", border: "1px solid #10B98130" }
-                    : { backgroundColor: "#ef444415", color: "#FFB4AB", border: "1px solid #ef444430" }
-                  }>
-                  {viewItemLive.status === "Tersedia"
-                    ? <Check size={10} strokeWidth={3} />
-                    : <XCircle size={10} strokeWidth={2} />
+                <span
+                  className="flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-md"
+                  style={
+                    viewLive.status === "AKTIF"
+                      ? {
+                          backgroundColor: "#10B98115",
+                          color: "#4EDEA3",
+                          border: "1px solid #10B98130",
+                        }
+                      : {
+                          backgroundColor: "#ef444415",
+                          color: "#FFB4AB",
+                          border: "1px solid #ef444430",
+                        }
                   }
-                  {viewItemLive.status}
+                >
+                  {viewLive.status === "AKTIF" ? (
+                    <Check size={10} strokeWidth={3} />
+                  ) : (
+                    <XCircle size={10} strokeWidth={2} />
+                  )}
+                  {viewLive.status === "AKTIF" ? "Tersedia" : "Nonaktif"}
                 </span>
-              </div>
-
-              {/* Toggle status inside popup */}
-              <div className="flex items-center justify-between pt-3 border-t" style={{ borderColor: "#3C4A42" }}>
-                <span className="text-slate-400 text-sm">Ubah ketersediaan</span>
-                <Toggle
-                  checked={viewItemLive.status === "Tersedia"}
-                  onChange={() => setToggleTarget(viewItemLive)}
-                />
               </div>
             </div>
           </div>
