@@ -1,16 +1,20 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { StatusMenu, TipePesanan } from "@prisma/client";
 
 // GET /api/orders - Ambil semua pesanan
 export async function GET() {
   try {
-    const orders = await prisma.order.findMany({
+    const orders = await prisma.pesanan.findMany({
       include: {
-        orderItems: { include: { menuItem: true } },
-        table: true,
-        user: { select: { id: true, name: true, email: true } },
+        detail_pesanan: { include: { menu: true } },
+        meja: true,
+        user: {
+          select: { id_user: true, nama_lengkap: true, username: true, role: true },
+        },
+        pembayaran: true,
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { waktu_pesanan: "desc" },
       take: 50,
     });
     return NextResponse.json({ success: true, data: orders });
@@ -27,7 +31,26 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { items, tableId, customerName, customerPhone, notes } = body;
+    const {
+      items,
+      id_meja,
+      id_user,
+      tipe_pesanan = "DINE_IN",
+      catatan,
+    } = body as {
+      items: { id_menu: number; jumlah: number; catatan?: string }[];
+      id_meja?: number | null;
+      id_user: number;
+      tipe_pesanan?: TipePesanan;
+      catatan?: string;
+    };
+
+    if (!id_user) {
+      return NextResponse.json(
+        { success: false, error: "id_user wajib diisi" },
+        { status: 400 }
+      );
+    }
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
@@ -36,52 +59,65 @@ export async function POST(request: Request) {
       );
     }
 
-    // Ambil harga menu dari database (hindari manipulasi harga dari client)
-    const menuItems = await prisma.menuItem.findMany({
-      where: { id: { in: items.map((i: { menuItemId: string }) => i.menuItemId) } },
+    const tipe =
+      tipe_pesanan === "TAKEAWAY" ? TipePesanan.TAKEAWAY : TipePesanan.DINE_IN;
+
+    if (tipe === TipePesanan.DINE_IN && !id_meja) {
+      return NextResponse.json(
+        { success: false, error: "id_meja wajib untuk pesanan dine-in" },
+        { status: 400 }
+      );
+    }
+
+    const menus = await prisma.menu.findMany({
+      where: {
+        id_menu: { in: items.map((i) => i.id_menu) },
+        status: StatusMenu.AKTIF,
+      },
     });
 
-    const orderItems = items.map((item: { menuItemId: string; quantity: number; notes?: string }) => {
-      const menuItem = menuItems.find((m) => m.id === item.menuItemId);
-      if (!menuItem) throw new Error(`Menu ${item.menuItemId} tidak ditemukan`);
+    const detailData = items.map((item) => {
+      const menuItem = menus.find((m) => m.id_menu === item.id_menu);
+      if (!menuItem) throw new Error(`Menu ${item.id_menu} tidak ditemukan`);
       return {
-        menuItemId: item.menuItemId,
-        quantity: item.quantity,
-        price: menuItem.price,
-        notes: item.notes,
+        id_menu: item.id_menu,
+        jumlah: item.jumlah,
+        catatan: item.catatan ?? catatan ?? null,
+        subtotal: menuItem.harga * item.jumlah,
       };
     });
 
-    const subtotal = orderItems.reduce((sum: number, item: { price: number; quantity: number }) => {
-      return sum + item.price * item.quantity;
-    }, 0);
-    const tax = Math.round(subtotal * 0.11); // PPN 11%
-    const serviceCharge = 0;
-    const total = subtotal + tax + serviceCharge;
+    const total_harga = detailData.reduce((sum, d) => sum + d.subtotal, 0);
 
-    const orderNumber = `ORD-${Date.now()}`;
-
-    const order = await prisma.order.create({
+    const order = await prisma.pesanan.create({
       data: {
-        orderNumber,
-        tableId: tableId || null,
-        customerName,
-        customerPhone,
-        notes,
-        subtotal,
-        tax,
-        serviceCharge,
-        total,
-        orderItems: { create: orderItems },
+        id_user,
+        id_meja: tipe === TipePesanan.TAKEAWAY ? null : id_meja ?? null,
+        tipe_pesanan: tipe,
+        total_harga,
+        detail_pesanan: { create: detailData },
       },
-      include: { orderItems: { include: { menuItem: true } } },
+      include: {
+        detail_pesanan: { include: { menu: true } },
+        meja: true,
+      },
     });
+
+    if (order.id_meja) {
+      await prisma.meja.update({
+        where: { id_meja: order.id_meja },
+        data: { status: "TERISI" },
+      });
+    }
 
     return NextResponse.json({ success: true, data: order }, { status: 201 });
   } catch (error) {
     console.error("POST /api/orders error:", error);
     return NextResponse.json(
-      { success: false, error: "Gagal membuat pesanan" },
+      {
+        success: false,
+        error: error instanceof Error ? error.message : "Gagal membuat pesanan",
+      },
       { status: 500 }
     );
   }

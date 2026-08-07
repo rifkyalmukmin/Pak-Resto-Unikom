@@ -3,12 +3,21 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   _req: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const item = await prisma.menuItem.findUnique({
-      where: { slug: params.slug },
-      include: { category: true },
+    const { id } = await params;
+    const id_menu = Number(id);
+    if (Number.isNaN(id_menu)) {
+      return NextResponse.json(
+        { success: false, error: "ID menu tidak valid" },
+        { status: 400 }
+      );
+    }
+
+    const item = await prisma.menu.findUnique({
+      where: { id_menu },
+      include: { kategori: true },
     });
     if (!item) {
       return NextResponse.json(
@@ -18,7 +27,7 @@ export async function GET(
     }
     return NextResponse.json({ success: true, data: item });
   } catch (error) {
-    console.error("GET /api/menu/[slug] error:", error);
+    console.error("GET /api/menu/[id] error:", error);
     return NextResponse.json(
       { success: false, error: "Gagal mengambil data menu" },
       { status: 500 }

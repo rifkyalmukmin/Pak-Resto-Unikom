@@ -1,4 +1,4 @@
-// Prisma schema untuk Pak Resto Unikom
+// Prisma schema — selaras ERD Pak Resto UNIKOM
 // Docs: https://pris.ly/d/prisma-schema
 
 generator client {
@@ -14,170 +14,175 @@ datasource db {
 // ============ ENUMS ============
 
 enum Role {
-  ADMIN
-  STAFF
-  CUSTOMER
+  PELAYAN
+  CHEF
+  KASIR
+  MANAJER
 }
 
-enum OrderStatus {
-  PENDING
-  CONFIRMED
-  PREPARING
-  READY
-  SERVED
-  COMPLETED
-  CANCELLED
+enum TipePesanan {
+  DINE_IN
+  TAKEAWAY
 }
 
-enum PaymentStatus {
-  UNPAID
-  PAID
-  REFUNDED
+enum StatusPesanan {
+  MENUNGGU
+  DIPROSES
+  SIAP
+  DIANTAR
+  SELESAI
+  DIBATALKAN
 }
 
-enum PaymentMethod {
+enum StatusMeja {
+  KOSONG
+  TERISI
+  RESERVED
+}
+
+enum StatusMenu {
+  AKTIF
+  NONAKTIF
+}
+
+enum StatusBahan {
+  TERSEDIA
+  MENIPIS
+  HABIS
+}
+
+enum MetodePembayaran {
   CASH
   QRIS
   TRANSFER
 }
 
+enum StatusPembayaran {
+  BELUM_BAYAR
+  LUNAS
+  DIBATALKAN
+}
+
 // ============ MODELS ============
 
-model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  role          Role      @default(CUSTOMER)
-  phone         String?
-  accounts      Account[]
-  sessions      Session[]
-  orders        Order[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+model user {
+  id_user      Int          @id @default(autoincrement())
+  nama_lengkap String
+  username     String       @unique
+  password     String
+  role         Role
+  pesanan      pesanan[]
+  pembayaran   pembayaran[]
 
-  @@map("users")
+  @@map("user")
 }
 
-model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?
-  session_state     String?
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+model meja {
+  id_meja    Int        @id @default(autoincrement())
+  nomor_meja Int        @unique
+  kapasitas  Int
+  kode_qr    String     @unique
+  status     StatusMeja @default(KOSONG)
+  pesanan    pesanan[]
 
-  @@unique([provider, providerAccountId])
-  @@map("accounts")
+  @@map("meja")
 }
 
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+model kategori {
+  id_kategori  Int     @id @default(autoincrement())
+  nama_kategori String
+  deskripsi    String?
+  warna        String?
+  jumlah_menu  Int     @default(0)
+  aktif        Boolean @default(true)
+  menu         menu[]
 
-  @@map("sessions")
+  @@map("kategori")
 }
 
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
+model menu {
+  id_menu         Int               @id @default(autoincrement())
+  id_kategori     Int
+  nama_menu       String
+  deskripsi       String?
+  harga           Int
+  status          StatusMenu        @default(AKTIF)
+  gambar          String?
+  kategori        kategori          @relation(fields: [id_kategori], references: [id_kategori], onDelete: Cascade)
+  detail_pesanan  detail_pesanan[]
+  menu_bahan      menu_bahan[]
 
-  @@unique([identifier, token])
-  @@map("verification_tokens")
+  @@index([id_kategori])
+  @@map("menu")
 }
 
-model Category {
-  id        String     @id @default(cuid())
-  name      String     @unique
-  slug      String     @unique
-  description String?
-  image     String?
-  menuItems MenuItem[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+model bahan_baku {
+  id_bahan   Int         @id @default(autoincrement())
+  nama_bahan String
+  jumlah     Float
+  satuan     String
+  status     StatusBahan @default(TERSEDIA)
+  menu_bahan menu_bahan[]
 
-  @@map("categories")
+  @@map("bahan_baku")
 }
 
-model MenuItem {
-  id          String   @id @default(cuid())
-  name        String
-  slug        String   @unique
-  description String?
-  price       Int
-  image       String?
-  isAvailable Boolean  @default(true)
-  categoryId  String
-  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  orderItems  OrderItem[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model menu_bahan {
+  id_bahan     Int
+  id_menu      Int
+  jumlah_pakai Float
+  bahan_baku   bahan_baku @relation(fields: [id_bahan], references: [id_bahan], onDelete: Cascade)
+  menu         menu       @relation(fields: [id_menu], references: [id_menu], onDelete: Cascade)
 
-  @@index([categoryId])
-  @@map("menu_items")
+  @@id([id_bahan, id_menu])
+  @@map("menu_bahan")
 }
 
-model RestaurantTable {
-  id        String   @id @default(cuid())
-  number    Int      @unique
-  capacity  Int      @default(4)
-  status    String   @default("AVAILABLE") // AVAILABLE | OCCUPIED | RESERVED
-  orders    Order[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model pesanan {
+  id_pesanan     Int              @id @default(autoincrement())
+  id_user        Int
+  id_meja        Int?
+  tipe_pesanan   TipePesanan
+  waktu_pesanan  DateTime         @default(now())
+  status_pesanan StatusPesanan    @default(MENUNGGU)
+  total_harga    Int
+  user           user             @relation(fields: [id_user], references: [id_user])
+  meja           meja?            @relation(fields: [id_meja], references: [id_meja])
+  detail_pesanan detail_pesanan[]
+  pembayaran     pembayaran?
 
-  @@map("restaurant_tables")
+  @@index([id_user])
+  @@index([id_meja])
+  @@index([status_pesanan])
+  @@map("pesanan")
 }
 
-model Order {
-  id            String        @id @default(cuid())
-  orderNumber   String        @unique
-  status        OrderStatus   @default(PENDING)
-  paymentStatus PaymentStatus @default(UNPAID)
-  paymentMethod PaymentMethod?
-  tableId       String?
-  table         RestaurantTable? @relation(fields: [tableId], references: [id])
-  userId        String?
-  user          User?         @relation(fields: [userId], references: [id])
-  customerName  String?
-  customerPhone String?
-  subtotal      Int
-  tax           Int           @default(0)
-  serviceCharge Int           @default(0)
-  total         Int
-  notes         String?
-  orderItems    OrderItem[]
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+model detail_pesanan {
+  id_detail  Int     @id @default(autoincrement())
+  id_menu    Int
+  id_pesanan Int
+  jumlah     Int
+  catatan    String?
+  subtotal   Int
+  menu       menu    @relation(fields: [id_menu], references: [id_menu])
+  pesanan    pesanan @relation(fields: [id_pesanan], references: [id_pesanan], onDelete: Cascade)
 
-  @@index([status])
-  @@index([userId])
-  @@map("orders")
+  @@index([id_pesanan])
+  @@index([id_menu])
+  @@map("detail_pesanan")
 }
 
-model OrderItem {
-  id         String   @id @default(cuid())
-  orderId    String
-  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  menuItemId String
-  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
-  quantity   Int      @default(1)
-  price      Int
-  notes      String?
-  createdAt  DateTime @default(now())
+model pembayaran {
+  id_pembayaran     Int               @id @default(autoincrement())
+  id_user           Int
+  id_pesanan        Int               @unique
+  metode_pembayaran MetodePembayaran
+  waktu_pembayaran  DateTime          @default(now())
+  total             Int
+  status_pembayaran StatusPembayaran  @default(BELUM_BAYAR)
+  user              user              @relation(fields: [id_user], references: [id_user])
+  pesanan           pesanan           @relation(fields: [id_pesanan], references: [id_pesanan])
 
-  @@index([orderId])
-  @@map("order_items")
+  @@index([id_user])
+  @@map("pembayaran")
 }

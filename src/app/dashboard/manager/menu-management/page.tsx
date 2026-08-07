@@ -89,7 +89,7 @@ export default function MenuManagementPage() {
         {/* Stat cards */}
         <div className="grid grid-cols-4 gap-3">
           {[
-            { label: "TOTAL MENU",  value: initialItems.length.toString().padStart ? "128" : "128", color: "#fff" },
+            { label: "TOTAL MENU",  value: "128", color: "#fff" },
             { label: "AKTIF",       value: "115",                                                    color: "#4EDEA3" },
             { label: "STOK HABIS",  value: "13",                                                     color: "#FFB4AB" },
             { label: "KATEGORI",    value: "8",                                                      color: "#ADC6FF" },

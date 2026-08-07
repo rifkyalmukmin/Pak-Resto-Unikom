@@ -3,8 +3,8 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
-    const tables = await prisma.restaurantTable.findMany({
-      orderBy: { number: "asc" },
+    const tables = await prisma.meja.findMany({
+      orderBy: { nomor_meja: "asc" },
     });
     return NextResponse.json({ success: true, data: tables });
   } catch (error) {
