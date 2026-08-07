@@ -1,9 +1,18 @@
 import type {
   MetodePembayaran,
+  StatusBahan,
   StatusMeja,
   StatusPesanan,
   TipePesanan,
 } from "@prisma/client";
+
+export interface ApiBahanBaku {
+  id_bahan: number;
+  nama_bahan: string;
+  jumlah: number;
+  satuan: string;
+  status: StatusBahan;
+}
 
 export interface ApiMenu {
   id_menu: number;

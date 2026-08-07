@@ -277,6 +277,60 @@
           }
         }
       ]
+    },
+    {
+      "name": "Bahan Baku",
+      "item": [
+        {
+          "name": "List Bahan Baku",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/bahan-baku",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bahan-baku"],
+              "query": [
+                { "key": "status", "value": "MENIPIS", "disabled": true, "description": "TERSEDIA|MENIPIS|HABIS" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Bahan Baku",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama_bahan\": \"Cabai Merah\",\n  \"jumlah\": 5,\n  \"satuan\": \"kg\"\n}"
+            },
+            "url": "{{baseUrl}}/api/bahan-baku"
+          }
+        },
+        {
+          "name": "Update Bahan Baku",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jumlah\": 12\n}"
+            },
+            "url": "{{baseUrl}}/api/bahan-baku/1"
+          }
+        },
+        {
+          "name": "Delete Bahan Baku",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/bahan-baku/1"
+          }
+        }
+      ]
     }
   ]
 }

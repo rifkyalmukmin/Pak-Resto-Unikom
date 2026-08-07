@@ -1,4 +1,5 @@
 import type {
+  ApiBahanBaku,
   ApiKategori,
   ApiMeja,
   ApiPembayaran,
@@ -6,7 +7,7 @@ import type {
   ApiResponse,
   CreateOrderItem,
 } from "@/types/api";
-import type { MetodePembayaran, StatusPesanan, TipePesanan } from "@prisma/client";
+import type { MetodePembayaran, StatusBahan, StatusPesanan, TipePesanan } from "@prisma/client";
 
 class ApiError extends Error {
   constructor(message: string) {
@@ -82,6 +83,33 @@ export const api = {
     request<ApiPembayaran>("/api/payments", {
       method: "POST",
       body: JSON.stringify(body),
+    }),
+
+  getBahanBaku: (params?: { status?: StatusBahan }) => {
+    const q = new URLSearchParams();
+    if (params?.status) q.set("status", params.status);
+    const qs = q.toString();
+    return request<ApiBahanBaku[]>(`/api/bahan-baku${qs ? `?${qs}` : ""}`);
+  },
+
+  createBahanBaku: (body: { nama_bahan: string; jumlah: number; satuan: string }) =>
+    request<ApiBahanBaku>("/api/bahan-baku", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  updateBahanBaku: (
+    id: number,
+    body: { nama_bahan?: string; jumlah?: number; satuan?: string; status?: StatusBahan }
+  ) =>
+    request<ApiBahanBaku>(`/api/bahan-baku/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
+
+  deleteBahanBaku: (id: number) =>
+    request<{ id_bahan: number }>(`/api/bahan-baku/${id}`, {
+      method: "DELETE",
     }),
 };
 
