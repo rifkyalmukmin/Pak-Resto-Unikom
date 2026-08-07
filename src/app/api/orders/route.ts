@@ -1,22 +1,51 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { StatusMenu, TipePesanan } from "@prisma/client";
+import { isAuthFailure, requireAuth } from "@/lib/api-auth";
+import { orderInclude } from "@/lib/prisma-includes";
+import {
+  buildOrderWhere,
+  ORDER_STATUS_VALUES,
+  ORDER_TYPE_VALUES,
+  parseOptionalEnum,
+} from "@/lib/order-helpers";
 
-// GET /api/orders - Ambil semua pesanan
-export async function GET() {
+const STAFF_ROLES = ["PELAYAN", "CHEF", "KASIR", "MANAJER"] as const;
+
+// GET /api/orders?status=MENUNGGU&tipe_pesanan=DINE_IN&id_meja=1&belum_bayar=true
+export async function GET(request: Request) {
+  const auth = await requireAuth([...STAFF_ROLES]);
+  if (isAuthFailure(auth)) return auth.error;
+
   try {
+    const { searchParams } = new URL(request.url);
+    const status = parseOptionalEnum(
+      searchParams.get("status"),
+      ORDER_STATUS_VALUES
+    );
+    const tipe_pesanan = parseOptionalEnum(
+      searchParams.get("tipe_pesanan"),
+      ORDER_TYPE_VALUES
+    );
+    const id_meja = searchParams.get("id_meja")
+      ? Number(searchParams.get("id_meja"))
+      : undefined;
+    const belum_bayar = searchParams.get("belum_bayar") === "true";
+
+    if (searchParams.get("id_meja") && (!id_meja || Number.isNaN(id_meja))) {
+      return NextResponse.json(
+        { success: false, error: "id_meja tidak valid" },
+        { status: 400 }
+      );
+    }
+
     const orders = await prisma.pesanan.findMany({
-      include: {
-        detail_pesanan: { include: { menu: true } },
-        meja: true,
-        user: {
-          select: { id_user: true, nama_lengkap: true, username: true, role: true },
-        },
-        pembayaran: true,
-      },
+      where: buildOrderWhere({ status, tipe_pesanan, id_meja, belum_bayar }),
+      include: orderInclude,
       orderBy: { waktu_pesanan: "desc" },
-      take: 50,
+      take: 100,
     });
+
     return NextResponse.json({ success: true, data: orders });
   } catch (error) {
     console.error("GET /api/orders error:", error);
@@ -27,8 +56,11 @@ export async function GET() {
   }
 }
 
-// POST /api/orders - Buat pesanan baru
+// POST /api/orders
 export async function POST(request: Request) {
+  const auth = await requireAuth(["PELAYAN", "KASIR", "MANAJER"]);
+  if (isAuthFailure(auth)) return auth.error;
+
   try {
     const body = await request.json();
     const {
@@ -40,15 +72,15 @@ export async function POST(request: Request) {
     } = body as {
       items: { id_menu: number; jumlah: number; catatan?: string }[];
       id_meja?: number | null;
-      id_user: number;
+      id_user?: number;
       tipe_pesanan?: TipePesanan;
       catatan?: string;
     };
 
-    if (!id_user) {
+    if (auth.role === "KASIR" && tipe_pesanan !== "TAKEAWAY") {
       return NextResponse.json(
-        { success: false, error: "id_user wajib diisi" },
-        { status: 400 }
+        { success: false, error: "Kasir hanya boleh membuat pesanan takeaway" },
+        { status: 403 }
       );
     }
 
@@ -91,16 +123,13 @@ export async function POST(request: Request) {
 
     const order = await prisma.pesanan.create({
       data: {
-        id_user,
+        id_user: id_user ?? auth.userId,
         id_meja: tipe === TipePesanan.TAKEAWAY ? null : id_meja ?? null,
         tipe_pesanan: tipe,
         total_harga,
         detail_pesanan: { create: detailData },
       },
-      include: {
-        detail_pesanan: { include: { menu: true } },
-        meja: true,
-      },
+      include: orderInclude,
     });
 
     if (order.id_meja) {

@@ -1,0 +1,282 @@
+{
+  "info": {
+    "name": "Pak Resto UNIKOM API",
+    "description": "Koleksi untuk menguji Orders & Payments API.\n\n**Auth:** Jalankan request \"Login\" terlebih dahulu. Cookie session akan tersimpan otomatis di Postman.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "csrfToken", "value": "" },
+    { "key": "orderId", "value": "1" },
+    { "key": "paymentId", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Get CSRF Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('csrfToken', json.csrfToken);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/auth/csrf"
+          }
+        },
+        {
+          "name": "Login (Kasir)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/x-www-form-urlencoded" }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "csrfToken", "value": "{{csrfToken}}", "type": "text" },
+                { "key": "username", "value": "kasir", "type": "text" },
+                { "key": "password", "value": "password123", "type": "text" },
+                { "key": "callbackUrl", "value": "/dashboard/kasir", "type": "text" },
+                { "key": "json", "value": "true", "type": "text" }
+              ]
+            },
+            "url": "{{baseUrl}}/api/auth/callback/credentials"
+          }
+        },
+        {
+          "name": "Login (Chef)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/x-www-form-urlencoded" }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "csrfToken", "value": "{{csrfToken}}", "type": "text" },
+                { "key": "username", "value": "chef", "type": "text" },
+                { "key": "password", "value": "password123", "type": "text" },
+                { "key": "callbackUrl", "value": "/dashboard/koki", "type": "text" },
+                { "key": "json", "value": "true", "type": "text" }
+              ]
+            },
+            "url": "{{baseUrl}}/api/auth/callback/credentials"
+          }
+        },
+        {
+          "name": "Login (Pelayan)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/x-www-form-urlencoded" }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "csrfToken", "value": "{{csrfToken}}", "type": "text" },
+                { "key": "username", "value": "pelayan", "type": "text" },
+                { "key": "password", "value": "password123", "type": "text" },
+                { "key": "callbackUrl", "value": "/dashboard/pelayan", "type": "text" },
+                { "key": "json", "value": "true", "type": "text" }
+              ]
+            },
+            "url": "{{baseUrl}}/api/auth/callback/credentials"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "List Orders",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/orders?status=MENUNGGU",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders"],
+              "query": [
+                { "key": "status", "value": "MENUNGGU", "description": "MENUNGGU|DIPROSES|SIAP|DIANTAR|SELESAI|DIBATALKAN" },
+                { "key": "tipe_pesanan", "value": "DINE_IN", "disabled": true },
+                { "key": "id_meja", "value": "1", "disabled": true },
+                { "key": "belum_bayar", "value": "true", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Order by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/orders/{{orderId}}"
+          }
+        },
+        {
+          "name": "Create Order (Dine-in)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const json = pm.response.json();",
+                  "  pm.collectionVariables.set('orderId', json.data.id_pesanan);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipe_pesanan\": \"DINE_IN\",\n  \"id_meja\": 2,\n  \"items\": [\n    { \"id_menu\": 1, \"jumlah\": 1, \"catatan\": \"Tidak pedas\" },\n    { \"id_menu\": 4, \"jumlah\": 2 }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/api/orders"
+          }
+        },
+        {
+          "name": "Create Order (Takeaway)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipe_pesanan\": \"TAKEAWAY\",\n  \"items\": [\n    { \"id_menu\": 3, \"jumlah\": 2 }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/api/orders"
+          }
+        },
+        {
+          "name": "Update Status → DIPROSES (Chef)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status_pesanan\": \"DIPROSES\"\n}"
+            },
+            "url": "{{baseUrl}}/api/orders/{{orderId}}"
+          }
+        },
+        {
+          "name": "Update Status → SIAP (Chef)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status_pesanan\": \"SIAP\"\n}"
+            },
+            "url": "{{baseUrl}}/api/orders/{{orderId}}"
+          }
+        },
+        {
+          "name": "Update Status → DIANTAR (Pelayan)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status_pesanan\": \"DIANTAR\"\n}"
+            },
+            "url": "{{baseUrl}}/api/orders/{{orderId}}"
+          }
+        },
+        {
+          "name": "Update Status → SELESAI (Pelayan)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status_pesanan\": \"SELESAI\"\n}"
+            },
+            "url": "{{baseUrl}}/api/orders/{{orderId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "List Payments",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/payments?status=LUNAS",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "payments"],
+              "query": [
+                { "key": "status", "value": "LUNAS" },
+                { "key": "id_pesanan", "value": "{{orderId}}", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Payment by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/payments/{{paymentId}}"
+          }
+        },
+        {
+          "name": "Create Payment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const json = pm.response.json();",
+                  "  pm.collectionVariables.set('paymentId', json.data.id_pembayaran);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_pesanan\": {{orderId}},\n  \"metode_pembayaran\": \"CASH\"\n}"
+            },
+            "url": "{{baseUrl}}/api/payments"
+          }
+        }
+      ]
+    }
+  ]
+}
