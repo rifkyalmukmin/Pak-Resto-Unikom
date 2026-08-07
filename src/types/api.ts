@@ -118,6 +118,7 @@ export interface ApiUser {
   nama_lengkap: string;
   username: string;
   role: string;
+  foto_profil: string | null;
 }
 
 export interface ApiTrenMenu {

@@ -151,6 +151,7 @@ export const api = {
     username: string;
     password: string;
     role: Role | string;
+    foto_profil?: string | null;
   }) =>
     request<ApiUser>("/api/users", {
       method: "POST",
@@ -164,6 +165,7 @@ export const api = {
       username?: string;
       password?: string;
       role?: Role | string;
+      foto_profil?: string | null;
     }
   ) =>
     request<ApiUser>(`/api/users/${id}`, {

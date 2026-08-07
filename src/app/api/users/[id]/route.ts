@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { isAuthFailure, requireAuth, ROLE_VALUES } from "@/lib/api-auth";
-import { parseRole, userPublicSelect } from "@/lib/user-helpers";
+import { parseRole, parseFotoProfil, userPublicSelect } from "@/lib/user-helpers";
 import { parsePositiveInt } from "@/lib/menu-helpers";
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -69,6 +69,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
       username?: string;
       password?: string;
       role?: string;
+      foto_profil?: string | null;
     };
 
     const data: {
@@ -76,6 +77,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
       username?: string;
       password?: string;
       role?: (typeof ROLE_VALUES)[number];
+      foto_profil?: string | null;
     } = {};
 
     if (body.nama_lengkap !== undefined) {
@@ -152,6 +154,17 @@ export async function PATCH(request: Request, { params }: RouteContext) {
         }
       }
       data.role = role;
+    }
+
+    if (body.foto_profil !== undefined) {
+      try {
+        data.foto_profil = parseFotoProfil(body.foto_profil) ?? null;
+      } catch (e) {
+        return NextResponse.json(
+          { success: false, error: e instanceof Error ? e.message : "Foto profil tidak valid" },
+          { status: 400 }
+        );
+      }
     }
 
     if (Object.keys(data).length === 0) {

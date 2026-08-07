@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import { TrendingUp, TrendingDown, FileText, FileSpreadsheet, Search, ListFilter, ChevronDown, Check } from "lucide-react";
 import { DateRangePicker } from "@/components/manager/date-range-picker";
 import { api, formatRp } from "@/lib/api";
+import { exportLaporanExcel, exportLaporanPdf } from "@/lib/financial-export";
 import type { ApiLaporanHarian, ApiLaporanPendapatan } from "@/types/api";
 
 const ACCENT = "#D0BCFF";
@@ -35,6 +36,8 @@ export default function FinancialReportsPage() {
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("Semua");
   const [filterOpen, setFilterOpen] = useState(false);
   const [exportType, setExportType] = useState<"PDF" | "Excel" | null>(null);
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   const loadLaporan = useCallback(async (from?: string, to?: string) => {
     setLoading(true);
@@ -72,6 +75,27 @@ export default function FinancialReportsPage() {
     const matchStatus = filterStatus === "Semua" || r.status === filterStatus;
     return matchSearch && matchStatus;
   });
+
+  function handleExport(type: "PDF" | "Excel") {
+    if (!laporan) {
+      setExportError("Data laporan belum tersedia. Tunggu hingga selesai dimuat.");
+      return;
+    }
+    setExportError(null);
+    setExporting(true);
+    try {
+      if (type === "PDF") {
+        exportLaporanPdf(laporan, filtered);
+      } else {
+        exportLaporanExcel(laporan, filtered);
+      }
+      setExportType(type);
+    } catch (e) {
+      setExportError(e instanceof Error ? e.message : "Gagal mengekspor laporan");
+    } finally {
+      setExporting(false);
+    }
+  }
 
   const statCards = [
     {
@@ -115,23 +139,34 @@ export default function FinancialReportsPage() {
             onChange={handleDateChange}
           />
           <button
-            onClick={() => setExportType("PDF")}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold border transition-colors hover:bg-white/5"
+            onClick={() => handleExport("PDF")}
+            disabled={loading || exporting || !laporan}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold border transition-colors hover:bg-white/5 disabled:opacity-40"
             style={{ borderColor: "rgba(255,255,255,0.15)", color: "#94a3b8" }}
           >
             <FileText size={14} />
-            Export PDF
+            {exporting ? "Mengekspor..." : "Export PDF"}
           </button>
           <button
-            onClick={() => setExportType("Excel")}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-opacity hover:opacity-90"
+            onClick={() => handleExport("Excel")}
+            disabled={loading || exporting || !laporan}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-40"
             style={{ backgroundColor: "#D0BCFF", color: "#000" }}
           >
             <FileSpreadsheet size={14} />
-            Export Excel
+            {exporting ? "Mengekspor..." : "Export Excel"}
           </button>
         </div>
       </div>
+
+      {exportError && (
+        <div
+          className="rounded-xl px-4 py-3 text-sm border"
+          style={{ backgroundColor: "rgba(239,68,68,0.1)", borderColor: "rgba(239,68,68,0.3)", color: "#ef4444" }}
+        >
+          {exportError}
+        </div>
+      )}
 
       {error && (
         <div
@@ -325,6 +360,14 @@ export default function FinancialReportsPage() {
               <h3 className="text-white font-bold text-lg">Laporan Berhasil Diekspor!</h3>
               <p className="text-sm" style={{ color: "#64748b" }}>
                 File {exportType} laporan keuangan telah berhasil diunduh.
+                {laporan && (
+                  <>
+                    <br />
+                    <span className="text-xs">
+                      {`laporan-keuangan_${laporan.periode.from}_${laporan.periode.to}.${exportType === "PDF" ? "pdf" : "xlsx"}`}
+                    </span>
+                  </>
+                )}
               </p>
             </div>
             <button

@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Plus, MoreVertical, ListFilter, ChevronDown, Trash2, AlertCircle, Check } from "lucide-react";
 import { api } from "@/lib/api";
-import { ROLE_LABEL } from "@/lib/user-helpers";
+import { ROLE_LABEL, userPhotoSrc } from "@/lib/user-helpers";
 import type { ApiUser } from "@/types/api";
 import type { Role } from "@prisma/client";
 
@@ -83,7 +83,11 @@ function UserCard({
           style={{ border: `2px solid ${color}40` }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/manager/user-default.webp" alt={user.nama_lengkap} className="w-full h-full object-cover" />
+          <img
+            src={userPhotoSrc(user.foto_profil)}
+            alt={user.nama_lengkap}
+            className="w-full h-full object-cover"
+          />
         </div>
         <div className="min-w-0">
           <p className="text-white font-bold text-sm leading-tight truncate">{user.nama_lengkap}</p>

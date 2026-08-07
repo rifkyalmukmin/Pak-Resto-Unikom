@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { isAuthFailure, requireAuth, ROLE_VALUES } from "@/lib/api-auth";
-import { parseRole, userPublicSelect } from "@/lib/user-helpers";
+import { parseRole, parseFotoProfil, userPublicSelect } from "@/lib/user-helpers";
 import type { Role } from "@prisma/client";
 
 // GET /api/users?role=PELAYAN
@@ -53,6 +53,7 @@ export async function POST(request: Request) {
       username?: string;
       password?: string;
       role?: string;
+      foto_profil?: string | null;
     };
 
     const nama_lengkap = body.nama_lengkap?.trim();
@@ -103,12 +104,26 @@ export async function POST(request: Request) {
     }
 
     const hash = await bcrypt.hash(password, 10);
+
+    let foto_profil: string | null = null;
+    if (body.foto_profil !== undefined) {
+      try {
+        foto_profil = parseFotoProfil(body.foto_profil) ?? null;
+      } catch (e) {
+        return NextResponse.json(
+          { success: false, error: e instanceof Error ? e.message : "Foto profil tidak valid" },
+          { status: 400 }
+        );
+      }
+    }
+
     const created = await prisma.user.create({
       data: {
         nama_lengkap,
         username,
         password: hash,
         role,
+        foto_profil,
       },
       select: userPublicSelect,
     });

@@ -176,21 +176,36 @@ export default function KonfirmasiPembayaranPage() {
 
           <div className="border-t border-white/5 p-4 shrink-0">
             <div className="grid grid-cols-4 gap-3">
-              {paymentMethods.map(({ key, label, icon }) => (
+              {paymentMethods.map(({ key, label, icon }) => {
+                const active = paymentMethod === key;
+                return (
                 <button
                   key={key}
                   onClick={() => setPaymentMethod(key)}
-                  className={`flex flex-col items-center gap-2 py-3.5 rounded-xl border ${
-                    paymentMethod === key
+                  className={`flex flex-col items-center gap-2 py-3.5 rounded-xl border transition-colors ${
+                    active
                       ? "border-[#4CD7F6] bg-[#4CD7F6]/10"
-                      : "border-white/8 bg-[#1E1E2E]"
+                      : "border-white/10 bg-[#1E1E2E] hover:border-white/20 hover:bg-[#252538]"
                   }`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={icon} alt={label} width={22} height={22} />
-                  <span className="text-xs">{label}</span>
+                  <img
+                    src={icon}
+                    alt={label}
+                    width={22}
+                    height={22}
+                    className={active ? "opacity-100" : "opacity-70"}
+                  />
+                  <span
+                    className={`text-xs font-semibold ${
+                      active ? "text-[#4CD7F6]" : "text-slate-300"
+                    }`}
+                  >
+                    {label}
+                  </span>
                 </button>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

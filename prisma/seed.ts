@@ -93,6 +93,7 @@ async function main() {
         deskripsi: "Nasi goreng dengan telur, ayam, dan sayuran",
         harga: 25000,
         status: StatusMenu.AKTIF,
+        gambar: "/images/menu/nasi-goreng.png",
       },
     }),
     prisma.menu.create({
@@ -102,6 +103,7 @@ async function main() {
         deskripsi: "Mie goreng dengan ayam dan sayuran",
         harga: 22000,
         status: StatusMenu.AKTIF,
+        gambar: "/images/menu/rendang-sapi.png",
       },
     }),
     prisma.menu.create({
@@ -111,6 +113,7 @@ async function main() {
         deskripsi: "Ayam geprek dengan sambal pedas",
         harga: 28000,
         status: StatusMenu.AKTIF,
+        gambar: "/images/menu/ayam-goreng.png",
       },
     }),
     prisma.menu.create({
@@ -120,6 +123,7 @@ async function main() {
         deskripsi: "Teh manis dingin",
         harga: 5000,
         status: StatusMenu.AKTIF,
+        gambar: "/images/menu/lychee-tea.png",
       },
     }),
     prisma.menu.create({
@@ -129,6 +133,7 @@ async function main() {
         deskripsi: "Jeruk peras segar",
         harga: 8000,
         status: StatusMenu.AKTIF,
+        gambar: "/images/menu/lychee-tea.png",
       },
     }),
     prisma.menu.create({
@@ -138,6 +143,7 @@ async function main() {
         deskripsi: "Kopi hitam tanpa gula",
         harga: 10000,
         status: StatusMenu.AKTIF,
+        gambar: "/images/menu/iced-cappucino.png",
       },
     }),
     prisma.menu.create({
@@ -147,6 +153,7 @@ async function main() {
         deskripsi: "Pisang goreng crispy",
         harga: 12000,
         status: StatusMenu.AKTIF,
+        gambar: "/images/menu/chocolate-lava.png",
       },
     }),
     prisma.menu.create({
@@ -156,6 +163,7 @@ async function main() {
         deskripsi: "Kentang goreng dengan saus",
         harga: 15000,
         status: StatusMenu.AKTIF,
+        gambar: "/images/menu/mix-dim-sum.png",
       },
     }),
   ]);

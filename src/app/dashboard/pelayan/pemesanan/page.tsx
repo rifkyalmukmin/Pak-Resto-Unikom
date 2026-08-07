@@ -18,6 +18,8 @@ type OverlayType = "catatan" | "konfirmasi-dapur" | "sukses-dapur" | null;
 
 const fmt = (n: number) => "Rp" + n.toLocaleString("id-ID").replace(/,/g, ".");
 
+const PLACEHOLDER_IMAGE = "/images/menu/nasi-goreng.png";
+
 const InfoIcon = () => (
   <div
     className="w-11 h-11 rounded-full flex items-center justify-center border-2 mb-5"
@@ -184,8 +186,13 @@ export default function PemesananMakananPage() {
                     className="rounded-xl border border-white/5 overflow-hidden flex flex-col"
                     style={{ backgroundColor: "#171F33" }}
                   >
-                    <div className="w-full aspect-[4/3] bg-[#0f172a] flex items-center justify-center">
-                      <span className="text-slate-600 text-xs">Menu</span>
+                    <div className="relative w-full aspect-[4/3] bg-[#0f172a] overflow-hidden">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={item.gambar || PLACEHOLDER_IMAGE}
+                        alt={item.nama_menu}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                     <div className="p-4 flex flex-col gap-3">
                       <p className="text-white text-sm font-semibold line-clamp-1">

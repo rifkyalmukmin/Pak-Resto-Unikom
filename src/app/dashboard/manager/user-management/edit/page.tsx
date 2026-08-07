@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronRight, ChevronDown, Eye, EyeOff, AlertCircle, Check, Pencil } from "lucide-react";
 import { api } from "@/lib/api";
-import { LABEL_TO_ROLE, ROLE_LABEL, initialsFromName } from "@/lib/user-helpers";
+import { LABEL_TO_ROLE, ROLE_LABEL, initialsFromName, fileToDataUrl, userPhotoSrc } from "@/lib/user-helpers";
 import type { Role } from "@prisma/client";
 
 const roleOptions = ["Pelayan", "Koki", "Kasir", "Manager"];
@@ -35,6 +35,8 @@ function EditUserContent() {
   const [showPass, setShowPass]       = useState(false);
   const [roleOpen, setRoleOpen]       = useState(false);
   const [preview, setPreview]         = useState<string | null>(null);
+  const [photoData, setPhotoData]     = useState<string | null>(null);
+  const [existingPhoto, setExistingPhoto] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [hoverThumb, setHoverThumb]   = useState(false);
@@ -59,6 +61,9 @@ function EditUserContent() {
         role:     ROLE_LABEL[user.role as Role] ?? user.role,
         password: "",
       });
+      setExistingPhoto(user.foto_profil);
+      setPreview(null);
+      setPhotoData(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Gagal memuat data user");
     } finally {
@@ -80,10 +85,22 @@ function EditUserContent() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (file) setPreview(URL.createObjectURL(file));
+    if (!file) return;
+    try {
+      const dataUrl = await fileToDataUrl(file);
+      setPreview(URL.createObjectURL(file));
+      setPhotoData(dataUrl);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal memuat foto");
+      setPreview(null);
+      setPhotoData(null);
+    }
   }
+
+  const displayPhoto = preview ?? userPhotoSrc(existingPhoto);
 
   const roleColor = ROLE_COLORS[form.role] ?? "#64748b";
   const initials = form.nama ? initialsFromName(form.nama) : "??";
@@ -99,6 +116,7 @@ function EditUserContent() {
         username: string;
         role: string;
         password?: string;
+        foto_profil?: string;
       } = {
         nama_lengkap: form.nama.trim(),
         username: form.username.trim(),
@@ -106,6 +124,9 @@ function EditUserContent() {
       };
       if (form.password.trim()) {
         body.password = form.password;
+      }
+      if (photoData) {
+        body.foto_profil = photoData;
       }
       await api.updateUser(userId, body);
       setShowConfirm(false);
@@ -297,7 +318,7 @@ function EditUserContent() {
               onClick={() => fileRef.current?.click()}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/images/manager/user-default.webp" alt={form.nama} className="w-full h-full object-cover" />
+              <img src={displayPhoto} alt={form.nama} className="w-full h-full object-cover" />
 
               {hoverThumb && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-2"
@@ -324,6 +345,9 @@ function EditUserContent() {
                   {preview ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+                  ) : existingPhoto ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={existingPhoto} alt="Preview" className="w-full h-full object-cover" />
                   ) : (
                     <span>{initials}</span>
                   )}

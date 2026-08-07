@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ListFilter, Download, Check, X } from "lucide-react";
 import type { ApiPembayaran } from "@/types/api";
 import { api, formatRp } from "@/lib/api";
+import { exportTransaksiExcel, mapPembayaranToExportRow } from "@/lib/transaction-export";
 
 const methodLabel: Record<string, string> = {
   CASH: "Cash",
@@ -60,6 +61,8 @@ export default function LaporanTransaksiPage() {
   const filterRef = useRef<HTMLDivElement>(null);
   const [detail, setDetail] = useState<ApiPembayaran | null>(null);
   const [showExportSuccess, setShowExportSuccess] = useState(false);
+  const [exportError, setExportError] = useState("");
+  const [exporting, setExporting] = useState(false);
 
   const loadPayments = useCallback(async () => {
     try {
@@ -116,8 +119,37 @@ export default function LaporanTransaksiPage() {
     return { label: `TA-${p.id_pesanan}`, type: "TAKEAWAY" };
   }
 
+  function handleExportExcel() {
+    if (loading) return;
+    setExportError("");
+    setExporting(true);
+    try {
+      const filterLabel =
+        filterOptions.find((o) => o.value === filterStatus)?.label ?? "Semua Status";
+      exportTransaksiExcel(
+        filtered.map(mapPembayaranToExportRow),
+        {
+          totalPenjualanHariIni: totalHariIni,
+          jumlahTransaksiHariIni: todayLunas.length,
+          filterLabel,
+        }
+      );
+      setShowExportSuccess(true);
+    } catch (e) {
+      setExportError(e instanceof Error ? e.message : "Gagal mengekspor laporan");
+    } finally {
+      setExporting(false);
+    }
+  }
+
   return (
     <div className="p-6 space-y-5">
+      {exportError && (
+        <p className="text-red-400 bg-red-950/40 border border-red-800 rounded-lg px-4 py-2 text-sm">
+          {exportError}
+        </p>
+      )}
+
       {error && (
         <p className="text-red-400 bg-red-950/40 border border-red-800 rounded-lg px-4 py-2 text-sm">
           {error}
@@ -210,11 +242,12 @@ export default function LaporanTransaksiPage() {
               )}
             </div>
             <button
-              onClick={() => setShowExportSuccess(true)}
-              className="flex items-center gap-2 bg-[#4CD7F6] text-black text-sm px-3.5 py-2 rounded-lg hover:bg-[#3bc5e3] transition-colors font-semibold"
+              onClick={handleExportExcel}
+              disabled={loading || exporting}
+              className="flex items-center gap-2 bg-[#4CD7F6] text-black text-sm px-3.5 py-2 rounded-lg hover:bg-[#3bc5e3] transition-colors font-semibold disabled:opacity-40"
             >
               <Download size={13} />
-              Ekspor CSV
+              {exporting ? "Mengekspor..." : "Export Excel"}
             </button>
           </div>
         </div>
@@ -393,9 +426,12 @@ export default function LaporanTransaksiPage() {
               <Download size={26} style={{ color: "#22C55E" }} />
             </div>
             <div className="space-y-2">
-              <h3 className="text-white font-bold text-lg">Export (demo)</h3>
+              <h3 className="text-white font-bold text-lg">Export Berhasil!</h3>
               <p className="text-slate-400 text-sm">
-                Unduhan CSV belum diimplementasikan. Data tabel sudah dari database.
+                File Excel laporan transaksi telah berhasil diunduh.
+              </p>
+              <p className="text-slate-500 text-xs">
+                {`laporan-transaksi_${new Date().toISOString().slice(0, 10)}.xlsx`}
               </p>
             </div>
             <button

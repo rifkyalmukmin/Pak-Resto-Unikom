@@ -71,6 +71,7 @@ model user {
   username     String       @unique
   password     String
   role         Role
+  foto_profil  String?
   pesanan      pesanan[]
   pembayaran   pembayaran[]
 

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronRight, ChevronDown, Eye, EyeOff, ImageIcon, AlertCircle, Check } from "lucide-react";
 import { api } from "@/lib/api";
-import { LABEL_TO_ROLE, initialsFromName } from "@/lib/user-helpers";
+import { LABEL_TO_ROLE, initialsFromName, fileToDataUrl } from "@/lib/user-helpers";
 
 const roleOptions = ["Pelayan", "Koki", "Kasir", "Manager"];
 
@@ -22,6 +22,7 @@ export default function TambahUserPage() {
   const [showPass, setShowPass]   = useState(false);
   const [roleOpen, setRoleOpen]   = useState(false);
   const [preview, setPreview]     = useState<string | null>(null);
+  const [photoData, setPhotoData] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError]         = useState<string | null>(null);
@@ -38,9 +39,19 @@ export default function TambahUserPage() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (file) setPreview(URL.createObjectURL(file));
+    if (!file) return;
+    try {
+      const dataUrl = await fileToDataUrl(file);
+      setPreview(URL.createObjectURL(file));
+      setPhotoData(dataUrl);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal memuat foto");
+      setPreview(null);
+      setPhotoData(null);
+    }
   }
 
   const roleColor = form.role ? ROLE_COLORS[form.role] : "#64748b";
@@ -65,6 +76,7 @@ export default function TambahUserPage() {
         username: form.username.trim(),
         password: form.password,
         role: LABEL_TO_ROLE[form.role],
+        foto_profil: photoData,
       });
       setShowConfirm(false);
       setShowSuccess(true);
@@ -239,7 +251,7 @@ export default function TambahUserPage() {
             <div className="text-center px-4">
               <p className="text-white font-bold text-base">Klik untuk unggah foto</p>
               <p className="text-xs mt-2 leading-relaxed" style={{ color: "#64748b" }}>
-                Rasio 1:1 direkomendasikan. Maksimal file 5MB (JPG, PNG).
+                Rasio 1:1 direkomendasikan. Maksimal file 500KB (JPG, PNG, WebP).
               </p>
             </div>
           </label>
