@@ -188,7 +188,7 @@ export default function TakeAwayPage() {
       </div>
 
       <div className="rounded-xl border border-white/5 overflow-hidden">
-        <div className="grid grid-cols-[1fr_1.5fr_1fr_1.2fr_1.2fr_auto] gap-4 px-5 py-3 bg-[#292839]">
+        <div className="grid grid-cols-[1fr_1.5fr_1fr_1.2fr_1.2fr_120px] gap-4 px-5 py-3 bg-[#292839]">
           {["NO. PESANAN", "PELAYAN", "JUMLAH ITEM", "TOTAL", "STATUS", "AKSI"].map((h) => (
             <p key={h} className="text-white text-sm font-bold uppercase tracking-wider">
               {h}
@@ -209,7 +209,7 @@ export default function TakeAwayPage() {
             return (
               <div
                 key={order.id_pesanan}
-                className="grid grid-cols-[1fr_1.5fr_1fr_1.2fr_1.2fr_auto] gap-4 px-5 py-4 items-center"
+                className="grid grid-cols-[1fr_1.5fr_1fr_1.2fr_1.2fr_120px] gap-4 px-5 py-4 items-center"
                 style={{ backgroundColor: i % 2 === 0 ? "#1E1E2E" : "#252538" }}
               >
                 <p className="text-sm text-[#E3E0F7]">#{order.id_pesanan}</p>
