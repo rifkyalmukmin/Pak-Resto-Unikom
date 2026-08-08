@@ -33,8 +33,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return {
           id: String(user.id_user),
           name: user.nama_lengkap,
+          email: user.username,
+          image: user.foto_profil ?? null,
           role: user.role,
-          foto_profil: user.foto_profil ?? null,
         };
       },
     }),
@@ -44,7 +45,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.role = (user as { role?: Role }).role;
         token.sub = user.id;
-        token.foto_profil = (user as { foto_profil?: string | null }).foto_profil ?? null;
+        token.picture = user.image ?? null;
       }
       return token;
     },
@@ -52,7 +53,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (session.user && token.sub) {
         session.user.id = token.sub;
         session.user.role = (token.role as Role) ?? "PELAYAN";
-        session.user.foto_profil = (token.foto_profil as string | null | undefined) ?? null;
+        session.user.image = (token.picture as string | null | undefined) ?? null;
       }
       return session;
     },

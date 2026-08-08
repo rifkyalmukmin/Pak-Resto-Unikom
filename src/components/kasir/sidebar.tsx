@@ -82,7 +82,7 @@ export function KasirSidebar({ open = false, onClose }: { open?: boolean; onClos
       <div className="px-4 py-4 border-t border-white/5">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl overflow-hidden shrink-0 flex items-center justify-center text-sm font-bold text-black" style={{ backgroundColor: "#06B6D4" }}>
-            {session?.user?.foto_profil ? (
+            {session?.user?.image ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={session.user.foto_profil} alt="" className="w-full h-full object-cover" />
             ) : (
