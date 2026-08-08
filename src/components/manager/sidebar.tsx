@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
@@ -25,7 +25,16 @@ export function ManagerSidebar({ open = false, onClose }: { open?: boolean; onCl
   const pathname = usePathname();
   const { data: session } = useSession();
   const [showLogout, setShowLogout] = useState(false);
+  const [fotoProfil, setFotoProfil] = useState<string | null>(null);
   const role = session?.user?.role as Role | undefined;
+
+  useEffect(() => {
+    if (!session?.user) return;
+    fetch("/api/me")
+      .then((r) => r.json())
+      .then((d) => { if (d?.data?.foto_profil) setFotoProfil(d.data.foto_profil); })
+      .catch(() => undefined);
+  }, [session?.user]);
 
   const content = (
     <>
@@ -73,9 +82,9 @@ export function ManagerSidebar({ open = false, onClose }: { open?: boolean; onCl
       <div className="px-4 py-4 border-t border-white/5">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl overflow-hidden shrink-0 flex items-center justify-center text-sm font-bold text-black" style={{ backgroundColor: ACCENT }}>
-            {session?.user?.image ? (
+            {fotoProfil ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={session.user.image} alt="" className="w-full h-full object-cover" />
+              <img src={fotoProfil} alt="" className="w-full h-full object-cover" />
             ) : (
               (session?.user?.name ?? "S").charAt(0).toUpperCase()
             )}
