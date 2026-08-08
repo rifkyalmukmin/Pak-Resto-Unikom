@@ -3,11 +3,15 @@
 import { useState, useRef, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ChevronRight, ChevronDown, Check, AlertCircle, Pencil, Search, X } from "lucide-react";
+import { ChevronRight, ChevronDown, Check, AlertCircle, Search, X, RefreshCw, ImageIcon } from "lucide-react";
 import { api } from "@/lib/api";
 import type { ApiBahanBaku, ApiKategori } from "@/types/api";
 
-const PLACEHOLDER_IMAGE = "/images/menu/nasi-goreng.png";
+function buildImageUrl(name: string, seed?: number): string {
+  const query = encodeURIComponent(name + " food");
+  const s = seed ?? Math.floor(Math.random() * 1000);
+  return `https://source.unsplash.com/800x600/?${query}&sig=${s}`;
+}
 
 function EditMenuContent() {
   const router = useRouter();
@@ -18,12 +22,10 @@ function EditMenuContent() {
   const [kategoriOpen, setKategoriOpen] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [preview, setPreview] = useState<string | null>(null);
   const [selectedBahan, setSelectedBahan] = useState<number[]>([]);
   const [bahanSearch, setBahanSearch] = useState("");
   const [kategoriList, setKategoriList] = useState<ApiKategori[]>([]);
   const [bahanList, setBahanList] = useState<ApiBahanBaku[]>([]);
-  const [existingGambar, setExistingGambar] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -37,7 +39,6 @@ function EditMenuContent() {
   });
 
   const kategoriRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const loadData = useCallback(async () => {
     if (!menuId || Number.isNaN(menuId)) {
@@ -59,10 +60,9 @@ function EditMenuContent() {
         id_kategori: menu.id_kategori,
         harga: String(menu.harga),
         deskripsi: menu.deskripsi ?? "",
-        gambar: menu.gambar ?? "",
+        gambar: menu.gambar ?? buildImageUrl(menu.nama_menu),
       });
       setAvailable(menu.status === "AKTIF");
-      setExistingGambar(menu.gambar);
       setSelectedBahan((menu.menu_bahan ?? []).map((mb) => mb.id_bahan));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Gagal memuat menu");
@@ -87,6 +87,11 @@ function EditMenuContent() {
     );
   }
 
+  function handleRefreshImage() {
+    if (!form.nama.trim()) return;
+    setForm((prev) => ({ ...prev, gambar: buildImageUrl(prev.nama.trim()) }));
+  }
+
   useEffect(() => {
     function handler(e: MouseEvent) {
       if (kategoriRef.current && !kategoriRef.current.contains(e.target as Node)) {
@@ -97,32 +102,20 @@ function EditMenuContent() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (file) setPreview(URL.createObjectURL(file));
-  }
-
-  const displayImage = preview ?? existingGambar ?? PLACEHOLDER_IMAGE;
-
   async function handleSubmit() {
     if (!menuId || !form.nama.trim() || !form.id_kategori || !form.harga) return;
     setSubmitting(true);
     setError(null);
     try {
-      const body: Parameters<typeof api.updateMenu>[1] = {
+      await api.updateMenu(menuId, {
         nama_menu: form.nama.trim(),
         id_kategori: form.id_kategori,
         harga: Number(form.harga),
         deskripsi: form.deskripsi.trim() || null,
         status: available ? "AKTIF" : "NONAKTIF",
+        gambar: form.gambar.trim() || null,
         bahan: selectedBahan.map((id_bahan) => ({ id_bahan })),
-      };
-      if (form.gambar.trim()) {
-        body.gambar = form.gambar.trim();
-      } else if (!preview) {
-        body.gambar = existingGambar;
-      }
-      await api.updateMenu(menuId, body);
+      });
       setShowConfirm(false);
       setShowSuccess(true);
     } catch (e) {
@@ -388,72 +381,63 @@ function EditMenuContent() {
           </div>
 
           <div className="rounded-xl p-6 border space-y-5" style={{ backgroundColor: "#151C25", borderColor: "#494454" }}>
-            <h3 className="text-xs font-bold tracking-widest uppercase" style={{ color: "#D0BCFF" }}>Thumbnail Menu</h3>
-
-            <div
-              className="relative rounded-xl overflow-hidden group cursor-pointer border"
-              style={{ borderColor: "#494454" }}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={displayImage} alt="Thumbnail" className="w-full object-cover" style={{ height: 200 }} />
-              <div
-                className="absolute inset-0 flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold tracking-widest uppercase" style={{ color: "#D0BCFF" }}>Thumbnail Menu</h3>
+              <button
+                type="button"
+                onClick={handleRefreshImage}
+                disabled={!form.nama.trim()}
+                title="Ganti foto otomatis"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors disabled:opacity-30"
+                style={{ borderColor: "rgba(208,188,255,0.3)", color: "#D0BCFF", backgroundColor: "rgba(208,188,255,0.08)" }}
               >
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: "rgba(208,188,255,0.2)", border: "1px solid #D0BCFF" }}
-                >
-                  <Pencil size={16} style={{ color: "#D0BCFF" }} />
-                </div>
-                <p className="text-sm font-semibold" style={{ color: "#D0BCFF" }}>Ganti Foto</p>
-              </div>
-              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+                <RefreshCw size={11} />
+                Ganti Foto
+              </button>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold mb-2" style={{ color: "#94a3b8" }}>Path Gambar (opsional)</label>
-              <input
-                type="text"
-                placeholder="/images/menu/nasi-goreng.png"
-                value={form.gambar}
-                onChange={(e) => setForm({ ...form, gambar: e.target.value })}
-                className="w-full h-9 px-3 rounded-lg text-sm outline-none border"
-                style={{ backgroundColor: "#080F17", borderColor: "#494454", color: "#fff" }}
-              />
-            </div>
-
-            <p className="text-xs text-center" style={{ color: "#64748b" }}>Rekomendasi ukuran: 1:1 (Min. 800×800px)</p>
-
-            <div>
-              <p className="text-sm font-semibold mb-3" style={{ color: "#D0BCFF" }}>Pratinjau Menu</p>
-              <div className="rounded-xl border overflow-hidden" style={{ borderColor: "#494454" }}>
-                <div className="relative w-full" style={{ height: 200, backgroundColor: "#080F17" }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={displayImage} alt="Preview" className="w-full h-full object-cover" />
-                  {selectedKategori && (
-                    <span
-                      className="absolute bottom-3 left-3 text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wide"
-                      style={{ backgroundColor: selectedKategori.warna ?? "#10B981", color: "#fff" }}
-                    >
-                      {selectedKategori.nama_kategori}
-                    </span>
-                  )}
-                </div>
-                <div className="p-4" style={{ backgroundColor: "#2E353F" }}>
-                  <p className="text-white font-bold text-base leading-tight">{form.nama || "Nama Menu Anda"}</p>
-                  <p className="text-xs mt-1 line-clamp-2" style={{ color: "#94a3b8" }}>
-                    {form.deskripsi || "Deskripsi menu akan tampil di sini."}
-                  </p>
-                  <div className="mt-3">
-                    <span className="text-sm font-bold" style={{ color: "#D0BCFF" }}>
-                      Rp {form.harga ? Number(form.harga).toLocaleString("id-ID") : "0"}
-                    </span>
+            <div className="rounded-xl border overflow-hidden" style={{ borderColor: "#494454" }}>
+              <div className="relative w-full" style={{ height: 220, backgroundColor: "#080F17" }}>
+                {form.gambar ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    key={form.gambar}
+                    src={form.gambar}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center gap-3">
+                    <ImageIcon size={36} style={{ color: "#374151" }} />
+                    <p className="text-xs" style={{ color: "#64748b" }}>Tidak ada gambar</p>
                   </div>
+                )}
+                {selectedKategori && (
+                  <span
+                    className="absolute bottom-3 left-3 text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wide"
+                    style={{ backgroundColor: selectedKategori.warna ?? "#10B981", color: "#fff" }}
+                  >
+                    {selectedKategori.nama_kategori}
+                  </span>
+                )}
+              </div>
+              <div className="p-4" style={{ backgroundColor: "#2E353F" }}>
+                <p className="text-white font-bold text-base leading-tight">{form.nama || "Nama Menu Anda"}</p>
+                <p className="text-xs mt-1 line-clamp-2" style={{ color: "#94a3b8" }}>
+                  {form.deskripsi || "Deskripsi menu akan tampil di sini."}
+                </p>
+                <div className="mt-3">
+                  <span className="text-sm font-bold" style={{ color: "#D0BCFF" }}>
+                    Rp {form.harga ? Number(form.harga).toLocaleString("id-ID") : "0"}
+                  </span>
                 </div>
               </div>
             </div>
+
+            <p className="text-xs text-center" style={{ color: "#64748b" }}>
+              Foto diambil otomatis dari Unsplash. Klik &quot;Ganti Foto&quot; untuk foto berbeda.
+            </p>
           </div>
         </div>
       )}
