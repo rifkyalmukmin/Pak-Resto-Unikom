@@ -85,7 +85,7 @@ export default function TambahPesananPage() {
           </p>
         )}
 
-        <div className="flex gap-2 mb-4 overflow-x-auto">
+        <div className="flex flex-wrap gap-2 mb-4">
           {categoryTabs.map((cat) => (
             <button
               key={cat}
@@ -104,7 +104,8 @@ export default function TambahPesananPage() {
         {loading ? (
           <p className="text-slate-500">Memuat menu...</p>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 overflow-y-auto content-start">
+          <div className="flex-1 min-h-0 overflow-y-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pb-4">
             {filtered.map((item) => {
               const q = qty[item.id_menu] ?? 0;
               return (
@@ -158,6 +159,7 @@ export default function TambahPesananPage() {
                 </div>
               );
             })}
+          </div>
           </div>
         )}
       </div>
