@@ -81,19 +81,24 @@ export function KasirSidebar({ open = false, onClose }: { open?: boolean; onClos
       {/* User */}
       <div className="px-4 py-4 border-t border-white/5">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl overflow-hidden shrink-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/manager/user-default.webp" alt="" className="w-full h-full object-cover" />
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-sm font-bold text-black"
+            style={{ backgroundColor: "#06B6D4" }}
+          >
+            {(session?.user?.name ?? "S").charAt(0).toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-semibold text-white truncate">
+            <p className="text-[13px] font-semibold text-white truncate leading-tight">
               {session?.user?.name ?? "Staff"}
             </p>
-            <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: "#00B954" }}>
+            <span
+              className="inline-block mt-0.5 text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded"
+              style={{ backgroundColor: "#06B6D420", color: "#06B6D4" }}
+            >
               {role ? ROLE_LABEL[role] : "Kasir"}
-            </p>
+            </span>
           </div>
-          <button onClick={() => setShowLogout(true)} className="text-slate-500 hover:text-white transition-colors p-1">
+          <button onClick={() => setShowLogout(true)} className="text-slate-500 hover:text-white transition-colors p-1 shrink-0">
             <LogOut size={15} />
           </button>
         </div>

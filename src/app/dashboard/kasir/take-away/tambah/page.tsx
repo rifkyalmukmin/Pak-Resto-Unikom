@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Minus, Check } from "lucide-react";
+import { Plus, Minus, Check, FileText } from "lucide-react";
 import type { ApiKategori } from "@/types/api";
 import { api } from "@/lib/api";
 
 const fmt = (n: number) => "Rp" + n.toLocaleString("id-ID");
+
+const PLACEHOLDER_IMAGE = "/images/menu/nasi-goreng.png";
 
 export default function TambahPesananPage() {
   const [categories, setCategories] = useState<ApiKategori[]>([]);
@@ -17,6 +19,8 @@ export default function TambahPesananPage() {
   const [qty, setQty] = useState<Record<number, number>>({});
   const [showConfirm, setShowConfirm] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showCatatan, setShowCatatan] = useState(false);
+  const [catatan, setCatatan] = useState("");
 
   const loadMenu = useCallback(async () => {
     try {
@@ -51,12 +55,15 @@ export default function TambahPesananPage() {
     try {
       await api.createOrder({
         tipe_pesanan: "TAKEAWAY",
+        catatan: catatan || undefined,
         items: cartItems.map((m) => ({
           id_menu: m.id_menu,
           jumlah: qty[m.id_menu] ?? 0,
+          catatan: catatan || undefined,
         })),
       });
       setQty({});
+      setCatatan("");
       setShowConfirm(false);
       setShowSuccess(true);
     } catch (e) {
@@ -98,23 +105,59 @@ export default function TambahPesananPage() {
           <p className="text-slate-500">Memuat menu...</p>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 overflow-auto">
-            {filtered.map((item) => (
-              <div
-                key={item.id_menu}
-                className="bg-[#1E1E2E] rounded-xl border border-white/5 p-4"
-              >
-                <p className="text-white font-semibold text-sm mb-2">{item.nama_menu}</p>
-                <p className="text-[#22d3ee] font-bold text-sm mb-3">{fmt(item.harga)}</p>
-                <button
-                  onClick={() =>
-                    setQty((p) => ({ ...p, [item.id_menu]: (p[item.id_menu] ?? 0) + 1 }))
-                  }
-                  className="w-full py-2 rounded-lg bg-[#06B6D4] text-black text-sm font-bold"
+            {filtered.map((item) => {
+              const q = qty[item.id_menu] ?? 0;
+              return (
+                <div
+                  key={item.id_menu}
+                  className="rounded-xl border border-white/5 overflow-hidden flex flex-col"
+                  style={{ backgroundColor: "#171F33" }}
                 >
-                  Tambah
-                </button>
-              </div>
-            ))}
+                  <div className="relative w-full aspect-[4/3] bg-[#0f172a] overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={item.gambar || PLACEHOLDER_IMAGE}
+                      alt={item.nama_menu}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="p-4 flex flex-col gap-3">
+                    <p className="text-white text-sm font-semibold line-clamp-1">{item.nama_menu}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-bold text-[#22d3ee]">{fmt(item.harga)}</span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() =>
+                            setQty((p) => {
+                              const n = (p[item.id_menu] ?? 0) - 1;
+                              if (n <= 0) {
+                                const next = { ...p };
+                                delete next[item.id_menu];
+                                return next;
+                              }
+                              return { ...p, [item.id_menu]: n };
+                            })
+                          }
+                          className="w-7 h-7 rounded-lg border border-white/10 flex items-center justify-center text-white"
+                          style={{ backgroundColor: "#131B2E" }}
+                        >
+                          <Minus size={11} />
+                        </button>
+                        <span className="text-white text-sm font-semibold w-5 text-center">{q}</span>
+                        <button
+                          onClick={() =>
+                            setQty((p) => ({ ...p, [item.id_menu]: (p[item.id_menu] ?? 0) + 1 }))
+                          }
+                          className="w-7 h-7 rounded-lg flex items-center justify-center text-black font-bold bg-[#06B6D4]"
+                        >
+                          <Plus size={11} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
@@ -162,13 +205,21 @@ export default function TambahPesananPage() {
             <span>Total</span>
             <span>{fmt(total)}</span>
           </div>
-          <button
-            onClick={() => cartItems.length > 0 && setShowConfirm(true)}
-            disabled={cartItems.length === 0}
-            className="w-full py-3 rounded-xl bg-[#06B6D4] text-black font-bold disabled:opacity-40"
-          >
-            Buat Pesanan
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowCatatan(true)}
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-white/15 text-white text-sm font-semibold"
+            >
+              <FileText size={14} /> Catatan
+            </button>
+            <button
+              onClick={() => cartItems.length > 0 && setShowConfirm(true)}
+              disabled={cartItems.length === 0}
+              className="flex-1 py-3 rounded-xl bg-[#06B6D4] text-black font-bold disabled:opacity-40 text-sm"
+            >
+              Buat Pesanan
+            </button>
+          </div>
           <Link
             href="/dashboard/kasir/take-away"
             className="block text-center text-slate-400 text-sm mt-3 hover:text-white"
@@ -177,6 +228,31 @@ export default function TambahPesananPage() {
           </Link>
         </div>
       </div>
+
+      {showCatatan && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setShowCatatan(false)} />
+          <div
+            className="relative w-full max-w-[500px] mx-4 rounded-2xl border border-white/10 p-6 z-10"
+            style={{ backgroundColor: "#222A3D" }}
+          >
+            <h2 className="font-bold text-xl text-white mb-4">Catatan Pesanan</h2>
+            <textarea
+              value={catatan}
+              onChange={(e) => setCatatan(e.target.value)}
+              rows={4}
+              className="w-full rounded-xl border border-white/10 px-4 py-3 text-white text-sm bg-[#060E20] resize-none"
+              placeholder="Instruksi khusus untuk pesanan..."
+            />
+            <button
+              onClick={() => setShowCatatan(false)}
+              className="mt-4 w-full py-3 rounded-xl font-bold bg-[#06B6D4] text-black"
+            >
+              Simpan
+            </button>
+          </div>
+        </div>
+      )}
 
       {showConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">

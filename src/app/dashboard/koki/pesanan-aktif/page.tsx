@@ -276,8 +276,12 @@ export default function PesananAktifPage() {
               </div>
               <h3 className="text-white text-xl font-bold mb-2">Tandai Siap?</h3>
               <p className="text-slate-400 text-sm">
-                Pesanan <span className="text-white font-semibold">#{confirmId}</span> siap
-                diantar ke pelanggan.
+                {(() => {
+                  const o = orders.find((x) => x.id_pesanan === confirmId);
+                  return o?.tipe_pesanan === "TAKEAWAY"
+                    ? <>Pesanan Takeaway <span className="text-white font-semibold">#{confirmId}</span> siap diambil pelanggan.</>
+                    : <>Pesanan Meja <span className="text-white font-semibold">{o?.meja?.nomor_meja ?? "-"}</span> siap diantar ke pelanggan.</>;
+                })()}
               </p>
             </div>
             <div className="flex gap-3">
