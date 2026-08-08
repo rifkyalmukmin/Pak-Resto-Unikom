@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
-import { signIn, useSession, getSession } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { Eye, EyeOff, User, Lock } from "lucide-react";
 import type { Role } from "@prisma/client";
 import { getDashboardPath, QUICK_LOGIN_USERS } from "@/lib/auth-routes";
@@ -40,44 +40,56 @@ const DEMO_PASSWORD = "password123";
 export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { data: session, status } = useSession();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (status !== "authenticated" || !session?.user?.role) return;
-
-    const callbackUrl = searchParams.get("callbackUrl");
-    const role = session.user.role as Role;
-    const destination =
-      callbackUrl && callbackUrl.startsWith("/dashboard")
-        ? callbackUrl
-        : getDashboardPath(role);
-    router.replace(destination);
-  }, [session, status, router, searchParams]);
-
   async function performLogin(loginUsername: string, loginPassword: string) {
     setError("");
     setLoading(true);
 
+    // NextAuth login (sets shared cookie for middleware auth check)
     const result = await signIn("credentials", {
       username: loginUsername,
       password: loginPassword,
       redirect: false,
     });
 
-    setLoading(false);
-
     if (result?.error) {
+      setLoading(false);
       setError("Username atau kata sandi salah.");
       return;
     }
 
+    // Tab-specific JWT stored in sessionStorage — isolates role per browser tab
+    try {
+      const tabRes = await fetch("/api/auth/tab-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: loginUsername, password: loginPassword }),
+      });
+      const tabData = (await tabRes.json()) as {
+        token?: string;
+        role?: string;
+        name?: string;
+        userId?: number;
+      };
+      if (tabData.token) {
+        sessionStorage.setItem("tab-session", tabData.token);
+        sessionStorage.setItem("tab-role", tabData.role ?? "");
+        sessionStorage.setItem("tab-name", tabData.name ?? "");
+      }
+    } catch {
+      // Tab session failed — will fall back to cookie auth for API calls
+    }
+
     const updatedSession = await getSession();
-    const role = updatedSession?.user?.role as Role | undefined;
+    const role = (updatedSession?.user?.role ?? sessionStorage.getItem("tab-role")) as Role | null;
+
+    setLoading(false);
+
     if (!role) {
       setError("Gagal memuat sesi. Silakan coba lagi.");
       return;
@@ -104,17 +116,6 @@ export default function LoginForm() {
     setUsername(quickUsername);
     setPassword(DEMO_PASSWORD);
     void performLogin(quickUsername, DEMO_PASSWORD);
-  }
-
-  if (status === "loading") {
-    return (
-      <div
-        className="min-h-screen flex items-center justify-center font-sans text-stone-500"
-        style={{ backgroundColor: "#FAF9F6" }}
-      >
-        Memuat...
-      </div>
-    );
   }
 
   return (
