@@ -27,20 +27,54 @@ export default function BayarPage() {
     setMeja(parseInt(params.get("meja") ?? "12", 10));
   }, []);
 
-  function handleSelesai() {
-    const orderId = "PRU-" + Date.now().toString().slice(-6);
-    localStorage.setItem("pak-resto-last-order", JSON.stringify({
-      orderId,
-      metode,
-      nama,
-      meja: tableNumber ?? meja,
-      items,
-      subtotal,
-      tax,
-      grandTotal,
-    }));
-    clearCart();
-    router.push(`/pesan/sukses?order=${orderId}&metode=${metode}&nama=${encodeURIComponent(nama)}`);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  async function handleSelesai() {
+    if (submitting || items.length === 0) return;
+    setSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const res = await fetch("/api/orders/customer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: items.map((i) => ({
+            id_menu: parseInt(i.menuItemId, 10),
+            jumlah: i.quantity,
+            catatan: i.notes || undefined,
+          })),
+          nomor_meja: tableNumber ?? meja,
+          nama_pelanggan: nama || undefined,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        setSubmitError(data.error ?? "Gagal mengirim pesanan. Coba lagi.");
+        return;
+      }
+
+      const orderId = `PRU-${data.data.id_pesanan}`;
+      localStorage.setItem("pak-resto-last-order", JSON.stringify({
+        orderId,
+        metode,
+        nama,
+        meja: tableNumber ?? meja,
+        items,
+        subtotal,
+        tax,
+        grandTotal,
+      }));
+      clearCart();
+      router.push(`/pesan/sukses?order=${orderId}&metode=${metode}&nama=${encodeURIComponent(nama)}`);
+    } catch {
+      setSubmitError("Terjadi kesalahan jaringan. Periksa koneksi Anda.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -69,10 +103,15 @@ export default function BayarPage() {
 
           {/* Kiri: Konten per metode */}
           <div>
-            {metode === "QRIS" && <QrisContent grandTotal={grandTotal} onSelesai={handleSelesai} />}
-            {metode === "EWALLET" && <EwalletContent grandTotal={grandTotal} onSelesai={handleSelesai} />}
-            {metode === "DEBIT" && <DebitContent grandTotal={grandTotal} onSelesai={handleSelesai} />}
-            {metode === "NANTI" && <NantiContent onSelesai={handleSelesai} />}
+            {submitError && (
+              <div className="mb-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3">
+                {submitError}
+              </div>
+            )}
+            {metode === "QRIS" && <QrisContent grandTotal={grandTotal} onSelesai={handleSelesai} submitting={submitting} />}
+            {metode === "EWALLET" && <EwalletContent grandTotal={grandTotal} onSelesai={handleSelesai} submitting={submitting} />}
+            {metode === "DEBIT" && <DebitContent grandTotal={grandTotal} onSelesai={handleSelesai} submitting={submitting} />}
+            {metode === "NANTI" && <NantiContent onSelesai={handleSelesai} submitting={submitting} />}
           </div>
 
           {/* Kanan: Ringkasan */}
@@ -124,7 +163,7 @@ export default function BayarPage() {
 }
 
 /* ── QRIS ── */
-function QrisContent({ grandTotal, onSelesai }: { grandTotal: number; onSelesai: () => void }) {
+function QrisContent({ grandTotal, onSelesai, submitting }: { grandTotal: number; onSelesai: () => void; submitting: boolean }) {
   return (
     <div className="bg-white rounded-2xl border border-stone-100 shadow-sm p-6">
       <h1 className="font-playfair text-2xl font-bold text-stone-900 mb-1">Bayar dengan QRIS</h1>
@@ -141,17 +180,18 @@ function QrisContent({ grandTotal, onSelesai }: { grandTotal: number; onSelesai:
 
       <button
         onClick={onSelesai}
-        className="w-full text-white font-semibold py-3.5 rounded-full transition-opacity hover:opacity-90 text-sm"
+        disabled={submitting}
+        className="w-full text-white font-semibold py-3.5 rounded-full transition-opacity hover:opacity-90 disabled:opacity-60 text-sm"
         style={{ backgroundColor: "#F97316" }}
       >
-        Sudah Bayar
+        {submitting ? "Memproses..." : "Sudah Bayar"}
       </button>
     </div>
   );
 }
 
 /* ── E-Wallet ── */
-function EwalletContent({ grandTotal, onSelesai }: { grandTotal: number; onSelesai: () => void }) {
+function EwalletContent({ grandTotal, onSelesai, submitting }: { grandTotal: number; onSelesai: () => void; submitting: boolean }) {
   const wallets = [
     { name: "GoPay", color: "#00AED6" },
     { name: "OVO", color: "#4C3494" },
@@ -182,17 +222,18 @@ function EwalletContent({ grandTotal, onSelesai }: { grandTotal: number; onSeles
 
       <button
         onClick={onSelesai}
-        className="w-full text-white font-semibold py-3.5 rounded-full transition-opacity hover:opacity-90 text-sm"
+        disabled={submitting}
+        className="w-full text-white font-semibold py-3.5 rounded-full transition-opacity hover:opacity-90 disabled:opacity-60 text-sm"
         style={{ backgroundColor: "#F97316" }}
       >
-        Sudah Bayar
+        {submitting ? "Memproses..." : "Sudah Bayar"}
       </button>
     </div>
   );
 }
 
 /* ── Debit/Kredit ── */
-function DebitContent({ grandTotal, onSelesai }: { grandTotal: number; onSelesai: () => void }) {
+function DebitContent({ grandTotal, onSelesai, submitting }: { grandTotal: number; onSelesai: () => void; submitting: boolean }) {
   return (
     <div className="bg-white rounded-2xl border border-stone-100 shadow-sm p-6">
       <h1 className="font-playfair text-2xl font-bold text-stone-900 mb-1">Bayar dengan Kartu</h1>
@@ -216,17 +257,18 @@ function DebitContent({ grandTotal, onSelesai }: { grandTotal: number; onSelesai
 
       <button
         onClick={onSelesai}
-        className="w-full text-white font-semibold py-3.5 rounded-full transition-opacity hover:opacity-90 text-sm"
+        disabled={submitting}
+        className="w-full text-white font-semibold py-3.5 rounded-full transition-opacity hover:opacity-90 disabled:opacity-60 text-sm"
         style={{ backgroundColor: "#F97316" }}
       >
-        Sudah Bayar
+        {submitting ? "Memproses..." : "Sudah Bayar"}
       </button>
     </div>
   );
 }
 
 /* ── Bayar di Kasir ── */
-function NantiContent({ onSelesai }: { onSelesai: () => void }) {
+function NantiContent({ onSelesai, submitting }: { onSelesai: () => void; submitting: boolean }) {
   return (
     <div className="bg-white rounded-2xl border border-stone-100 shadow-sm p-6">
       <h1 className="font-playfair text-2xl font-bold text-stone-900 mb-1">Pesanan Diterima!</h1>
@@ -241,10 +283,11 @@ function NantiContent({ onSelesai }: { onSelesai: () => void }) {
 
       <button
         onClick={onSelesai}
-        className="w-full text-white font-semibold py-3.5 rounded-full transition-opacity hover:opacity-90 text-sm"
+        disabled={submitting}
+        className="w-full text-white font-semibold py-3.5 rounded-full transition-opacity hover:opacity-90 disabled:opacity-60 text-sm"
         style={{ backgroundColor: "#F97316" }}
       >
-        Selesai
+        {submitting ? "Memproses..." : "Selesai"}
       </button>
     </div>
   );
