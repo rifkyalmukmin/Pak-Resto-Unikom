@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useRef, useEffect, Suspense } from "react";
 import { useRouter } from "next/navigation";
@@ -7,10 +7,25 @@ import Link from "next/link";
 import Image from "next/image";
 import { ShoppingCart, UtensilsCrossed, ArrowRight } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
-import { CATEGORIES, type MenuItem } from "@/lib/menu-data";
 
 function formatRupiah(n: number) {
   return "Rp" + n.toLocaleString("id-ID");
+}
+
+interface MenuFromDB {
+  id_menu: number;
+  nama_menu: string;
+  deskripsi: string | null;
+  harga: number;
+  gambar: string | null;
+  status: string;
+}
+
+interface CategoryFromDB {
+  id_kategori: number;
+  nama_kategori: string;
+  deskripsi: string | null;
+  menu: MenuFromDB[];
 }
 
 export default function PesanPage() {
@@ -18,28 +33,38 @@ export default function PesanPage() {
   const { tableNumber, totalItems, grandTotal, setTable, addItem } = useCart();
   const [activeCategory, setActiveCategory] = useState("semua");
   const menuRef = useRef<HTMLDivElement>(null);
+  const [categories, setCategories] = useState<CategoryFromDB[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const m = new URLSearchParams(window.location.search).get("meja");
     if (m) { const n = parseInt(m, 10); if (!isNaN(n)) setTable(null, n); }
   }, [setTable]);
 
+  useEffect(() => {
+    fetch("/api/menu/public")
+      .then((r) => r.json())
+      .then((res) => {
+        if (res.success) setCategories(res.data);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
   const displayedCategories =
     activeCategory === "semua"
-      ? CATEGORIES
-      : CATEGORIES.filter((c) => c.slug === activeCategory);
+      ? categories
+      : categories.filter((c) => c.id_kategori.toString() === activeCategory);
 
   return (
     <div className="min-h-screen font-sans" style={{ backgroundColor: "#F8F9FF" }}>
       {/* Navbar */}
       <nav className="sticky top-0 z-40 border-b border-stone-100 shadow-sm" style={{ backgroundColor: "#F8F9FF" }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-[60px] flex items-center justify-between gap-3 sm:gap-6">
-          {/* Logo */}
           <Link href="/pesan" className="font-playfair text-[15px] sm:text-lg font-bold text-amber-900 min-w-0 truncate">
             Pak Resto UNIKOM
           </Link>
 
-          {/* Nav links */}
           <div className="hidden md:flex items-center gap-5 text-sm font-medium text-stone-600">
             <Link href="/pesan" className="text-amber-800 border-b-2 border-amber-800 pb-0.5 leading-none">
               Home
@@ -52,9 +77,7 @@ export default function PesanPage() {
             </button>
           </div>
 
-          {/* Right controls */}
           <div className="flex items-center gap-2 shrink-0">
-            {/* Nomor meja */}
             <div className="flex items-center gap-1.5 border border-stone-200 rounded-full px-3 py-1.5 text-sm text-stone-700">
               <Image
                 src="/images/pelayan/sidebar/informasi-meja.png"
@@ -66,7 +89,6 @@ export default function PesanPage() {
               <Suspense fallback={tableNumber ?? "..."}><MejaNumber /></Suspense>
             </div>
 
-            {/* Keranjang */}
             <Link
               href="/pesan/keranjang"
               className="relative p-1.5 hover:bg-stone-100 rounded-full transition-colors"
@@ -86,10 +108,10 @@ export default function PesanPage() {
       <section className="relative h-[400px] md:h-[480px] flex items-center overflow-hidden">
         <div className="absolute inset-0">
           <Image
-            src="/images/menu/rendang-sapi.png"
+            src="/images/hero-section.png"
             alt="Pak Resto UNIKOM"
             fill
-            className="object-cover"
+            className="object-cover object-center"
             priority
           />
         </div>
@@ -123,12 +145,12 @@ export default function PesanPage() {
             active={activeCategory === "semua"}
             onClick={() => setActiveCategory("semua")}
           />
-          {CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <CategoryBtn
-              key={cat.id}
-              label={cat.name}
-              active={activeCategory === cat.slug}
-              onClick={() => setActiveCategory(cat.slug)}
+              key={cat.id_kategori}
+              label={cat.nama_kategori}
+              active={activeCategory === cat.id_kategori.toString()}
+              onClick={() => setActiveCategory(cat.id_kategori.toString())}
             />
           ))}
         </div>
@@ -136,28 +158,48 @@ export default function PesanPage() {
 
       {/* Menu */}
       <main className="max-w-6xl mx-auto px-4 py-10 pb-32">
-        {displayedCategories.map((cat) => (
-          <section key={cat.id} className="mb-14">
-            <div className="mb-6">
-              <h2 className="font-playfair text-2xl font-bold text-amber-900">{cat.name}</h2>
-              <p className="text-stone-500 text-sm mt-1">{cat.description}</p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {cat.menuItems.map((item) => (
-                <MenuCard
-                  key={item.id}
-                  item={item}
-                  onAdd={() =>
-                    addItem(
-                      { menuItemId: item.id, name: item.name, price: item.price, image: item.image },
-                      1
-                    )
-                  }
-                />
-              ))}
-            </div>
-          </section>
-        ))}
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-24 gap-3">
+            <div className="w-8 h-8 border-2 border-amber-700 border-t-transparent rounded-full animate-spin" />
+            <p className="text-stone-400 text-sm">Memuat menu...</p>
+          </div>
+        ) : displayedCategories.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-24 gap-3">
+            <UtensilsCrossed size={40} className="text-stone-200" />
+            <p className="text-stone-400 text-sm">Belum ada menu tersedia.</p>
+          </div>
+        ) : (
+          displayedCategories.map((cat) => (
+            <section key={cat.id_kategori} className="mb-14">
+              <div className="mb-6">
+                <h2 className="font-playfair text-2xl font-bold text-amber-900">{cat.nama_kategori}</h2>
+                {cat.deskripsi && (
+                  <p className="text-stone-500 text-sm mt-1">{cat.deskripsi}</p>
+                )}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                {cat.menu.map((item) => (
+                  <MenuCard
+                    key={item.id_menu}
+                    item={item}
+                    categoryName={cat.nama_kategori}
+                    onAdd={() =>
+                      addItem(
+                        {
+                          menuItemId: item.id_menu.toString(),
+                          name: item.nama_menu,
+                          price: item.harga,
+                          image: item.gambar,
+                        },
+                        1
+                      )
+                    }
+                  />
+                ))}
+              </div>
+            </section>
+          ))
+        )}
       </main>
 
       {/* Floating Cart Bar */}
@@ -169,7 +211,6 @@ export default function PesanPage() {
               className="w-full text-white rounded-full px-5 py-3.5 flex items-center justify-between shadow-2xl transition-opacity hover:opacity-90"
               style={{ backgroundColor: "#F97316" }}
             >
-              {/* Kiri: icon + info */}
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: "#E06010" }}>
                   <Image src="/images/keranjang-icon.png" alt="keranjang" width={22} height={19} />
@@ -179,7 +220,6 @@ export default function PesanPage() {
                   <p className="text-lg font-bold leading-none">{formatRupiah(grandTotal)}</p>
                 </div>
               </div>
-              {/* Kanan */}
               <div className="flex items-center gap-2">
                 <span className="hidden sm:inline text-sm font-bold tracking-widest uppercase">LIHAT PESANAN</span>
                 <ArrowRight size={22} strokeWidth={2.5} className="text-white" />
@@ -212,15 +252,23 @@ function CategoryBtn({ label, active, onClick }: { label: string; active: boolea
   );
 }
 
-function MenuCard({ item, onAdd }: { item: MenuItem; onAdd: () => void }) {
+function MenuCard({
+  item,
+  categoryName,
+  onAdd,
+}: {
+  item: MenuFromDB;
+  categoryName: string;
+  onAdd: () => void;
+}) {
+  const isAvailable = item.status === "AKTIF";
   return (
     <div className="rounded-2xl overflow-hidden border border-stone-100 shadow-sm hover:shadow-md transition-shadow bg-white flex flex-col">
-      {/* Gambar */}
       <div className="relative aspect-[4/3] overflow-hidden bg-stone-100">
-        {item.image ? (
+        {item.gambar ? (
           <Image
-            src={item.image}
-            alt={item.name}
+            src={item.gambar}
+            alt={item.nama_menu}
             fill
             className="object-cover"
           />
@@ -229,7 +277,7 @@ function MenuCard({ item, onAdd }: { item: MenuItem; onAdd: () => void }) {
             <UtensilsCrossed className="text-stone-300" size={32} />
           </div>
         )}
-        {!item.isAvailable && (
+        {!isAvailable && (
           <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
             <span className="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full tracking-wide">
               STOK HABIS
@@ -238,17 +286,18 @@ function MenuCard({ item, onAdd }: { item: MenuItem; onAdd: () => void }) {
         )}
       </div>
 
-      {/* Info */}
       <div className="p-4 flex flex-col flex-1">
         <div className="flex justify-between items-start gap-2 mb-2">
-          <h3 className="font-semibold text-stone-800 leading-snug text-sm">{item.name}</h3>
+          <h3 className="font-semibold text-stone-800 leading-snug text-sm">{item.nama_menu}</h3>
           <span className="text-amber-800 font-bold text-sm whitespace-nowrap">
-            {formatRupiah(item.price)}
+            {formatRupiah(item.harga)}
           </span>
         </div>
-        <p className="text-stone-400 text-xs leading-relaxed mb-4 line-clamp-2">{item.description}</p>
+        <p className="text-stone-400 text-xs leading-relaxed mb-4 line-clamp-2">
+          {item.deskripsi ?? categoryName}
+        </p>
         <div className="mt-auto">
-          {item.isAvailable ? (
+          {isAvailable ? (
             <button
               onClick={onAdd}
               className="w-full border border-amber-700 text-amber-800 hover:bg-amber-700 hover:text-white text-xs font-semibold py-2 rounded-full transition-colors flex items-center justify-center gap-1.5"

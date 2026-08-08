@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>Pak Resto UNIKOM – Figma Mockup</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#1a1a2e}
+/* NAV */
+#master-nav{position:fixed;top:0;left:0;width:220px;height:100vh;background:#0f0f1a;border-right:1px solid #222;overflow-y:auto;z-index:9999;padding:12px 0}
+#master-nav h2{color:#888;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:8px 14px 4px}
+#master-nav button{display:block;width:100%;text-align:left;padding:6px 14px;background:none;border:none;color:#aaa;font-size:11px;cursor:pointer;line-height:1.4}
+#master-nav button:hover,#master-nav button.active{background:#1e1e3a;color:#fff}
+#master-nav .section{margin-top:6px}
+/* PAGES */
+#pages{margin-left:220px}
+.page{display:none;width:1220px;min-height:900px}
+.page.active{display:flex}
+
+/* ── SHARED DARK SIDEBAR ── */
+.d-sidebar{width:240px;min-height:900px;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid rgba(255,255,255,.05)}
+.d-sidebar .logo{padding:28px 20px 20px;display:block;text-decoration:none}
+.d-sidebar .logo h1{font-size:22px;font-weight:700;line-height:1.2}
+.d-sidebar .logo p{font-size:11px;color:#4b5563;margin-top:6px}
+.d-sidebar nav{flex:1;padding:12px;display:flex;flex-direction:column;gap:8px}
+.d-sidebar .nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;font-size:13px;font-weight:500;color:#6b7280;text-decoration:none;cursor:pointer}
+.d-sidebar .nav-item.active{color:#000}
+.d-sidebar .nav-item .icon-dot{width:17px;height:17px;border-radius:3px;background:currentColor;opacity:.5;flex-shrink:0}
+.d-sidebar .user-area{padding:16px;border-top:1px solid rgba(255,255,255,.05);display:flex;align-items:center;gap:10px}
+.d-sidebar .user-avatar{width:32px;height:32px;border-radius:10px;background:#374151;flex-shrink:0}
+.d-sidebar .user-name{font-size:13px;font-weight:600;color:#fff}
+.d-sidebar .user-role{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.d-sidebar .logout-btn{margin-left:auto;background:none;border:none;color:#6b7280;cursor:pointer;font-size:13px}
+
+/* ── DARK MAIN AREA ── */
+.d-main{flex:1;min-height:900px;overflow:auto}
+.d-main-inner{padding:24px;min-height:900px}
+
+/* ── STAT CARD ── */
+.stat-card{border-radius:12px;padding:20px;border:1px solid rgba(255,255,255,.07);background:#151C25}
+.stat-card .stat-icon{width:40px;height:40px;border-radius:10px;background:rgba(139,92,246,.15);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.stat-card .stat-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#CBC3D7;margin-bottom:4px}
+.stat-card .stat-value{font-size:22px;font-weight:700}
+.stat-card .stat-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px}
+
+/* ── TABLE DARK ── */
+.d-table{width:100%;border-collapse:collapse;font-size:13px}
+.d-table th{padding:12px 20px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#CBC3D7;border-bottom:1px solid rgba(255,255,255,.06)}
+.d-table td{padding:14px 20px;border-bottom:1px solid rgba(255,255,255,.04)}
+.d-table tr:hover td{background:rgba(255,255,255,.015)}
+
+/* ── BADGE ── */
+.badge{padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600}
+
+/* ── LIGHT THEME (Customer) ── */
+.l-nav{background:#F8F9FF;border-bottom:1px solid #e5e7eb;padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.l-nav .logo{font-size:17px;font-weight:700;color:#78350f;font-family:Georgia,serif}
+.l-main{background:#F8F9FF;flex:1;min-height:840px}
+
+/* TOGGLE */
+.toggle{position:relative;width:40px;height:20px;border-radius:99px;cursor:pointer;border:none;flex-shrink:0}
+.toggle .knob{position:absolute;top:2px;left:2px;width:16px;height:16px;background:#fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .15s}
+.toggle.on .knob{transform:translateX(20px)}
+
+/* INPUT DARK */
+.d-input{background:#0d1117;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 14px;color:#fff;font-size:13px;width:100%;outline:none}
+.d-input::placeholder{color:#4b5563}
+.d-textarea{background:#0d1117;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 14px;color:#fff;font-size:13px;width:100%;outline:none;resize:none}
+</style>
+</head>
+<body>
+
+<!-- MASTER NAV -->
+<nav id="master-nav">
+  <h2>Auth</h2>
+  <div class="section">
+    <button onclick="show('login')" class="active">Login</button>
+  </div>
+  <h2>Customer</h2>
+  <div class="section">
+    <button onclick="show('pesan-menu')">Menu Pesan</button>
+    <button onclick="show('pesan-keranjang')">Keranjang</button>
+    <button onclick="show('pesan-bayar')">Pembayaran</button>
+    <button onclick="show('pesan-sukses')">Sukses</button>
+  </div>
+  <h2>Kasir</h2>
+  <div class="section">
+    <button onclick="show('kasir-konfirmasi')">Konfirmasi Bayar</button>
+    <button onclick="show('kasir-konfirmasi-detail')">Detail Bayar</button>
+    <button onclick="show('kasir-laporan')">Laporan Transaksi</button>
+    <button onclick="show('kasir-takeaway')">Take Away</button>
+    <button onclick="show('kasir-takeaway-tambah')">Tambah Take Away</button>
+  </div>
+  <h2>Koki</h2>
+  <div class="section">
+    <button onclick="show('koki-pesanan')">Pesanan Aktif</button>
+    <button onclick="show('koki-inventaris')">Inventaris Stok</button>
+    <button onclick="show('koki-riwayat')">Riwayat Pesanan</button>
+  </div>
+  <h2>Pelayan</h2>
+  <div class="section">
+    <button onclick="show('pelayan-home')">Home</button>
+    <button onclick="show('pelayan-meja')">Informasi Meja</button>
+    <button onclick="show('pelayan-menu')">Menu</button>
+    <button onclick="show('pelayan-pemesanan')">Pemesanan</button>
+    <button onclick="show('pelayan-stok')">Stok Bahan</button>
+  </div>
+  <h2>Manager</h2>
+  <div class="section">
+    <button onclick="show('mgr-dashboard')">Dashboard</button>
+    <button onclick="show('mgr-financial')">Lap. Keuangan</button>
+    <button onclick="show('mgr-trend')">Analisis Tren</button>
+    <button onclick="show('mgr-menu')">Menu Management</button>
+    <button onclick="show('mgr-menu-tambah')">Tambah Menu</button>
+    <button onclick="show('mgr-kategori')">Kategori Mgmt</button>
+    <button onclick="show('mgr-user')">User Management</button>
+    <button onclick="show('mgr-user-tambah')">Tambah User</button>
+  </div>
+</nav>
+
+<div id="pages">
+
+<!-- ═══════════════════════════ LOGIN ═══════════════════════════ -->
+<div id="login" class="page active" style="background:#FAF9F6;min-height:900px;display:flex;flex-direction:column">
+  <div style="padding:48px 0 24px;text-align:center">
+    <h1 style="font-family:Georgia,serif;font-size:28px;font-weight:700;color:#9D4300">Pak Resto UNIKOM</h1>
+    <p style="font-size:10px;font-weight:700;letter-spacing:.2em;color:#a8a29e;text-transform:uppercase;margin-top:4px">Management Portal</p>
+  </div>
+  <div style="margin:0 auto;width:100%;max-width:480px;padding:0 16px">
+    <div style="background:#fff;border-radius:16px;border:1px solid #e7e5e4;padding:32px">
+      <h2 style="font-size:18px;font-weight:700;color:#1c1917;margin-bottom:4px">Masuk</h2>
+      <p style="font-size:13px;color:#a8a29e;margin-bottom:28px">Masukkan kredensial akun Anda untuk melanjutkan.</p>
+      <div style="margin-bottom:16px">
+        <label style="display:block;font-size:10px;font-weight:700;color:#78716c;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Username</label>
+        <div style="display:flex;align-items:center;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden">
+          <div style="padding:12px;border-right:1px solid #e5e7eb;display:flex">
+            <svg width="15" height="15" fill="none" stroke="#a8a29e" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          </div>
+          <input type="text" placeholder="pelayan" style="flex:1;padding:12px;font-size:13px;color:#44403c;border:none;outline:none;background:transparent">
+        </div>
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="display:block;font-size:10px;font-weight:700;color:#78716c;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Kata Sandi</label>
+        <div style="display:flex;align-items:center;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden">
+          <div style="padding:12px;border-right:1px solid #e5e7eb;display:flex">
+            <svg width="15" height="15" fill="none" stroke="#a8a29e" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          </div>
+          <input type="password" placeholder="••••••••" style="flex:1;padding:12px;font-size:13px;color:#44403c;border:none;outline:none;background:transparent">
+          <button style="padding:12px;color:#a8a29e;background:none;border:none;cursor:pointer">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <button style="width:100%;padding:12px;border-radius:99px;background:#F97316;color:#fff;font-weight:700;font-size:13px;border:none;cursor:pointer">Masuk ke Portal</button>
+    </div>
+    <div style="margin-top:32px;margin-bottom:40px">
+      <p style="text-align:center;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#a8a29e;margin-bottom:16px">Login Cepat</p>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+        <!-- Pelayan -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;background:#fff;border:1px solid #e7e5e4;border-radius:16px;padding:16px 8px">
+          <div style="width:40px;height:40px;border-radius:10px;background:#FFF3EC;display:flex;align-items:center;justify-content:center">
+            <svg width="20" height="20" fill="none" stroke="#F97316" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          </div>
+          <div style="text-align:center">
+            <p style="font-size:11px;font-weight:700;color:#44403c">Pelayan</p>
+            <p style="font-size:9px;color:#a8a29e;margin-top:2px">Order & Layanan</p>
+          </div>
+        </div>
+        <!-- Koki -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;background:#fff;border:1px solid #e7e5e4;border-radius:16px;padding:16px 8px">
+          <div style="width:40px;height:40px;border-radius:10px;background:#FFF3EC;display:flex;align-items:center;justify-content:center">
+            <svg width="20" height="20" fill="none" stroke="#F97316" stroke-width="1.8" viewBox="0 0 24 24"><path d="M6 13.87A4 4 0 017.41 6a5.11 5.11 0 019.18 0A4 4 0 0118 13.87V21H6z"/><line x1="6" y1="17" x2="18" y2="17"/></svg>
+          </div>
+          <div style="text-align:center">
+            <p style="font-size:11px;font-weight:700;color:#44403c">Koki</p>
+            <p style="font-size:9px;color:#a8a29e;margin-top:2px">Manajemen Dapur</p>
+          </div>
+        </div>
+        <!-- Kasir -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;background:#fff;border:1px solid #e7e5e4;border-radius:16px;padding:16px 8px">
+          <div style="width:40px;height:40px;border-radius:10px;background:#FFF3EC;display:flex;align-items:center;justify-content:center">
+            <svg width="20" height="20" fill="none" stroke="#F97316" stroke-width="1.8" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          </div>
+          <div style="text-align:center">
+            <p style="font-size:11px;font-weight:700;color:#44403c">Kasir</p>
+            <p style="font-size:9px;color:#a8a29e;margin-top:2px">Transaksi & Billing</p>
+          </div>
+        </div>
+        <!-- Manajer -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;background:#fff;border:1px solid #e7e5e4;border-radius:16px;padding:16px 8px">
+          <div style="width:40px;height:40px;border-radius:10px;background:#FFF3EC;display:flex;align-items:center;justify-content:center">
+            <svg width="20" height="20" fill="none" stroke="#F97316" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          </div>
+          <div style="text-align:center">
+            <p style="font-size:11px;font-weight:700;color:#44403c">Manajer</p>
+            <p style="font-size:9px;color:#a8a29e;margin-top:2px">Laporan & Staf</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ CUSTOMER: MENU PESAN ═══════════════════════════ -->
+<div id="pesan-menu" class="page" style="flex-direction:column;background:#F8F9FF">
+  <nav class="l-nav">
+    <span class="logo">Pak Resto UNIKOM</span>
+    <div style="display:flex;gap:20px;font-size:13px;font-weight:500;color:#57534e">
+      <a style="color:#92400e;border-bottom:2px solid #92400e;padding-bottom:2px;text-decoration:none">Home</a>
+      <a style="text-decoration:none;color:#57534e">Menu</a>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div style="display:flex;align-items:center;gap:6px;border:1px solid #e5e7eb;border-radius:99px;padding:6px 12px;font-size:13px;color:#44403c">
+        <svg width="14" height="14" fill="none" stroke="#92400e" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="8" y1="3" x2="8" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>
+        Meja 5
+      </div>
+      <div style="position:relative;cursor:pointer">
+        <svg width="20" height="20" fill="none" stroke="#44403c" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        <span style="position:absolute;top:-4px;right:-4px;background:#b45309;color:#fff;font-size:10px;font-weight:700;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center">3</span>
+      </div>
+    </div>
+  </nav>
+  <!-- Hero -->
+  <div style="position:relative;height:420px;overflow:hidden;background:linear-gradient(135deg,#1c0a00,#3b1a08)">
+    <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(0,0,0,.85) 40%,transparent)"></div>
+    <div style="position:relative;z-index:2;padding:100px 40px 0;max-width:1000px;margin:0 auto">
+      <p style="color:#fbbf24;font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;margin-bottom:12px">Fine Dining Experience</p>
+      <h1 style="font-family:Georgia,serif;font-size:42px;font-weight:700;color:#fff;line-height:1.2;margin-bottom:16px">Cita Rasa yang Elegan.</h1>
+      <p style="color:#d6d3d1;font-size:13px;max-width:280px;line-height:1.7;margin-bottom:32px">Nikmati perpaduan rempah tradisional Indonesia dengan teknik kuliner modern dalam suasana yang hangat dan mewah.</p>
+      <button style="background:#F97316;color:#fff;font-weight:600;padding:12px 24px;border-radius:99px;border:none;cursor:pointer;font-size:13px">Pesan Sekarang</button>
+    </div>
+  </div>
+  <!-- Category filter -->
+  <div style="background:#F8F9FF;border-bottom:1px solid #e5e7eb;padding:12px 24px;display:flex;gap:8px">
+    <button style="padding:6px 16px;border-radius:99px;background:#92400e;color:#fff;border:none;font-size:13px;font-weight:500;cursor:pointer">Semua Menu</button>
+    <button style="padding:6px 16px;border-radius:99px;background:#DEE9FC;color:#57534e;border:none;font-size:13px;font-weight:500;cursor:pointer">Main Course</button>
+    <button style="padding:6px 16px;border-radius:99px;background:#DEE9FC;color:#57534e;border:none;font-size:13px;font-weight:500;cursor:pointer">Appetizer</button>
+    <button style="padding:6px 16px;border-radius:99px;background:#DEE9FC;color:#57534e;border:none;font-size:13px;font-weight:500;cursor:pointer">Minuman</button>
+    <button style="padding:6px 16px;border-radius:99px;background:#DEE9FC;color:#57534e;border:none;font-size:13px;font-weight:500;cursor:pointer">Dessert</button>
+  </div>
+  <!-- Menu grid -->
+  <div style="max-width:1100px;margin:0 auto;padding:32px 24px">
+    <h2 style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#92400e;margin-bottom:4px">Main Course</h2>
+    <p style="color:#78716c;font-size:13px;margin-bottom:24px">Hidangan utama pilihan chef terbaik kami</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
+      <!-- Card 1 -->
+      <div style="background:#fff;border-radius:16px;border:1px solid #f0ece8;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06)">
+        <div style="height:160px;background:linear-gradient(135deg,#7c3a00,#b45309)"></div>
+        <div style="padding:16px">
+          <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">
+            <span style="font-weight:600;color:#1c1917;font-size:13px">Ayam Bakar Madu</span>
+            <span style="color:#92400e;font-weight:700;font-size:13px;white-space:nowrap">Rp45.000</span>
+          </div>
+          <p style="color:#a8a29e;font-size:11px;line-height:1.6;margin-bottom:16px">Ayam bakar dengan marinade madu istimewa, disajikan dengan lalapan segar dan sambal.</p>
+          <button style="width:100%;border:1px solid #b45309;color:#92400e;font-size:11px;font-weight:600;padding:8px;border-radius:99px;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+            Tambah ke Pesanan
+          </button>
+        </div>
+      </div>
+      <!-- Card 2 -->
+      <div style="background:#fff;border-radius:16px;border:1px solid #f0ece8;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06)">
+        <div style="height:160px;background:linear-gradient(135deg,#4a1c00,#92400e)"></div>
+        <div style="padding:16px">
+          <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">
+            <span style="font-weight:600;color:#1c1917;font-size:13px">Rendang Sapi Spesial</span>
+            <span style="color:#92400e;font-weight:700;font-size:13px;white-space:nowrap">Rp65.000</span>
+          </div>
+          <p style="color:#a8a29e;font-size:11px;line-height:1.6;margin-bottom:16px">Rendang sapi dengan bumbu rempah khas Minang, dimasak perlahan selama 4 jam.</p>
+          <button style="width:100%;border:1px solid #b45309;color:#92400e;font-size:11px;font-weight:600;padding:8px;border-radius:99px;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+            Tambah ke Pesanan
+          </button>
+        </div>
+      </div>
+      <!-- Card 3 – Stok Habis -->
+      <div style="background:#fff;border-radius:16px;border:1px solid #f0ece8;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06)">
+        <div style="height:160px;background:linear-gradient(135deg,#374151,#6b7280);position:relative">
+          <div style="position:absolute;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center">
+            <span style="background:#dc2626;color:#fff;font-size:10px;font-weight:700;padding:4px 12px;border-radius:99px;letter-spacing:.05em">STOK HABIS</span>
+          </div>
+        </div>
+        <div style="padding:16px">
+          <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">
+            <span style="font-weight:600;color:#1c1917;font-size:13px">Iga Bakar Penyet</span>
+            <span style="color:#92400e;font-weight:700;font-size:13px;white-space:nowrap">Rp85.000</span>
+          </div>
+          <p style="color:#a8a29e;font-size:11px;line-height:1.6;margin-bottom:16px">Iga sapi bakar empuk dengan bumbu penyet pedas, nasi dan lalapan.</p>
+          <button disabled style="width:100%;background:#DEE0E2;color:#a8a29e;font-size:11px;font-weight:600;padding:8px;border-radius:99px;border:none;cursor:not-allowed">Tidak Tersedia</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Float cart bar -->
+  <div style="position:sticky;bottom:16px;padding:0 24px">
+    <div style="max-width:600px;margin:0 auto">
+      <button style="width:100%;background:#F97316;color:#fff;border-radius:99px;padding:14px 20px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 32px rgba(249,115,22,.4)">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:40px;height:40px;border-radius:50%;background:#E06010;display:flex;align-items:center;justify-content:center">
+            <svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+          </div>
+          <div style="text-align:left">
+            <p style="font-size:11px;font-weight:700;margin-bottom:2px">3 Item</p>
+            <p style="font-size:17px;font-weight:700">Rp155.000</p>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase">LIHAT PESANAN</span>
+          <svg width="20" height="20" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ CUSTOMER: KERANJANG ═══════════════════════════ -->
+<div id="pesan-keranjang" class="page" style="flex-direction:column;background:#F8F9FF">
+  <nav class="l-nav">
+    <div style="display:flex;align-items:center;gap:12px">
+      <button style="padding:6px;border-radius:50%;background:none;border:none;cursor:pointer"><svg width="18" height="18" fill="none" stroke="#44403c" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <span class="logo">Pak Resto UNIKOM</span>
+    </div>
+    <div style="display:flex;gap:20px;font-size:13px;font-weight:500;color:#57534e">
+      <a style="text-decoration:none;color:#57534e">Home</a>
+      <a style="text-decoration:none;color:#57534e">Menu</a>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;border:1px solid #e5e7eb;border-radius:99px;padding:6px 12px;font-size:13px;color:#44403c">
+      <svg width="14" height="14" fill="none" stroke="#92400e" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="8" y1="3" x2="8" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>
+      Meja 5
+    </div>
+  </nav>
+  <div style="max-width:900px;margin:0 auto;padding:32px 24px;width:100%">
+    <h1 style="font-family:Georgia,serif;font-size:28px;font-weight:700;color:#1c1917;margin-bottom:32px">Pesanan Anda</h1>
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:32px;align-items:start">
+      <!-- Left -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <!-- Items -->
+        <div style="background:#fff;border-radius:16px;border:1px solid #f0ece8;overflow:hidden">
+          <!-- Item 1 -->
+          <div style="padding:16px;display:flex;gap:16px;border-bottom:1px solid #f0ece8">
+            <div style="width:64px;height:64px;border-radius:12px;background:linear-gradient(135deg,#7c3a00,#b45309);flex-shrink:0"></div>
+            <div style="flex:1">
+              <div style="display:flex;justify-content:space-between;align-items:start">
+                <p style="font-weight:600;color:#1c1917;font-size:13px">Ayam Bakar Madu</p>
+                <button style="background:none;border:none;opacity:.5;cursor:pointer"><svg width="15" height="15" fill="none" stroke="#44403c" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <button style="width:28px;height:28px;border-radius:50%;border:1px solid #e5e7eb;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer"><svg width="12" height="12" fill="none" stroke="#44403c" stroke-width="2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+                  <span style="font-size:13px;font-weight:600;color:#44403c;width:24px;text-align:center">2</span>
+                  <button style="width:28px;height:28px;border-radius:50%;border:1px solid #e5e7eb;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer"><svg width="12" height="12" fill="none" stroke="#44403c" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+                </div>
+                <span style="color:#92400e;font-weight:700;font-size:13px">Rp90.000</span>
+              </div>
+            </div>
+          </div>
+          <!-- Item 2 -->
+          <div style="padding:16px;display:flex;gap:16px">
+            <div style="width:64px;height:64px;border-radius:12px;background:linear-gradient(135deg,#374151,#6b7280);flex-shrink:0"></div>
+            <div style="flex:1">
+              <div style="display:flex;justify-content:space-between;align-items:start">
+                <p style="font-weight:600;color:#1c1917;font-size:13px">Rendang Sapi Spesial</p>
+                <button style="background:none;border:none;opacity:.5;cursor:pointer"><svg width="15" height="15" fill="none" stroke="#44403c" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <button style="width:28px;height:28px;border-radius:50%;border:1px solid #e5e7eb;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer"><svg width="12" height="12" fill="none" stroke="#44403c" stroke-width="2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+                  <span style="font-size:13px;font-weight:600;color:#44403c;width:24px;text-align:center">1</span>
+                  <button style="width:28px;height:28px;border-radius:50%;border:1px solid #e5e7eb;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer"><svg width="12" height="12" fill="none" stroke="#44403c" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+                </div>
+                <span style="color:#92400e;font-weight:700;font-size:13px">Rp65.000</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Nama -->
+        <div style="background:#fff;border-radius:16px;border:1px solid #f0ece8;padding:16px">
+          <p style="font-size:10px;font-weight:700;color:#78716c;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px">Nama Pemesan</p>
+          <input type="text" placeholder="Contoh: Budi" style="width:100%;border:none;border-bottom:1px solid #e5e7eb;padding-bottom:4px;font-size:13px;color:#44403c;outline:none;background:transparent">
+        </div>
+        <!-- Meja & Catatan -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div style="background:#fff;border-radius:16px;border:1px solid #f0ece8;padding:16px">
+            <p style="font-size:10px;font-weight:700;color:#78716c;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px">Nomor Meja</p>
+            <p style="font-size:22px;font-weight:700;color:#44403c">5</p>
+          </div>
+          <div style="background:#fff;border-radius:16px;border:1px solid #f0ece8;padding:16px">
+            <p style="font-size:10px;font-weight:700;color:#78716c;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px">Catatan Pesanan</p>
+            <textarea placeholder="Contoh: Sambal dipisah" rows="2" style="width:100%;border:none;border-bottom:1px solid #e5e7eb;font-size:12px;color:#44403c;outline:none;background:transparent;resize:none"></textarea>
+          </div>
+        </div>
+      </div>
+      <!-- Right: Summary -->
+      <div style="background:#fff;border-radius:16px;border:1px solid #f0ece8;padding:24px">
+        <h2 style="font-family:Georgia,serif;font-size:20px;font-weight:700;color:#1c1917;margin-bottom:20px">Ringkasan Pembayaran</h2>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">
+          <div style="display:flex;justify-content:space-between;font-size:13px;color:#57534e"><span>Subtotal</span><span>Rp155.000</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;color:#57534e"><span>Pajak (11%)</span><span>Rp17.050</span></div>
+          <div style="border-top:1px solid #f0ece8;padding-top:12px;display:flex;justify-content:space-between;font-weight:700">
+            <span style="font-family:Georgia,serif;font-size:17px;color:#1c1917">Grand Total</span>
+            <span style="font-family:Georgia,serif;font-size:17px;color:#92400e">Rp172.050</span>
+          </div>
+        </div>
+        <p style="font-size:10px;font-weight:700;color:#78716c;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px">Metode Pembayaran</p>
+        <!-- Bayar Langsung -->
+        <div style="border:1px solid #9D4300;border-radius:99px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:8px;background:rgba(255,182,144,.1)">
+          <svg width="20" height="20" fill="none" stroke="#92400e" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          <div style="flex:1"><p style="font-size:13px;font-weight:600;color:#1c1917">Bayar Langsung</p><p style="font-size:11px;color:#a8a29e">QRIS, E-Wallet, Debit, Tunai</p></div>
+          <svg width="20" height="20" fill="none" stroke="#92400e" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <!-- Sub-method -->
+        <div style="padding-left:16px;margin-bottom:8px;display:flex;flex-direction:column;gap:6px">
+          <div style="border:1px solid #9D4300;border-radius:99px;padding:8px 14px;display:flex;align-items:center;gap:10px;background:rgba(255,182,144,.1)">
+            <svg width="16" height="16" fill="none" stroke="#92400e" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            <div style="flex:1"><p style="font-size:12px;font-weight:600;color:#44403c">QRIS</p><p style="font-size:10px;color:#a8a29e">Scan QR code</p></div>
+            <svg width="16" height="16" fill="none" stroke="#92400e" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </div>
+        <!-- Bayar di Kasir -->
+        <div style="border:1px solid #e5e7eb;border-radius:99px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:20px">
+          <svg width="20" height="20" fill="none" stroke="#57534e" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <div style="flex:1"><p style="font-size:13px;font-weight:600;color:#1c1917">Bayar di Kasir</p><p style="font-size:11px;color:#a8a29e">Bayar setelah selesai makan</p></div>
+        </div>
+        <button style="width:100%;background:#F97316;color:#fff;font-weight:600;padding:14px;border-radius:99px;border:none;cursor:pointer;font-size:13px">Konfirmasi &amp; Bayar →</button>
+        <p style="font-size:11px;color:#a8a29e;text-align:center;margin-top:12px;line-height:1.6">Dengan menekan tombol di atas, Anda setuju dengan Syarat &amp; Ketentuan Pak Resto UNIKOM.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ CUSTOMER: BAYAR ═══════════════════════════ -->
+<div id="pesan-bayar" class="page" style="flex-direction:column;background:#F8F9FF;align-items:center;justify-content:center;min-height:900px">
+  <div style="max-width:440px;width:100%;padding:40px 24px;text-align:center">
+    <div style="background:#fff;border-radius:24px;border:1px solid #f0ece8;padding:32px">
+      <div style="width:64px;height:64px;border-radius:16px;background:#FFF3EC;margin:0 auto 20px;display:flex;align-items:center;justify-content:center">
+        <svg width="28" height="28" fill="none" stroke="#F97316" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      </div>
+      <h2 style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#1c1917;margin-bottom:8px">Scan untuk Bayar</h2>
+      <p style="font-size:13px;color:#78716c;margin-bottom:24px">Meja 5 · Pesanan #1042</p>
+      <!-- QR placeholder -->
+      <div style="width:160px;height:160px;margin:0 auto 24px;border:2px solid #f0ece8;border-radius:12px;display:flex;align-items:center;justify-content:center;background:#f9fafb">
+        <div style="width:120px;height:120px;background:repeating-conic-gradient(#44403c 0% 25%, transparent 0% 50%) 0/20px 20px;border-radius:4px"></div>
+      </div>
+      <div style="background:#fafaf9;border-radius:12px;padding:16px;margin-bottom:24px">
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:#57534e;margin-bottom:8px"><span>Total Bayar</span><span style="font-weight:700;color:#92400e">Rp172.050</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:#57534e"><span>Metode</span><span>QRIS</span></div>
+      </div>
+      <p style="font-size:11px;color:#a8a29e;line-height:1.6">Setelah pembayaran berhasil, pesanan Anda akan segera diproses oleh dapur.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ CUSTOMER: SUKSES ═══════════════════════════ -->
+<div id="pesan-sukses" class="page" style="flex-direction:column;background:#F8F9FF;align-items:center;justify-content:center;min-height:900px">
+  <div style="max-width:420px;width:100%;padding:40px 24px;text-align:center">
+    <div style="width:80px;height:80px;border-radius:50%;background:rgba(16,185,129,.1);border:2px solid #10B981;margin:0 auto 24px;display:flex;align-items:center;justify-content:center">
+      <svg width="36" height="36" fill="none" stroke="#10B981" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h1 style="font-family:Georgia,serif;font-size:28px;font-weight:700;color:#1c1917;margin-bottom:8px">Pesanan Berhasil!</h1>
+    <p style="font-size:13px;color:#78716c;margin-bottom:32px;line-height:1.7">Pesanan Anda untuk Meja 5 telah kami terima. Silakan tunggu, dapur kami sedang memproses pesanan Anda.</p>
+    <div style="background:#fff;border-radius:16px;border:1px solid #f0ece8;padding:20px;margin-bottom:24px;text-align:left">
+      <div style="display:flex;justify-content:space-between;margin-bottom:12px;font-size:13px"><span style="color:#78716c">No. Pesanan</span><span style="font-weight:700;color:#44403c">#1042</span></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:12px;font-size:13px"><span style="color:#78716c">Meja</span><span style="font-weight:700;color:#44403c">5</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#78716c">Total</span><span style="font-weight:700;color:#92400e">Rp172.050</span></div>
+    </div>
+    <a href="#" style="display:block;width:100%;background:#F97316;color:#fff;font-weight:600;padding:14px;border-radius:99px;text-decoration:none;font-size:13px">Kembali ke Menu</a>
+  </div>
+</div>
+</div><!-- end #pages -->
+
+<script>
+function show(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#master-nav button').forEach(b=>b.classList.remove('active'));
+  var el=document.getElementById(id);
+  if(el){el.classList.add('active');el.style.display='flex';}
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>
