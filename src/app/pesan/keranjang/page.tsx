@@ -28,13 +28,48 @@ export default function KeranjangPage() {
   const [paymentCategory, setPaymentCategory] = useState<"LANGSUNG" | "NANTI">("LANGSUNG");
   const [paymentMethod, setPaymentMethod] = useState<"QRIS" | "EWALLET" | "DEBIT">("QRIS");
   const [showConfirm, setShowConfirm] = useState(false);
-  const [submitting] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  function handleSubmit() {
-    if (items.length === 0) return;
+  async function handleSubmit() {
+    if (items.length === 0 || submitting) return;
     setShowConfirm(false);
-    const metode = paymentCategory === "NANTI" ? "NANTI" : paymentMethod;
-    router.push(`/pesan/bayar?metode=${metode}&meja=${tableNumber ?? 12}&nama=${encodeURIComponent(customerName)}`);
+    setSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const res = await fetch("/api/orders/customer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: items.map((i) => ({
+            id_menu: parseInt(i.menuItemId, 10),
+            jumlah: i.quantity,
+            catatan: i.notes || undefined,
+          })),
+          nomor_meja: tableNumber,
+          nama_pelanggan: customerName || undefined,
+          catatan: orderNotes || undefined,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        setSubmitError(data.error ?? "Gagal membuat pesanan. Coba lagi.");
+        return;
+      }
+
+      const metode = paymentCategory === "NANTI" ? "NANTI" : paymentMethod;
+      const orderId = data.data.id_pesanan;
+      router.push(
+        `/pesan/bayar?metode=${metode}&meja=${tableNumber ?? ""}&nama=${encodeURIComponent(customerName)}&order=${orderId}`
+      );
+    } catch {
+      setSubmitError("Terjadi kesalahan jaringan. Periksa koneksi Anda.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   if (items.length === 0) {
@@ -392,9 +427,15 @@ export default function KeranjangPage() {
               )}
             </div>
 
+            {submitError && (
+              <div className="mb-4 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl px-3 py-2">
+                {submitError}
+              </div>
+            )}
+
             <div className="flex gap-3">
               <button
-                onClick={() => setShowConfirm(false)}
+                onClick={() => { setShowConfirm(false); setSubmitError(null); }}
                 disabled={submitting}
                 className="flex-1 border border-stone-200 text-stone-600 font-semibold py-3 rounded-full hover:bg-stone-50 transition-colors text-sm"
               >

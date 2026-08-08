@@ -27,11 +27,18 @@ class ApiError extends Error {
   }
 }
 
+function getTabToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return sessionStorage.getItem("tab-session");
+}
+
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
+  const tabToken = getTabToken();
   const res = await fetch(url, {
     ...init,
     headers: {
       "Content-Type": "application/json",
+      ...(tabToken ? { Authorization: `Bearer ${tabToken}` } : {}),
       ...init?.headers,
     },
   });
