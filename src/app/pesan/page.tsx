@@ -105,7 +105,7 @@ export default function PesanPage() {
       </nav>
 
       {/* Hero */}
-      <section className="relative h-[400px] md:h-[480px] flex items-center overflow-hidden">
+      <section className="relative h-[560px] md:h-[680px] flex items-center overflow-hidden">
         <div className="absolute inset-0">
           <Image
             src="/images/hero-section.png"
@@ -115,21 +115,21 @@ export default function PesanPage() {
             priority
           />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-r from-stone-900/88 via-stone-900/55 to-transparent" />
-        <div className="relative z-10 px-6 max-w-6xl mx-auto w-full">
-          <p className="text-amber-400 text-xs font-semibold tracking-widest uppercase mb-3">
+        <div className="absolute inset-0 bg-gradient-to-r from-stone-900/80 via-stone-900/40 to-transparent" />
+        <div className="relative z-10 px-8 md:px-16 max-w-6xl mx-auto w-full">
+          <p className="text-amber-400 text-xs font-semibold tracking-widest uppercase mb-4">
             Fine Dining Experience
           </p>
-          <h1 className="font-playfair text-4xl md:text-5xl font-bold text-white leading-tight mb-4">
+          <h1 className="font-playfair text-4xl md:text-6xl font-bold text-white leading-tight mb-5">
             Cita Rasa yang Elegan.
           </h1>
-          <p className="text-stone-300 text-sm max-w-xs leading-relaxed mb-8">
+          <p className="text-stone-300 text-sm md:text-base max-w-sm leading-relaxed mb-10">
             Nikmati perpaduan rempah tradisional Indonesia dengan teknik kuliner modern dalam
             suasana yang hangat dan mewah.
           </p>
           <button
             onClick={() => menuRef.current?.scrollIntoView({ behavior: "smooth" })}
-            className="text-white font-semibold px-6 py-3 rounded-full transition-opacity hover:opacity-90 text-sm"
+            className="text-white font-semibold px-7 py-3.5 rounded-full transition-opacity hover:opacity-90 text-sm"
             style={{ backgroundColor: "#F97316" }}
           >
             Pesan Sekarang
