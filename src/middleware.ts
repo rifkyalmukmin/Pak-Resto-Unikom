@@ -1,7 +1,5 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
-import type { Role } from "@prisma/client";
-import { getDashboardPath, getRoleForDashboardPath } from "@/lib/auth-routes";
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;

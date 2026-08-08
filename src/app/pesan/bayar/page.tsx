@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { CheckCircle, CreditCard, Smartphone } from "lucide-react";
+import { CheckCircle, CreditCard } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 
 function formatRupiah(n: number) {
